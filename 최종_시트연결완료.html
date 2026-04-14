@@ -756,6 +756,7 @@ function submitClaimToSheet() {
   const accidentType = document.getElementById('accidentTypeSelect')?.value || '';
   const accidentDetail = document.getElementById('claimAccidentDesc')?.value?.trim() || '';
   const note = document.getElementById('claimMemo')?.value?.trim() || '';
+  const email = document.getElementById('claimEmail')?.value?.trim() || '';
 
   if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !accidentType) {
     alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
@@ -780,7 +781,8 @@ function submitClaimToSheet() {
     accidentDate,
     accidentType,
     accidentDetail,
-    note
+    note,
+    email
   };
 
   Object.entries(fields).forEach(([key, value]) => {
@@ -858,5 +860,4 @@ window.onload = function() {
 
 </body>
 </html>
-
 
