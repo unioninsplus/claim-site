@@ -556,6 +556,22 @@ function clearLookup(resetTop=true) {
   document.getElementById("claimInfoInsurer").textContent = "-";
 }
 
+function normalizeStartDate(startDate) {
+  if (!startDate) return "";
+  const value = String(startDate).trim();
+  const match = value.match(/(20\d{2})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : "";
+}
+
+function isLookupTargetForYear(year, block) {
+  if (!block || !block.start_date) return false;
+  const normalized = normalizeStartDate(block.start_date);
+  if (!normalized) return false;
+  if (!normalized.startsWith(String(year) + "-")) return false;
+  if (String(year) === "2026" && normalized > "2026-04-18") return false;
+  return true;
+}
+
 function aggregateBySido(year, sido) {
   const regionMap = (DATASET[year] && DATASET[year][sido]) ? DATASET[year][sido] : {};
   const merged = [];
@@ -564,6 +580,7 @@ function aggregateBySido(year, sido) {
   let starts = [];
   let populations = [];
   Object.entries(regionMap).forEach(([sigungu, block]) => {
+    if (!isLookupTargetForYear(year, block)) return;
     if (block.insurer) insurer.push(block.insurer);
     if (block.start_date) starts.push(block.start_date);
     if (block.population) populations.push(block.population);
@@ -614,8 +631,14 @@ function runLookup() {
     items = block.coverages || [];
     regionLabel = `${sido} 전체`;
   } else if (DATASET[year] && DATASET[year][sido] && DATASET[year][sido][sigungu]) {
-    block = DATASET[year][sido][sigungu];
-    items = (block.coverages || []).map(x => ({...x, region:sigungu}));
+    const selectedBlock = DATASET[year][sido][sigungu];
+    if (isLookupTargetForYear(year, selectedBlock)) {
+      block = selectedBlock;
+      items = (block.coverages || []).map(x => ({...x, region:sigungu}));
+    } else {
+      block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
+      items = [];
+    }
   } else {
     block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
     items = [];
@@ -860,3 +883,4 @@ window.onload = function() {
 
 </body>
 </html>
+
