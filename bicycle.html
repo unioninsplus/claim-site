@@ -218,7 +218,7 @@ cursor:pointer;
 
           <div style="grid-column:1/-1;"><label>비고</label><input id="claimMemo" placeholder="관리 메모 또는 참고사항"></div>
 
-          <div style="grid-column:1/-1; display:none;" id="emailWrap">
+          <div style="grid-column:1/-1;" id="emailWrap">
   <label>이메일</label>
   <input id="claimEmail" type="email" autocomplete="email" placeholder="자동 확인이 안 되면 이메일 입력">
 </div>
@@ -8233,9 +8233,7 @@ function submitClaimToSheet() {
   const accidentType2 = document.getElementById('accidentType2Select')?.value || '';
   const accidentDetail = document.getElementById('claimAccidentDesc')?.value?.trim() || '';
   const note = document.getElementById('claimMemo')?.value?.trim() || '';
-  const email = (typeof getSubmitEmail === 'function')
-    ? getSubmitEmail()
-    : (document.getElementById('claimEmail')?.value?.trim() || '');
+ const email = document.getElementById('claimEmail')?.value?.trim() || '';
 
   if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !accidentType1) {
     alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
