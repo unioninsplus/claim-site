@@ -8243,32 +8243,28 @@ function submitClaimToSheet() {
   }
 
  
-  const payload = {
-  year: year,
-  sido: sido,
-  sigungu: sigungu,
-  name: name,
-  claimant: claimant,
-  rrn: rrn,
-  phone: phone,
-  receiptDate: receiptDate,
-  accidentDate: accidentDate,
-  accidentType1: accidentType1,
-  accidentType2: accidentType2,
-  accidentDetail: accidentDetail,
-  note: note,
-  paymentDate: "",
-  paymentAmount: "",
-  status: "접수",
-  email: email
-};
+ const formData = new URLSearchParams();
+formData.append("year", year);
+formData.append("sido", sido);
+formData.append("sigungu", sigungu);
+formData.append("name", name);
+formData.append("claimant", claimant);
+formData.append("rrn", rrn);
+formData.append("phone", phone);
+formData.append("receiptDate", receiptDate);
+formData.append("accidentDate", accidentDate);
+formData.append("accidentType1", accidentType1);
+formData.append("accidentType2", accidentType2);
+formData.append("accidentDetail", accidentDetail);
+formData.append("note", note);
+formData.append("paymentDate", "");
+formData.append("paymentAmount", "");
+formData.append("status", "접수");
+formData.append("email", email);
 
 fetch(GOOGLE_SCRIPT_URL, {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(payload)
+  body: formData
 })
 .then(res => res.json())
 .then(data => {
@@ -8292,7 +8288,7 @@ fetch(GOOGLE_SCRIPT_URL, {
 })
 .catch(err => {
   console.error(err);
-  alert("서버 연결 오류");
+  alert("저장 실패: " + err.message);
 });
 }
 
