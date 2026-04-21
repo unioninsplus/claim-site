@@ -247,6 +247,7 @@ cursor:pointer;
     기존 시트 열기
   </button>
 </div>
+<div id="saveMessage" style="display:none;">접수가 완료되었습니다.</div>
 <div class="note" style="margin-top:10px;">
           보험금 청구 입력이 완료되면 별도의 청구서 작성은 필요하지 않습니다.<br>
 본 화면에 입력한 내용과 동의·전자서명은 보험금청구서 제출에 갈음합니다.<br>
@@ -8267,7 +8268,7 @@ fetch(GOOGLE_SCRIPT_URL, {
 .then(res => res.json())
 .then(data => {
   if (data.result === "success") {
-    alert("접수 저장 완료");
+    document.getElementById('saveMessage').style.display = 'block';
 
     document.getElementById('claimName').value = '';
     document.getElementById('claimDepositor').value = '';
