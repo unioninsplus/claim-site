@@ -8293,7 +8293,7 @@ fetch(GOOGLE_SCRIPT_URL, {
 .then(res => res.json())
 .then(data => {
   if (data.result === "success") {
-    document.getElementById('saveMessage').style.display = 'block';
+    document.getElementById('saveMessage').style.display = 'flex';
 
     document.getElementById('claimName').value = '';
     document.getElementById('claimDepositor').value = '';
