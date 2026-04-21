@@ -8242,54 +8242,57 @@ function submitClaimToSheet() {
     return;
   }
 
+ 
   const payload = {
-    year,
-    sido,
-    sigungu,
-    name,
-    claimant,
-    rrn,
-    phone,
-    receiptDate,
-    accidentDate,
-    accidentType1,
-    accidentType2,
-    accidentDetail,
-    note,
-    paymentDate: "",
-    paymentAmount: "",
-    status: "접수",
-    email
-  };
+  year: year,
+  sido: sido,
+  sigungu: sigungu,
+  name: name,
+  claimant: claimant,
+  rrn: rrn,
+  phone: phone,
+  receiptDate: receiptDate,
+  accidentDate: accidentDate,
+  accidentType1: accidentType1,
+  accidentType2: accidentType2,
+  accidentDetail: accidentDetail,
+  note: note,
+  paymentDate: "",
+  paymentAmount: "",
+  status: "접수",
+  email: email
+};
 
-  fetch(GOOGLE_SCRIPT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.result === "success") {
-        alert('접수 저장 완료');
-        document.getElementById('claimName').value = '';
-        document.getElementById('claimDepositor').value = '';
-        document.getElementById('claimRRN').value = '';
-        document.getElementById('claimPhone').value = '';
-        document.getElementById('claimAccidentDate').value = '';
-        document.getElementById('claimAccidentDesc').value = '';
-        document.getElementById('claimMemo').value = '';
-        if (document.getElementById('claimEmail')) {
-          document.getElementById('claimEmail').value = '';
-        }
-     } else {
-  alert(data.message || '저장 중 오류가 발생했습니다.');
-}
-    })
-   .catch(err => {
+fetch(GOOGLE_SCRIPT_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+})
+.then(res => res.json())
+.then(data => {
+  if (data.result === "success") {
+    alert("접수 저장 완료");
+
+    document.getElementById('claimName').value = '';
+    document.getElementById('claimDepositor').value = '';
+    document.getElementById('claimRRN').value = '';
+    document.getElementById('claimPhone').value = '';
+    document.getElementById('claimAccidentDate').value = '';
+    document.getElementById('claimAccidentDesc').value = '';
+    document.getElementById('claimMemo').value = '';
+
+    if (document.getElementById('claimEmail')) {
+      document.getElementById('claimEmail').value = '';
+    }
+  } else {
+    alert(data.message || "저장 오류");
+  }
+})
+.catch(err => {
   console.error(err);
-  alert('저장 실패: ' + err.message);
+  alert("서버 연결 오류");
 });
 }
 
@@ -8323,8 +8326,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-function closeWin(){
-  if(window.opener){
+function closeWin() {
+  if (window.opener) {
     window.close();
   } else {
     window.location.href = "bicycle.html";
