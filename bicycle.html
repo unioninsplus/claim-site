@@ -211,8 +211,29 @@ cursor:pointer;
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
           <div><label>사고일</label><input id="claimAccidentDate" type="text" placeholder="예: 2026-02-05"></div>
 
-          <div><label>1.사고유형</label><select id="accidentTypeSelect"></select></div>
-          <div><label>2.사고유형</label><select id="accidentType2Select"></select></div>
+          <div style="grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+
+  <div>
+    <label>구분</label>
+    <select id="accidentCategorySelect">
+      <option value="">구분 선택</option>
+      <option value="개인">개인</option>
+      <option value="공공">공공</option>
+      <option value="PM">PM</option>
+    </select>
+  </div>
+
+  <div>
+    <label>1.사고유형</label>
+    <select id="accidentTypeSelect"></select>
+  </div>
+
+  <div>
+    <label>2.사고유형</label>
+    <select id="accidentType2Select"></select>
+  </div>
+
+</div>
           
           <div style="grid-column:1/-1;"><label>사고내용</label><textarea id="claimAccidentDesc" placeholder="사고 경위, 발생 장소, 상황 등을 상세히 입력"></textarea></div>
 
@@ -8199,7 +8220,7 @@ alert("보험금 청구가 완료되었습니다.\n접수번호: "+claimNo+"\n�
   return true;
 }
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwBMtXizpS8ORo077ZplQq2waLGKzNDoCGq8AnJbMuoXurfJ77WjGgND3spcAj6MZR8/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfIJBGSjF9zQJ3ZXNc7ZpMu4wwpAd2mG_nE9gZpQJGDj-9CLr1VoI5IaY-9FySUFIp/exec";
 
 initDropdowns();
 clearLookup();
@@ -8256,65 +8277,74 @@ function submitClaimToSheet() {
   const phone = document.getElementById('claimPhone')?.value?.trim() || '';
   const receiptDate = document.getElementById('claimReceiptDateView')?.value || getTodayKST();
   const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
+
+  // ⭐ 핵심 추가
+  const category = document.getElementById('accidentCategorySelect')?.value || '';
+
   const accidentType1 = document.getElementById('accidentTypeSelect')?.value || '';
   const accidentType2 = document.getElementById('accidentType2Select')?.value || '';
   const accidentDetail = document.getElementById('claimAccidentDesc')?.value?.trim() || '';
   const note = document.getElementById('claimMemo')?.value?.trim() || '';
- const email = document.getElementById('claimEmail')?.value?.trim() || '';
+  const email = document.getElementById('claimEmail')?.value?.trim() || '';
 
-  if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !accidentType1) {
-    alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
+  if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !category || !accidentType1) {
+    alert('연도/지자체/이름/전화/사고일/구분/사고유형 입력하세요.');
     return;
   }
 
- 
- const formData = new URLSearchParams();
-formData.append("year", year);
-formData.append("sido", sido);
-formData.append("sigungu", sigungu);
-formData.append("name", name);
-formData.append("claimant", claimant);
-formData.append("rrn", rrn);
-formData.append("phone", phone);
-formData.append("receiptDate", receiptDate);
-formData.append("accidentDate", accidentDate);
-formData.append("accidentType1", accidentType1);
-formData.append("accidentType2", accidentType2);
-formData.append("accidentDetail", accidentDetail);
-formData.append("note", note);
-formData.append("paymentDate", "");
-formData.append("paymentAmount", "");
-formData.append("status", "접수");
-formData.append("email", email);
+  const formData = new URLSearchParams();
+  formData.append("year", year);
+  formData.append("sido", sido);
+  formData.append("sigungu", sigungu);
+  formData.append("name", name);
+  formData.append("claimant", claimant);
+  formData.append("rrn", rrn);
+  formData.append("phone", phone);
+  formData.append("receiptDate", receiptDate);
+  formData.append("accidentDate", accidentDate);
 
-fetch(GOOGLE_SCRIPT_URL, {
-  method: "POST",
-  body: formData
-})
-.then(res => res.json())
-.then(data => {
-  if (data.result === "success") {
-    document.getElementById('saveMessage').style.display = 'flex';
+  // ⭐ 핵심 추가
+  formData.append("category", category);
 
-    document.getElementById('claimName').value = '';
-    document.getElementById('claimDepositor').value = '';
-    document.getElementById('claimRRN').value = '';
-    document.getElementById('claimPhone').value = '';
-    document.getElementById('claimAccidentDate').value = '';
-    document.getElementById('claimAccidentDesc').value = '';
-    document.getElementById('claimMemo').value = '';
+  formData.append("accidentType1", accidentType1);
+  formData.append("accidentType2", accidentType2);
+  formData.append("accidentDetail", accidentDetail);
+  formData.append("note", note);
+  formData.append("paymentDate", "");
+  formData.append("paymentAmount", "");
+  formData.append("status", "접수");
+  formData.append("email", email);
 
-    if (document.getElementById('claimEmail')) {
-      document.getElementById('claimEmail').value = '';
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.result === "success") {
+      document.getElementById('saveMessage').style.display = 'flex';
+
+      document.getElementById('claimName').value = '';
+      document.getElementById('claimDepositor').value = '';
+      document.getElementById('claimRRN').value = '';
+      document.getElementById('claimPhone').value = '';
+      document.getElementById('claimAccidentDate').value = '';
+      document.getElementById('accidentCategorySelect').value = '';
+      document.getElementById('accidentTypeSelect').value = '';
+      document.getElementById('accidentType2Select').value = '';
+      document.getElementById('claimAccidentDesc').value = '';
+      document.getElementById('claimMemo').value = '';
+      if (document.getElementById('claimEmail')) {
+        document.getElementById('claimEmail').value = '';
+      }
+
+    } else {
+      alert(data.message || "저장 오류");
     }
-  } else {
-    alert(data.message || "저장 오류");
-  }
-})
-.catch(err => {
-  console.error(err);
-  alert("저장 실패: " + err.message);
-});
+  })
+  .catch(err => {
+    alert("저장 실패");
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
