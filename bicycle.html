@@ -8361,8 +8361,8 @@ if (sido === "세종특별자치시" && sigungu === "전체") {
   // ⭐ 핵심 추가
   formData.append("category", category);
 
-  formData.append("accidentType", coverageItems.map(i => i.type).join('|'));
-  formData.append("paymentAmount", coverageItems.map(i => i.amount).join('|'));
+  formData.append("accidentType", coverageItems.map(i => i.type).join('/'));
+  formData.append("paymentAmount", coverageItems.map(i => i.amount).join('/'));
   formData.append("accidentDetail", accidentDetail);
   formData.append("note", note);
   formData.append("paymentDate", "");
