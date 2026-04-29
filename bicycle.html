@@ -9017,10 +9017,19 @@ if (sido === "세종특별자치시" && sigungu === "전체") {
 }
   const name = document.getElementById('claimName')?.value?.trim() || '';
   const claimant = document.getElementById('claimDepositor')?.value?.trim() || '';
-  const rrn = document.getElementById('claimRRN')?.value?.trim() || '';
+  let rrn = document.getElementById('claimRRN')?.value?.trim() || '';
+rrn = rrn.replace(/[^0-9]/g, '');
+if (rrn.length === 13) {
+  rrn = rrn.replace(/(\d{6})(\d{7})/, '$1-$2');
+}
+
+let accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
+accidentDate = accidentDate.replace(/[^0-9]/g, '');
+if (accidentDate.length === 8) {
+  accidentDate = accidentDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+}
   const phone = document.getElementById('claimPhone')?.value?.trim() || '';
   const receiptDate = document.getElementById('claimReceiptDateView')?.value || getTodayKST();
-  const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
   const accidentType = coverageItems.map(i => i.type).join('/');
   const paymentAmount = coverageItems.map(i => i.amount).join('/');
   // ⭐ 핵심 추가
