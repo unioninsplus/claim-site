@@ -9151,6 +9151,9 @@ function openAmountPopup(typeName) {
   document.getElementById('amountPopupType').textContent = currentAmountTarget;
   document.getElementById('popupAmountInput').value = '';
   document.getElementById('amountPopup').style.display = 'block';
+setTimeout(() => {
+  document.getElementById('popupAmountInput')?.focus();
+}, 50);
 }
 function closeAmountPopup() {
   document.getElementById('amountPopup').style.display = 'none';
