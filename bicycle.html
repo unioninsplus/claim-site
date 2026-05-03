@@ -220,11 +220,14 @@ cursor:pointer;
           <div><label>이름</label><input id="claimName" placeholder="이름"></div>
           <div><label>청구자</label><input id="claimDepositor" placeholder="청구자"></div>
 
-          <div><label>주민등록번호</label><input id="claimRRN" placeholder="예: 900101-1234567"></div>
+          <div><label>주민등록번호</label><input id="claimRRN" placeholder="예: 900101-1234567" oninput="formatRRN(this)"></div>
           <div><label>전화번호</label><input id="claimPhone" placeholder="010-0000-0000"></div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
-          <div><label>사고일</label><input id="claimAccidentDate" type="text" placeholder="예: 2026-02-05"></div>
+          <div>
+  <label>사고일</label>
+  <input id="claimAccidentDate" type="text" placeholder="예: 2026-02-05" oninput="formatDate(this)">
+</div>
 
           <div style="grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
 
