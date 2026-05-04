@@ -9167,7 +9167,6 @@ function savePopupAmount() {
   let amount = document.getElementById('popupAmountInput').value.replace(/,/g, '').trim();
 
 if (!amount) {
-  alert('금액 입력하세요');
   return;
 }
 
@@ -9183,7 +9182,7 @@ amount = Number(amount).toLocaleString();
   coverageItems.map(i => i.amount).join('/');
     renderSelectedCoverageList();
   document.getElementById('popupAmountInput').value = '';
-  document.getElementById('amountPopup').style.display = 'none';
+closeAmountPopup();
 }
 
 function renderSelectedCoverageList() {
