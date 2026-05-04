@@ -210,11 +210,17 @@ cursor:pointer;
           <div><label>이름</label><input id="claimName" placeholder="이름"></div>
           <div><label>청구자</label><input id="claimDepositor" placeholder="청구자"></div>
 
-          <div><label>주민등록번호</label><input id="claimRRN" placeholder="예: 900101-1234567"></div>
+          <div>
+  <label>주민등록번호</label>
+  <input id="claimRRN" maxlength="14" oninput="formatRRN(this)" placeholder="예: 900101-1234567">
+</div>
           <div><label>전화번호</label><input id="claimPhone" placeholder="010-0000-0000"></div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
-          <div><label>사고일</label><input id="claimAccidentDate" type="text" placeholder="예: 2026-02-05"></div>
+          <div>
+  <label>사고일</label>
+  <input id="claimAccidentDate" type="text" maxlength="10" oninput="formatDate8(this)" placeholder="예: 2026-02-05">
+</div>
 
           <div><label>사고유형</label><select id="accidentTypeSelect"></select></div>
 
@@ -34771,6 +34777,23 @@ window.onload = function() {
     document.getElementById("claimEmail").value = email;
   }
 };
+function formatRRN(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 13);
+  if (v.length > 6) {
+    v = v.slice(0, 6) + '-' + v.slice(6);
+  }
+  input.value = v;
+}
+
+function formatDate8(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 8);
+  if (v.length > 4 && v.length <= 6) {
+    v = v.slice(0, 4) + '-' + v.slice(4);
+  } else if (v.length > 6) {
+    v = v.slice(0, 4) + '-' + v.slice(4, 6) + '-' + v.slice(6);
+  }
+  input.value = v;
+}
 </script>
 
 </body>
