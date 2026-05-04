@@ -9217,14 +9217,7 @@ function removeCoverageItem(index) {
   document.getElementById('claimPayoutAmount').value =
     coverageItems.map(i => i.amount).join('|');
 }
-document.addEventListener('keydown', function(e) {
-  const input = document.getElementById('popupAmountInput');
 
-  if (e.key === 'Enter' && input && document.activeElement === input) {
-    e.preventDefault();
-    savePopupAmount();
-  }
-});
 </script>
 
 </body>
