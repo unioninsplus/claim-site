@@ -219,7 +219,21 @@ cursor:pointer;
   <input id="claimAccidentDate" type="text" maxlength="10" oninput="formatDate8(this)" placeholder="예: 2026-02-05">
 </div>
 
-          <div><label>사고유형</label><select id="accidentTypeSelect"></select></div>
+          <div style="grid-column:1/-1; display:flex; gap:10px; align-items:flex-start;">
+
+  <div style="flex:1;">
+    <label>사고유형</label>
+    <select id="accidentTypeSelect" onchange="addCitizenCoverage(this.value)"></select>
+  </div>
+
+  <div style="flex:1;">
+    <label>선택 담보</label>
+    <div id="selectedCoverageList"
+      style="min-height:90px;max-height:140px;border:1px solid #ccd8eb;border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;overflow-y:auto;">
+    </div>
+  </div>
+
+</div>
 
           <div style="grid-column:1/-1;"><label>사고내용</label><textarea id="claimAccidentDesc" placeholder="사고 경위, 발생 장소, 상황 등을 상세히 입력"></textarea></div>
 
@@ -282,6 +296,8 @@ cursor:pointer;
     font-weight:700;
     cursor:pointer;
   ">
+
+
     확인
   </button>
 </div>
@@ -34520,10 +34536,23 @@ function runLookup() {
   let regionLabel = `${sido} ${sigungu}`;
 
   if (sigungu === "전체") {
-    block = aggregateBySido(year, sido);
-    items = block.coverages || [];
-    regionLabel = `${sido} 전체`;
-  } else if (DATASET[year] && DATASET[year][sido] && DATASET[year][sido][sigungu]) {
+
+  if (
+    DATASET[year] &&
+    DATASET[year][sido] &&
+    DATASET[year][sido]["전체"] &&
+    isLookupTargetForYear(year, DATASET[year][sido]["전체"])
+  ) {
+    block = DATASET[year][sido]["전체"];
+    items = (block.coverages || []).map(x => ({...x, region:"전체"}));
+  } else {
+    block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
+    items = [];
+  }
+
+  regionLabel = `${sido} 전체`;
+}
+  else if (DATASET[year] && DATASET[year][sido] && DATASET[year][sido][sigungu]) {
     const selectedBlock = DATASET[year][sido][sigungu];
     if (isLookupTargetForYear(year, selectedBlock)) {
       block = selectedBlock;
@@ -34669,7 +34698,7 @@ function submitClaimToSheet() {
   const phone = document.getElementById('claimPhone')?.value?.trim() || '';
   const receiptDate = document.getElementById('claimReceiptDateView')?.value || getTodayKST();
   const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
-  const accidentType = document.getElementById('accidentTypeSelect')?.value || '';
+  const accidentType = citizenCoverageItems.join('/');
   const accidentDetail = document.getElementById('claimAccidentDesc')?.value?.trim() || '';
   const note = document.getElementById('claimMemo')?.value?.trim() || '';
   const email = document.getElementById('claimEmail')?.value?.trim() || '';
@@ -34724,6 +34753,8 @@ function submitClaimToSheet() {
     document.getElementById('claimAccidentDesc').value = '';
     document.getElementById('claimMemo').value = '';
     document.getElementById('claimEmail').value = '';
+    citizenCoverageItems = [];
+renderCitizenCoverageList();
   }, 1200);
 }
 function closeSaveMessage() {
@@ -34792,7 +34823,49 @@ function formatDate8(input) {
   input.value = v;
 }
 </script>
+<script>
+let citizenCoverageItems = [];
 
+function addCitizenCoverage(typeName) {
+  if (!typeName) return;
+
+  citizenCoverageItems.push(typeName);
+  renderCitizenCoverageList();
+
+  document.getElementById("accidentTypeSelect").value = "";
+}
+
+function renderCitizenCoverageList() {
+  const box = document.getElementById("selectedCoverageList");
+  if (!box) return;
+
+  box.innerHTML = "";
+
+  citizenCoverageItems.forEach((type, index) => {
+    const tag = document.createElement("div");
+
+    tag.style.padding = "6px 10px";
+    tag.style.background = "#eef4ff";
+    tag.style.border = "1px solid #cfe0ff";
+    tag.style.borderRadius = "10px";
+    tag.style.fontSize = "13px";
+    tag.style.fontWeight = "700";
+
+    tag.innerHTML = `
+      ${type}
+      <span onclick="removeCitizenCoverage(${index})"
+      style="margin-left:6px;cursor:pointer;color:red;">×</span>
+    `;
+
+    box.appendChild(tag);
+  });
+}
+
+function removeCitizenCoverage(index) {
+  citizenCoverageItems.splice(index, 1);
+  renderCitizenCoverageList();
+}
+</script>
 </body>
 </html>
 
