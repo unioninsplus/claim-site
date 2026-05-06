@@ -14425,7 +14425,12 @@ function runLookup() {
     regionLabel = `${sido} 전체`;
   } else if (DATASET[year] && DATASET[year][sido] && DATASET[year][sido][sigungu]) {
     block = DATASET[year][sido][sigungu];
-    items = (block.coverages || []).map(x => ({...x, region:sigungu}));
+    items = (block.coverages || []).map(x => ({
+  ...x,
+  region: sigungu,
+  policyNo: x.policyNo || block.policyNo || "",
+  amount: x.amount || ""
+}));
   } else {
     block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
     items = [];
@@ -14459,7 +14464,7 @@ function runLookup() {
   } else {
     items.forEach((item, idx) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${idx+1}</td><td>${item.name}</td><td>${item.policyNo || "-"}</td><td>${item.detail || "-"}</td><td>${item.amount || extractAmount(item.detail || "")}</td>`;
+      tr.innerHTML = `<td>${idx+1}</td><td>${item.name}</td><td style="white-space:pre-line;">${item.policyNo || "-"}</td><td style="white-space:pre-line;">${item.detail || "-"}</td><td style="white-space:pre-line;">${item.amount || extractAmount(item.detail || "")}</td>`;
       tbody.appendChild(tr);
     });
   }
