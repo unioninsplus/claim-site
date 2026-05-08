@@ -214,9 +214,14 @@ cursor:pointer;
           <div><label>전화번호</label><input id="claimPhone" placeholder="010-0000-0000"></div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
-          <div>
+          
+  <div>
   <label>사고일</label>
-  <input id="claimAccidentDate" type="text" maxlength="10" oninput="formatDate8(this)" placeholder="예: 2026-02-05">
+  <input id="claimAccidentDate" type="text" maxlength="10" oninput="formatDate8(this); checkAccidentDateInPolicyPeriod();" placeholder="예: 2026-02-05">
+
+  <div id="accidentDateError" style="display:none; color:red; font-size:13px; margin-top:4px;">
+    해당 증권 기간 사고일이 아닙니다.
+  </div>
 </div>
 
           <div style="grid-column:1/-1; display:flex; gap:10px; align-items:flex-start;">
@@ -34687,7 +34692,30 @@ function getTodayKST() {
   const day = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
+function checkAccidentDateInPolicyPeriod() {
+  const year = document.getElementById('claimYearView')?.value?.trim() || '';
+  const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
+  const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
+  const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
 
+  if (!year || !sido || !sigungu || !accidentDate) return true;
+  if (accidentDate.length < 10) return true;
+  const block = DATASET?.[year]?.[sido]?.[sigungu];
+  if (!block || !block.start_date) return true;
+
+  const startDate = normalizeStartDate(block.start_date);
+  if (!startDate) return true;
+
+  const errorBox = document.getElementById('accidentDateError');
+
+if (accidentDate < startDate) {
+  if (errorBox) errorBox.style.display = 'block';
+} else {
+  if (errorBox) errorBox.style.display = 'none';
+}
+
+  return true;
+}
 function submitClaimToSheet() {
   const year = document.getElementById('claimYearView')?.value?.trim() || '';
   const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
@@ -34707,7 +34735,9 @@ function submitClaimToSheet() {
     alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
     return;
   }
-
+if (!checkAccidentDateInPolicyPeriod()) {
+  return;
+}
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = GOOGLE_SCRIPT_URL;
