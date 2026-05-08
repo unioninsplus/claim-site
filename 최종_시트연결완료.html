@@ -217,7 +217,9 @@ cursor:pointer;
           
   <div>
   <label>사고일</label>
-  <input id="claimAccidentDate" type="text" maxlength="10" oninput="formatDate8(this); checkAccidentDateInPolicyPeriod();" placeholder="예: 2026-02-05">
+  <input id="claimAccidentDate" type="text" maxlength="10"
+oninput="formatDate8(this); setTimeout(checkAccidentDateInPolicyPeriod, 0);"
+placeholder="예: 2026-02-05">
 
   <div id="accidentDateError" style="display:none; color:red; font-size:13px; margin-top:4px;">
     해당 증권 기간 사고일이 아닙니다.
@@ -34693,21 +34695,41 @@ function getTodayKST() {
   return `${y}-${m}-${day}`;
 }
 function checkAccidentDateInPolicyPeriod() {
-  const year = document.getElementById('claimYearView')?.value?.trim() || '';
+  const year =
+  document.getElementById('claimYearView')?.value?.trim() ||
+  document.getElementById('yearSelect')?.value?.trim() ||
+  '';
   const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
-  const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
+  let sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
   const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
 
   if (!year || !sido || !sigungu || !accidentDate) return true;
   if (accidentDate.length < 10) return true;
-  const block = DATASET?.[year]?.[sido]?.[sigungu];
-  if (!block || !block.start_date) return true;
+  let block = null;
+
+if (sigungu === '전체') {
+  const sidoData = DATASET?.[year]?.[sido] || {};
+  const startDates = Object.values(sidoData)
+    .map(item => normalizeStartDate(item.start_date))
+    .filter(Boolean)
+    .sort();
+
+  if (startDates.length === 0) return true;
+
+  block = {
+    start_date: startDates[0]
+  };
+} else {
+  block = DATASET?.[year]?.[sido]?.[sigungu];
+}
+
+if (!block || !block.start_date) return true;
 
   const startDate = normalizeStartDate(block.start_date);
   if (!startDate) return true;
 
   const errorBox = document.getElementById('accidentDateError');
-
+if (errorBox) errorBox.style.display = 'none';
 if (accidentDate < startDate) {
   if (errorBox) errorBox.style.display = 'block';
 } else {
@@ -34719,7 +34741,7 @@ if (accidentDate < startDate) {
 function submitClaimToSheet() {
   const year = document.getElementById('claimYearView')?.value?.trim() || '';
   const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
-  const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
+  let sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
   const name = document.getElementById('claimName')?.value?.trim() || '';
   const claimant = document.getElementById('claimDepositor')?.value?.trim() || '';
   const rrn = document.getElementById('claimRRN')?.value?.trim() || '';
@@ -34735,9 +34757,7 @@ function submitClaimToSheet() {
     alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
     return;
   }
-if (!checkAccidentDateInPolicyPeriod()) {
-  return;
-}
+
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = GOOGLE_SCRIPT_URL;
@@ -34851,6 +34871,69 @@ function formatDate8(input) {
     v = v.slice(0, 4) + '-' + v.slice(4, 6) + '-' + v.slice(6);
   }
   input.value = v;
+}
+function normalizeStartDate(dateStr) {
+  if (!dateStr) return '';
+  return String(dateStr).substring(0, 10);
+}
+
+function isValidDate10(dateStr) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const d = new Date(dateStr + 'T00:00:00');
+  return !isNaN(d.getTime());
+}
+
+function checkAccidentDateInPolicyPeriod() {
+  const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
+  const errorBox = document.getElementById('accidentDateError');
+
+  if (errorBox) errorBox.style.display = 'none';
+  if (!accidentDate || accidentDate.length < 10) return true;
+
+  if (!isValidDate10(accidentDate)) {
+    if (errorBox) errorBox.style.display = 'block';
+    return true;
+  }
+
+  const year =
+    document.getElementById('claimYearView')?.value?.trim() ||
+    document.getElementById('yearSelect')?.value?.trim() ||
+    '';
+
+  const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
+  const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
+
+  let startDate = '';
+
+  if (year && sido && sigungu && DATASET?.[year]?.[sido]) {
+    if (sigungu === '전체') {
+      const startDates = Object.values(DATASET[year][sido])
+        .map(item => normalizeStartDate(item.start_date))
+        .filter(Boolean)
+        .sort();
+      startDate = startDates[0] || '';
+    } else {
+      startDate = normalizeStartDate(DATASET?.[year]?.[sido]?.[sigungu]?.start_date || '');
+    }
+  }
+
+  if (!startDate) {
+    startDate = normalizeStartDate(document.getElementById('infoStart')?.textContent?.trim() || '');
+  }
+
+  if (!startDate || startDate === '-') return true;
+
+  const start = new Date(startDate + 'T00:00:00');
+  const end = new Date(startDate + 'T00:00:00');
+  end.setFullYear(end.getFullYear() + 1);
+
+  const accident = new Date(accidentDate + 'T00:00:00');
+
+  if (accident < start || accident >= end) {
+    if (errorBox) errorBox.style.display = 'block';
+  }
+
+  return true;
 }
 </script>
 <script>
