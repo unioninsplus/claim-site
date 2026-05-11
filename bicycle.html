@@ -14310,7 +14310,7 @@ function initDropdowns() {
 
   document.getElementById("sidoSelect").addEventListener("change", () => {
     const sido = document.getElementById("sidoSelect").value;
-    fillSelect("sigunguSelect", FULL_SIGUNGU[sido] || ["전체"], "시군구 선택");
+   fillSelect("sigunguSelect", (FULL_SIGUNGU[sido] || ["전체"]).sort((a, b) => a.localeCompare(b, 'ko')), "시군구 선택");
     clearLookup(false);
     syncSelectionView();
   });
