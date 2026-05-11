@@ -14823,43 +14823,50 @@ function formatDate8(el) {
   el.value = v;
 }
 function checkAccidentDateInPolicyPeriod() {
-  const year = document.getElementById('claimYearView')?.value;
-  const sido = document.getElementById('sidoSelect')?.value;
-  const sigungu = document.getElementById('sigunguSelect')?.value;
-  const accidentDate = document.getElementById('claimAccidentDate')?.value;
+  const year =
+    document.getElementById('claimYearView')?.value?.trim() ||
+    document.getElementById('yearSelect')?.value?.trim() ||
+    '';
 
+  const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
+  const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
+  const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
   const errorEl = document.getElementById('accidentDateError');
 
+  if (errorEl) errorEl.style.display = 'none';
+
   if (!year || !sido || !sigungu || !accidentDate || accidentDate.length < 10) {
-  errorEl.style.display = 'none';
-  return;
-}
-
-  let block = null;
-
-  if (
-    DATASET[year] &&
-    DATASET[year][sido] &&
-    DATASET[year][sido][sigungu]
-  ) {
-    block = DATASET[year][sido][sigungu];
+    return true;
   }
 
-  if (!block || !block.start_date) {
-    errorEl.style.display = 'none';
-    return;
+  let startDate = '';
+
+  if (sigungu === '전체') {
+    const sidoData = DATASET?.[year]?.[sido] || {};
+    const startDates = Object.values(sidoData)
+      .map(item => item.start_date)
+      .filter(Boolean)
+      .sort();
+
+    startDate = startDates[0] || '';
+  } else {
+    startDate = DATASET?.[year]?.[sido]?.[sigungu]?.start_date || '';
   }
 
-  const startDate = block.start_date;
-const endDate = String(Number(year) + 1) + startDate.slice(4);
+  if (!startDate) return true;
 
-if (accidentDate < startDate || accidentDate >= endDate) {
-  errorEl.style.display = 'block';
-} else {
-  errorEl.style.display = 'none';
-}
-}
+  const start = new Date(startDate + 'T00:00:00');
+  const end = new Date(startDate + 'T00:00:00');
+  end.setFullYear(end.getFullYear() + 1);
 
+  const accident = new Date(accidentDate + 'T00:00:00');
+
+  if (accident < start || accident >= end) {
+    if (errorEl) errorEl.style.display = 'block';
+  }
+
+  return true;
+}
 </script>
 
 </body>
