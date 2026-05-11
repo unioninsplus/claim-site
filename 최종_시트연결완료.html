@@ -34587,7 +34587,7 @@ function initDropdowns() {
 
   document.getElementById("sidoSelect").addEventListener("change", () => {
     const sido = document.getElementById("sidoSelect").value;
-    fillSelect("sigunguSelect", FULL_SIGUNGU[sido] || ["전체"], "시군구 선택");
+    fillSelect("sigunguSelect", (FULL_SIGUNGU[sido] || ["전체"]).sort((a, b) => a.localeCompare(b, 'ko')), "시군구 선택");
     clearLookup(false);
     syncSelectionView();
   });
@@ -34814,7 +34814,13 @@ tr.innerHTML = `
 <td>${idx+1}</td>
 <td>${item.name || ""}</td>
 <td>${formatPolicyNoCell(item.policy_no || item.policyNo || getPolicyNoForCoverage(year, sido, sigungu, item) || "")}</td>
-<td>${parsed.detail || ""}</td>
+<td>${(parsed.detail || "")
+  .replace(/ 가\./g, '<br><br>가.')
+  .replace(/ 나\./g, '<br><br>나.')
+  .replace(/ 다\./g, '<br><br>다.')
+  .replace(/\*/g, '<br><br>*')
+  .replace(/ ‧ /g, '<br>‧ ')
+}</td>
 <td>${parsed.amount || ""}</td>
 `;
       tbody.appendChild(tr);
