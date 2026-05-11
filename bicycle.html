@@ -220,17 +220,28 @@ cursor:pointer;
           <div><label>이름</label><input id="claimName" placeholder="이름"></div>
           <div><label>청구자</label><input id="claimDepositor" placeholder="청구자"></div>
 
-          <div><label>주민등록번호</label><input id="claimRRN" placeholder="예: 900101-1234567" oninput="formatRRN(this)"></div>
+          <div>
+  <label>주민등록번호</label>
+  <input id="claimRRN" type="text" maxlength="14"
+  placeholder="예: 900101-1234567"
+  oninput="formatRRN(this)">
+</div>
           <div><label>전화번호</label><input id="claimPhone" placeholder="010-0000-0000"></div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
           <div>
-  <label>사고일</label>
-  <input id="claimAccidentDate" type="text" placeholder="예: 2026-02-05" oninput="formatDate(this)">
+<label>사고일</label>
+<input id="claimAccidentDate" type="text" maxlength="10"
+oninput="formatDate8(this); setTimeout(checkAccidentDateInPolicyPeriod, 0);"
+placeholder="예: 2026-02-05">
+
+<div id="accidentDateError"
+style="display:none; color:red; font-size:13px; margin-top:4px;">
+  해당 증권 기간 사고일이 아닙니다.
+</div>
 </div>
 
-          <div style="grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
-
+<div style="grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
   <div>
     <label>구분</label>
     <select id="accidentCategorySelect">
@@ -14773,7 +14784,77 @@ function removeCoverageItem(index) {
   renderSelectedCoverageList();
 
   document.getElementById('claimPayoutAmount').value =
-    coverageItems.map(i => i.amount).join('|');
+    coverageItems.map(i => i.amount).join('/');
+}
+function removeCoverageItem(index) {
+  coverageItems.splice(index, 1);
+  renderSelectedCoverageList();
+
+  document.getElementById('claimPayoutAmount').value =
+    coverageItems.map(i => i.amount).join('/');
+}
+
+function formatRRN(el) {
+  let v = el.value.replace(/[^0-9]/g, '');
+
+  if (v.length > 13) v = v.slice(0, 13);
+
+  if (v.length >= 7) {
+    v = v.replace(/(\d{6})(\d+)/, '$1-$2');
+  }
+
+  el.value = v;
+}
+
+function formatDate8(el) {
+  let v = el.value.replace(/[^0-9]/g, '');
+
+  if (v.length > 8) v = v.slice(0, 8);
+
+  if (v.length >= 5) {
+    v = v.replace(/(\d{4})(\d{2})(\d+)/, '$1-$2-$3');
+  } else if (v.length >= 3) {
+    v = v.replace(/(\d{4})(\d+)/, '$1-$2');
+  }
+
+  el.value = v;
+}
+function checkAccidentDateInPolicyPeriod() {
+  const year = document.getElementById('claimYearView')?.value;
+  const sido = document.getElementById('sidoSelect')?.value;
+  const sigungu = document.getElementById('sigunguSelect')?.value;
+  const accidentDate = document.getElementById('claimAccidentDate')?.value;
+
+  const errorEl = document.getElementById('accidentDateError');
+
+  if (!year || !sido || !sigungu || !accidentDate || accidentDate.length < 10) {
+  errorEl.style.display = 'none';
+  return;
+}
+
+  let block = null;
+
+  if (
+    DATASET[year] &&
+    DATASET[year][sido] &&
+    DATASET[year][sido][sigungu]
+  ) {
+    block = DATASET[year][sido][sigungu];
+  }
+
+  if (!block || !block.start_date) {
+    errorEl.style.display = 'none';
+    return;
+  }
+
+  const startDate = block.start_date;
+const endDate = String(Number(year) + 1) + startDate.slice(4);
+
+if (accidentDate < startDate || accidentDate >= endDate) {
+  errorEl.style.display = 'block';
+} else {
+  errorEl.style.display = 'none';
+}
 }
 
 </script>
