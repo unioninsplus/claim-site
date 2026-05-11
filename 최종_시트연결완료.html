@@ -34972,6 +34972,14 @@ function submitClaimToSheet() {
     alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
     return;
   }
+checkAccidentDateInPolicyPeriod();
+
+const accidentError = document.getElementById('accidentDateError');
+
+if (accidentError && accidentError.style.display !== 'none') {
+  alert('해당 증권 기간 사고일이 아닙니다.');
+  return;
+}
 
   const form = document.createElement('form');
   form.method = 'POST';
