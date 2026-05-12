@@ -14649,6 +14649,12 @@ if (coverageItems.length === 0) {
   alert('담보를 최소 1개 이상 입력하세요.');
   return;
 }
+const errorEl = document.getElementById('accidentDateError');
+
+if (errorEl && errorEl.style.display !== 'none') {
+  alert('해당 증권 기간 사고일이 아닙니다.');
+  return;
+}
   fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
     body: formData
