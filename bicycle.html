@@ -217,9 +217,26 @@ cursor:pointer;
       <div class="card">
         <h3>청구 입력</h3>
         <div class="form-grid">
-          <div><label>해당연도</label><input id="claimYearView" readonly></div>
-          <div><label>지자체</label><input id="claimRegionView" readonly placeholder="조회에서 선택한 지자체 자동표시"></div>
+          <div>
+  <label>
+    해당연도
+    <span id="claimStartText"
+      style="
+        margin-left:12px;
+        font-size:15px;
+        font-weight:900;
+        color:#163b7a;">
+      -
+    </span>
+  </label>
 
+  <input id="claimYearView" readonly>
+</div>
+
+<div>
+  <label>지자체</label>
+  <input id="claimRegionView" readonly placeholder="조회에서 선택한 지자체 자동표시">
+</div>
           <div><label>이름</label><input id="claimName" placeholder="이름"></div>
           <div><label>청구자</label><input id="claimDepositor" placeholder="청구자"></div>
 
@@ -244,8 +261,7 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
 </div>
 </div>
 
-<div style="grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
-  <div>
+<div style="grid-column:1/-1;">
     <label>구분</label>
     <select id="accidentCategorySelect">
       <option value="">구분 선택</option>
@@ -253,7 +269,6 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
       <option value="공공">공공</option>
       <option value="PM">PM</option>
     </select>
-  </div>
 
   <div style="grid-column:1/-1; display:flex; gap:10px; align-items:flex-start;">
   <div style="flex:1;">
@@ -265,6 +280,8 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
     <label>선택 담보</label>
    <div id="selectedCoverageList" style="min-height:90px;max-height:140px;border:1px solid #ccd8eb;border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;overflow-y:auto;"></div>
   </div>
+</div>
+
 </div>
           
           <div style="grid-column:1/-1;"><label>사고내용</label><textarea id="claimAccidentDesc" placeholder="사고 경위, 발생 장소, 상황 등을 상세히 입력"></textarea></div>
@@ -14494,6 +14511,8 @@ function runLookup() {
 ], "사고유형 선택");
   const accidentDetailViewEl = document.getElementById("accidentDetailView"); if (accidentDetailViewEl) accidentDetailViewEl.value = "";
   document.getElementById("claimYearView").value = year;
+  document.getElementById("claimStartText").textContent =
+  block.period_text || block.start_date || "-";
   const claimYearMirrorEl2 = document.getElementById("claimYearMirror"); if (claimYearMirrorEl2) claimYearMirrorEl2.value = year;
   document.getElementById("claimRegionView").value = regionLabel;
   const claimInfoYearEl2 = document.getElementById("claimInfoYear");
@@ -14647,12 +14666,6 @@ if (accidentDate.length === 8) {
 
 if (coverageItems.length === 0) {
   alert('담보를 최소 1개 이상 입력하세요.');
-  return;
-}
-const errorEl = document.getElementById('accidentDateError');
-
-if (errorEl && errorEl.style.display !== 'none') {
-  alert('해당 증권 기간 사고일이 아닙니다.');
   return;
 }
   fetch(GOOGLE_SCRIPT_URL, {
