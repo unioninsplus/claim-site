@@ -204,9 +204,28 @@ cursor:pointer;
       <div class="card">
         <h3>청구 입력</h3>
         <div class="form-grid">
-          <div><label>해당연도</label><input id="claimYearView" readonly></div>
-          <div><label>지자체</label><input id="claimRegionView" readonly placeholder="조회에서 선택한 지자체 자동표시"></div>
+      <div>
+  <label>
+    해당연도
+    <span id="claimStartText"
+      style="
+        margin-left:12px;
+        font-size:15px;
+        font-weight:900;
+        color:#163b7a;">
+      -
+    </span>
+  </label>
 
+  <input id="claimYearView" readonly>
+</div>
+
+<div>
+  <label>지자체</label>
+  <input id="claimRegionView"
+         readonly
+         placeholder="조회에서 선택한 지자체 자동표시">
+</div>
           <div><label>이름</label><input id="claimName" placeholder="이름"></div>
           <div><label>청구자</label><input id="claimDepositor" placeholder="청구자"></div>
 
@@ -326,34 +345,27 @@ placeholder="예: 2026-02-05">
           <div class="mini"><b>사고유형수</b><span id="claimInfoCount">0</span></div>
           <div class="mini"><b>보험사</b><span id="claimInfoInsurer">-</span></div>
         </div>
-      <div class="mini" style="grid-column:1/-1;">
-  <details>
-    <summary class="soft"
-      style="cursor:pointer; text-align:center; padding:10px; border-radius:10px; font-weight:700;">
-      서류 다운로드
-    </summary>
-  
-  <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-
-    <a href="claim_form.pdf" download
-       class="soft"
-       style="padding:8px; border-radius:8px; text-decoration:none; text-align:center;">
-      보험금 청구서
-    </a>
-
-    <a href="required_docs.pdf" download
-       class="soft"
-       style="padding:8px; border-radius:8px; text-decoration:none; text-align:center;">
-      구비서류 안내문
-    </a>
-
-  </div>
-</details>
+      <div class="mini">
+  <a href="#"
+     class="soft"
+     style="display:block; text-align:center; padding:8px; border-radius:10px; text-decoration:none; font-weight:700;">
+    보험금 청구서 다운로드
+  </a>
 </div>
 
+<div class="mini">
+  <a href="#"
+     class="soft"
+     style="display:block; text-align:center; padding:8px; border-radius:10px; text-decoration:none; font-weight:700;">
+    구비서류 안내문 다운로드
+  </a>
 </div>
-</div>
-</section>
+
+
+      </div>
+    </div>
+  </section>
+
 
   <section id="docs">
     <h2 class="title">보험금 청구서류 안내</h2>
@@ -34804,6 +34816,8 @@ function runLookup() {
   document.getElementById("infoCount").textContent = items.length;
   document.getElementById("infoInsurer").textContent = block.insurer || "-";
   document.getElementById("infoStart").textContent = block.start_date || "-";
+  document.getElementById("claimStartText").textContent =
+  block.start_date || "-";
   document.getElementById("infoPop").textContent = block.population || "-";
   document.getElementById("infoRegion").textContent = regionLabel;
   document.getElementById("infoProduct").textContent = regionLabel + " 시민안전보험";
