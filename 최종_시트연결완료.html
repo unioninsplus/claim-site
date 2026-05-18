@@ -34086,6 +34086,15 @@ const DATASET = {
             "name": "대중교통상해 부상치료비\n(대중교통 사고로 상해등급을 받았을 경우)",
             "detail": "KB:100 / 100"
           },
+         {
+  "name": "가스사고사망",
+  "detail": "1000만원"
+},
+{
+  "name": "가스사고상해후유장해",
+  "detail": "1000만원한도"
+},
+        
           {
             "name": "강도상해사망",
             "detail": "현대:1000 / 1000"
@@ -34891,17 +34900,20 @@ function runLookup() {
 
 items.forEach(item => {
 
-  const normalizedName = String(item.name || "")
-    .replace(/\s+/g, "")
-    .replace(/\(.*?\)/g, "")
-    .replace(/후유장해/g, "후유")
-    .replace(/이용중/g, "")
-    .replace(/대중교통상해부상치료비/g, "대중교통부상치료비")
-    .replace(/스쿨존\(.*?\)/g, "스쿨존")
-    .replace(/화상수술비.*/g, "화상수술비");
+  const originalName = String(item.name || "").trim();
 
-  const key = normalizedName;
+const normalizedName = originalName === "익사사망(선원포함)"
+  ? "익사사망(선원포함)"
+  : originalName
+      .replace(/\s+/g, "")
+      .replace(/\(.*?\)/g, "")
+      .replace(/후유장해/g, "후유")
+      .replace(/이용중/g, "")
+      .replace(/대중교통상해부상치료비/g, "대중교통부상치료비")
+      .replace(/스쿨존\(.*?\)/g, "스쿨존")
+      .replace(/화상수술비.*/g, "화상수술비");
 
+const key = normalizedName;
   const old = uniqueMap.get(key);
 
   if (!old) {
