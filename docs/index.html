@@ -16,7 +16,7 @@ h2{
   margin-bottom:20px;
 }
 
-a{
+.file{
   display:block;
   margin-bottom:10px;
   padding:12px 14px;
@@ -28,127 +28,70 @@ a{
   font-weight:700;
 }
 
-a:hover{
+.file:hover{
   background:#edf4ff;
 }
 </style>
-
 </head>
+
 <body>
 
 <h2>시민안전보험 담보별 구비서류</h2>
 
-<a href="./★구비서류안내(상해진단금)(1).pdf" target="_blank">
-상해진단금
-</a>
+<div id="fileList"></div>
 
-<a href="./★구비서류안내(자연재해_상해진단위로금)(1).pdf" target="_blank">
-자연재해 상해진단위로금
-</a>
+<script>
+const files = [
 
-<a href="./★구비서류안내(후유장해).pdf" target="_blank">
-후유장해
-</a>
+"★구비서류안내(사망).pdf",
+"★구비서류안내(상해의료비)-실손가입자 제외.pdf",
+"★구비서류안내(상해의료비).pdf",
+"★구비서류안내(상해진단금).pdf",
+"★구비서류안내(스쿨존 실버존 어린이보행중 대중교통부상치료비).pdf",
+"★구비서류안내(자연재해_상해진단위로금).pdf",
+"★구비서류안내(후유장해).pdf",
+"★시민안전보험 보험금 청구서류_강도상해_ 후유장해.pdf",
+"★시민안전보험 보험금 청구서류_개물림 사고(응급&비응급) 치료비.pdf",
+"★시민안전보험 보험금 청구서류_성폭력범죄발생보상금.pdf",
+"★화상수술비(25.7.7~)_롯데.pdf",
+"★화상수술비(DB 외).pdf",
+"★화상수술비+화상수술치료비.pdf",
+"★화상수술치료비.pdf",
+"강력범죄피해 보상금(DB).pdf",
+"강력범죄피해보상금(농협).pdf",
+"개물림 부딪힘 진단비.pdf",
+"개물림 사고 진단금-연간1회.pdf",
+"구비서류 안내(개물림응급비응급치료비).pdf",
+"구비서류안내(개물림응급실내원).pdf",
+"구비서류안내(독액성동물 응급실내원진료비).pdf",
+"구비서류안내(사망_장례비용).pdf",
+"구비서류안내(상해의료비-실손가입자 제외)+(상해진단금).pdf",
+"구비서류안내(성폭력범죄상해).pdf",
+"구비서류안내(어린이학교폭력피해보장금).pdf",
+"구비서류안내(온열한랭 질환 진단비).pdf",
+"구비서류안내(재난지원비용).pdf",
+"구비서류안내(전동보조기기(전동휠체어,의료용스쿠터)사고 부상치료비.pdf"
 
-<a href="./★시민안전보험 보험금 청구서류_강도상해_ 후유장해.pdf" target="_blank">
-강도상해 후유장해
-</a>
+];
 
-<a href="./★구비서류안내(사망)(1).pdf" target="_blank">
-사망
-</a>
+const box = document.getElementById("fileList");
 
-<a href="./구비서류안내(사망_장례비용).pdf" target="_blank">
-사망 장례비용
-</a>
+files.forEach(file => {
 
-<a href="./★구비서류안내(상해의료비)(1).pdf" target="_blank">
-상해의료비
-</a>
+  const a = document.createElement("a");
 
-<a href="./★구비서류안내(상해의료비)-실손가입자 제외(1).pdf" target="_blank">
-상해의료비(실손가입자 제외)
-</a>
+  a.href = encodeURI(file);
 
-<a href="./구비서류안내(상해의료비-실손가입자 제외)+(상해진단금).pdf" target="_blank">
-상해의료비 + 상해진단금
-</a>
+  a.target = "_blank";
 
-<a href="./★구비서류안내(스쿨존 실버존 어린이보행중 대중교통부상치료비)(1).pdf" target="_blank">
-스쿨존/실버존/대중교통부상치료비
-</a>
+  a.className = "file";
 
-<a href="./★시민안전보험 보험금 청구서류_개물림 사고(응급&비응급) 치료비.pdf" target="_blank">
-개물림 사고 치료비
-</a>
+  a.textContent = file.replace(".pdf","");
 
-<a href="./구비서류 안내(개물림응급비응급치료비).pdf" target="_blank">
-개물림 응급/비응급 치료비
-</a>
+  box.appendChild(a);
 
-<a href="./구비서류안내(개물림응급실내원).pdf" target="_blank">
-개물림 응급실내원
-</a>
-
-<a href="./개물림 부딪힘 진단비.pdf" target="_blank">
-개물림 부딪힘 진단비
-</a>
-
-<a href="./개물림 사고 진단금-연간1회.pdf" target="_blank">
-개물림 사고 진단금(연간1회)
-</a>
-
-<a href="./구비서류안내(독액성동물 응급실내원진료비).pdf" target="_blank">
-독액성동물 응급실내원진료비
-</a>
-
-<a href="./★시민안전보험 보험금 청구서류_성폭력범죄발생보상금.pdf" target="_blank">
-성폭력범죄발생보상금
-</a>
-
-<a href="./구비서류안내(성폭력범죄상해).pdf" target="_blank">
-성폭력범죄상해
-</a>
-
-<a href="./구비서류안내(어린이학교폭력피해보장금).pdf" target="_blank">
-어린이학교폭력피해보장금
-</a>
-
-<a href="./강력범죄피해 보상금(DB).pdf" target="_blank">
-강력범죄피해 보상금(DB)
-</a>
-
-<a href="./강력범죄피해보상금(농협).pdf" target="_blank">
-강력범죄피해 보상금(농협)
-</a>
-
-<a href="./구비서류안내(온열한랭 질환 진단비).pdf" target="_blank">
-온열/한랭 질환 진단비
-</a>
-
-<a href="./구비서류안내(재난지원비용).pdf" target="_blank">
-재난지원비용
-</a>
-
-<a href="./구비서류안내(전동보조기기(전동휠체어,의료용스쿠터)사고 부상치료비.pdf" target="_blank">
-전동보조기기 사고 부상치료비
-</a>
-
-<a href="./★화상수술치료비.pdf" target="_blank">
-화상수술치료비
-</a>
-
-<a href="./★화상수술비(DB 외).pdf" target="_blank">
-화상수술비(DB 외)
-</a>
-
-<a href="./★화상수술비(25.7.7~)_롯데.pdf" target="_blank">
-화상수술비(롯데)
-</a>
-
-<a href="./★화상수술비+화상수술치료비.pdf" target="_blank">
-화상수술비 + 화상수술치료비
-</a>
+});
+</script>
 
 </body>
 </html>
