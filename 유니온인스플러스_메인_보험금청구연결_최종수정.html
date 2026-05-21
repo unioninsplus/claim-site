@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>(주)유니온인스플러스</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+    line-height: 1.6;
+  }
+  a { text-decoration: none; color: inherit; }
+  .container {
+    width: min(1200px, calc(100% - 40px));
+    margin: 0 auto;
+  }
+  header {
+    background: linear-gradient(135deg, #0d2f6f 0%, #1248a3 55%, #1c64d1 100%);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+    gap: 20px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    backdrop-filter: blur(6px);
+  }
+  .brand-text strong {
+    display: block;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+  }
+  .brand-text span {
+    display: block;
+    font-size: 12px;
+    opacity: 0.85;
+  }
+  nav {
+    display: flex;
+    gap: 24px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  nav a { opacity: 0.9; }
+  nav a:hover { opacity: 1; }
+
+  .hero {
+    background: linear-gradient(135deg, rgba(8,28,66,0.94), rgba(17,72,161,0.88)), url('https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1600&q=80') center/cover;
+    color: #fff;
+    padding: 92px 0 82px;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 36px;
+    align-items: center;
+  }
+  .hero h1 {
+    margin: 0 0 16px;
+    font-size: 46px;
+    line-height: 1.2;
+    letter-spacing: -1.3px;
+  }
+  .hero p {
+    margin: 0 0 28px;
+    font-size: 18px;
+    color: rgba(255,255,255,0.92);
+  }
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .badge {
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.16);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .hero-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 170px;
+    padding: 14px 20px;
+    border-radius: 14px;
+    font-weight: 700;
+    transition: 0.2s ease;
+  }
+  .btn-primary {
+    background: #fff;
+    color: #0d2f6f;
+  }
+  .btn-secondary {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+  }
+  .btn:hover { transform: translateY(-2px); }
+
+  .hero-card {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.16);
+    backdrop-filter: blur(10px);
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+  }
+  .hero-card h3 {
+    margin: 0 0 18px;
+    font-size: 22px;
+  }
+  .hero-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .hero-card li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.14);
+    font-size: 15px;
+  }
+  .hero-card li:last-child { border-bottom: none; }
+
+  section {
+    padding: 76px 0;
+  }
+  .section-title {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 34px;
+    color: #0f172a;
+    letter-spacing: -0.8px;
+  }
+  .section-sub {
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto 42px;
+    color: #475569;
+    font-size: 17px;
+  }
+
+  .intro-grid, .business-grid, .service-grid {
+    display: grid;
+    gap: 22px;
+  }
+  .intro-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .business-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .service-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+  }
+  .card .icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #e8f0ff;
+    color: #1747a6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 {
+    margin: 0 0 10px;
+    font-size: 22px;
+    color: #111827;
+  }
+  .card h4 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #111827;
+  }
+  .card p {
+    margin: 0;
+    color: #4b5563;
+    font-size: 15px;
+  }
+
+  .highlight {
+    background: linear-gradient(135deg, #0c2a63 0%, #1652ba 100%);
+    color: #fff;
+  }
+  .highlight .section-title,
+  .highlight .section-sub { color: #fff; }
+  .highlight-wrap {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 26px;
+    align-items: stretch;
+  }
+  .highlight-box {
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 24px;
+    padding: 28px;
+  }
+  .highlight-box h3 {
+    margin-top: 0;
+    font-size: 26px;
+  }
+  .highlight-box ul {
+    margin: 18px 0 0;
+    padding-left: 18px;
+  }
+  .highlight-box li { margin-bottom: 10px; }
+
+  .contact-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .contact-info {
+    background: #fff;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+  }
+  .contact-info h3 {
+    margin-top: 0;
+    font-size: 24px;
+  }
+  .info-row {
+    padding: 14px 0;
+    border-bottom: 1px solid #eef2f7;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row strong {
+    display: block;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+  .info-row span {
+    color: #475569;
+  }
+
+  footer {
+    background: #0f172a;
+    color: rgba(255,255,255,0.8);
+    padding: 26px 0;
+    font-size: 14px;
+  }
+  .footer-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 1024px) {
+    .hero-grid,
+    .highlight-wrap,
+    .contact-box,
+    .intro-grid,
+    .business-grid,
+    .service-grid {
+      grid-template-columns: 1fr;
+    }
+    nav {
+      display: none;
+    }
+    .hero h1 { font-size: 38px; }
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 72px 0 62px; }
+    .hero h1 { font-size: 30px; }
+    .section-title { font-size: 28px; }
+    .btn { width: 100%; }
+    .topbar { padding: 14px 0; }
+    .brand-text strong { font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container topbar">
+    <div class="brand">
+      <div class="logo-box">🛡</div>
+      <div class="brand-text">
+        <strong>(주)유니온인스플러스</strong>
+        <span>지자체 복지보험 · 시민안전보험 · 자전거보험 · 일반보험</span>
+      </div>
+    </div>
+    <nav>
+      <a href="#about">회사소개</a>
+      <a href="#business">사업영역</a>
+      <a href="#" onclick="window.open('최종_시트연결완료.html','claim','width=1200,height=900'); return false;">보험금청구</a>
+      <a href="#contact">오시는 길</a>
+      <a href="#" onclick="window.open('최종_시트연결완료.html', 'lookup', 'width=1200,height=900'); return false;">전국가입현황</a>
+</nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-badges">
+        <span class="badge">법인보험대리점</span>
+        <span class="badge">지자체 보험 전문</span>
+      </div>
+      <h1>지자체와 시민을 위한<br>보험서비스의 신뢰 파트너</h1>
+      <p>
+        (주)유니온인스플러스는 시민안전보험, 자전거보험, 지자체 복지보험,
+        일반보험까지 폭넓은 보험서비스를 제공하며 체계적인 접수와 안정적인 운영을 지원합니다.
+      </p>
+      <div class="hero-buttons">
+
+  <a class="btn btn-primary" href="#" onclick="window.open('시민안전보험 청구.html','claim','width=1200,height=900,resizable=yes,scrollbars=yes'); return false;">
+  1. 시민안전보험 보험금청구 바로가기
+</a>
+
+<a class="btn btn-primary" href="#" onclick="window.open('bicycle.html','bike','width=1200,height=900,resizable=yes,scrollbars=yes'); return false;">
+  2. 자전거보험 보험금청구 바로가기
+</a>
+
+  
+</div>
+    </div>
+    <div class="hero-card">
+      <h3>주요 서비스 안내</h3>
+      <ul>
+        <li>연도별 · 시도별 · 시군구별 조회 및 보험접수</li>
+        <li>지자체별 보장내용 확인 및 사고유형 접수 지원</li>
+        <li>구비서류 안내 및 접수 프로세스 체계화</li>
+       
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <h2 class="section-title">회사소개</h2>
+    <p class="section-sub">
+      유니온인스플러스는 지자체 보험 운영 경험을 바탕으로 실무 중심의 보험 서비스를 제공하는 전문 파트너입니다.
+      단순 보험 판매를 넘어 계약 운영, 접수 프로세스, 고객 응대까지 함께 고민합니다.
+    </p>
+    <div class="intro-grid">
+      <div class="card">
+        <div class="icon">🏢</div>
+        <h4>회사 비전</h4>
+        <p>보험이 필요한 현장에 더 빠르고 정확한 서비스가 전달되도록 실무형 시스템을 구축합니다.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🤝</div>
+        <h4>신뢰 중심</h4>
+        <p>지자체 및 고객과의 신뢰를 최우선으로 하며, 책임감 있는 운영과 대응을 지향합니다.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📈</div>
+        <h4>지속 성장</h4>
+        <p>보험 접수, 조회, 데이터 관리까지 이어지는 확장형 서비스로 꾸준히 발전합니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="business">
+  <div class="container">
+    <h2 class="section-title">사업영역</h2>
+    <p class="section-sub">유니온인스플러스는 다양한 보험 영역에서 실질적인 운영 경험을 바탕으로 맞춤형 서비스를 제공합니다.</p>
+    <div class="business-grid">
+      <div class="card">
+        <div class="icon">🛡</div>
+        <h4>시민안전보험</h4>
+        <p>지자체 시민안전보험 계약 및 접수 운영 지원</p>
+      </div>
+      <div class="card">
+        <div class="icon">🚲</div>
+        <h4>자전거보험</h4>
+        <p>자전거 사고 대비 보험 운영 및 안내 서비스</p>
+      </div>
+      <div class="card">
+        <div class="icon">🏙</div>
+        <h4>지자체 복지보험</h4>
+        <p>지자체 대상 복지성 보험 상품 기획 및 운영</p>
+      </div>
+      <div class="card">
+        <div class="icon">📄</div>
+        <h4>일반보험</h4>
+        <p>법인과 개인 고객을 위한 다양한 일반보험 상담</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="claim" class="highlight">
+  <div class="container">
+    <h2 class="section-title">시민안전보험 접수 서비스</h2>
+    <p class="section-sub">조회와 접수를 한 화면 흐름으로 연결할 수 있는 실무형 접수서비스를 홈페이지 메뉴로 구성합니다.</p>
+    <div class="highlight-wrap">
+      <div class="highlight-box">
+        <h3>연도별 · 시도별 · 시군구별 조회 및 보험접수</h3>
+        <p>
+          접수 페이지에서는 지자체별 보장내용 확인, 사고유형 선택, 신청인 정보 입력,
+          구비서류 안내까지 한 흐름으로 제공할 수 있도록 구성할 수 있습니다.
+        </p>
+        <div class="hero-buttons" style="margin-top:24px;">
+          <a class="btn btn-primary" href="#" onclick="window.open('최종_시트연결완료.html','claim','width=1200,height=900'); return false;">보험금청구 페이지 연결</a>
+          <a class="btn btn-secondary" href="#contact">문의하기</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <h2 class="section-title">오시는 길 및 문의</h2>
+    <p class="section-sub">대표번호와 주소 정보를 메인 홈페이지 하단에 신뢰감 있게 배치하였습니다.</p>
+    <div class="contact-box">
+      <div class="contact-info">
+        <h3>회사 정보</h3>
+        <div class="info-row">
+          <strong>회사명</strong>
+          <span>(주)유니온인스플러스</span>
+        </div>
+        <div class="info-row">
+          <strong>대표번호</strong>
+          <span>1522-3556</span>
+        </div>
+        <div class="info-row">
+          <strong>팩스</strong>
+          <span>0507-774-0662</span>
+        </div>
+        <div class="info-row">
+          <strong>주소</strong>
+          <span>서울특별시 강동구 천호대로 176길 8, 형도빌딩 2층 · 3층</span>
+        </div>
+      </div>
+      <div class="contact-info">
+        <h3>안내 문구</h3>
+        <div class="info-row">
+          <strong>전문 분야</strong>
+          <span>계약업무 · 지자체 복지보험 · 시민안전보험 · 자전거보험 · 일반보험</span>
+        </div>
+        <div class="info-row">
+          <strong>홈페이지 구성</strong>
+          <span>회사소개 / 사업영역 / 보험접수 / 문의안내</span>
+        </div>
+        <div class="info-row">
+          <strong>로고 적용</strong>
+          <span>현재는 임시 방패형 아이콘 적용 상태이며, 실제 회사 로고 파일로 즉시 교체 가능합니다.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-wrap">
+    <div>© 2026 UNIONINSPLUS. All Rights Reserved.</div>
+    <div>(주)유니온인스플러스 | 대표번호 1522-3556</div>
+  </div>
+</footer>
+
+</body>
+</html>
