@@ -68,6 +68,8 @@ th { background:#f4f8ff; color:#12419e; }
 </head>
 <body>
 
+<form autocomplete="off">
+
 <button onclick="closeWin()" style="
 position:fixed;
 top:20px;
@@ -232,30 +234,81 @@ cursor:pointer;
          readonly
          placeholder="조회에서 선택한 지자체 자동표시">
 </div>
-          <div><label>이름</label><input id="claimName" placeholder="이름"></div>
-          <div><label>청구자</label><input id="claimDepositor" placeholder="청구자"></div>
-
           <div>
-  <label>주민등록번호</label>
-  <input id="claimRRN" maxlength="14" oninput="formatRRN(this)">
+  <label>이름</label>
+  <input
+    id="claimName"
+    type="text"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    name="no-autofill-name"
+    placeholder="이름">
 </div>
-          <div>
+
+<div>
+  <label>청구자</label>
+  <input
+    id="claimDepositor"
+    type="text"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    name="no-autofill-claimant"
+    placeholder="청구자">
+</div>
+
+<div>
+  <label>주민등록번호</label>
+  <input
+    id="claimRRN"
+    type="text"
+    maxlength="14"
+    autocomplete="new-password"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    inputmode="numeric"
+    name="no-autofill-rrn"
+    oninput="formatRRN(this)">
+</div>
+
+<div>
   <label>전화번호</label>
-  <input id="claimPhone"
-         type="text"
-         maxlength="13"
-         oninput="formatPhoneNumber(this)">
+  <input
+    id="claimPhone"
+    type="text"
+    maxlength="13"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    inputmode="numeric"
+    name="no-autofill-phone"
+    oninput="formatPhoneNumber(this)">
 </div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
           
   <div>
   <label>사고일</label>
-  <input id="claimAccidentDate" type="text" maxlength="10"
-oninput="formatDate8(this); checkAccidentDateInPolicyPeriod();"
->
 
-  <div id="accidentDateError" style="display:none; color:red; font-size:13px; margin-top:4px;">
+  <input
+    id="claimAccidentDate"
+    type="text"
+    maxlength="10"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    inputmode="numeric"
+    name="no-autofill-accidentdate"
+    oninput="formatDate8(this); checkAccidentDateInPolicyPeriod();">
+
+  <div id="accidentDateError"
+       style="display:none; color:red; font-size:13px; margin-top:4px;">
     해당 증권 기간 사고일이 아닙니다.
   </div>
 </div>
@@ -35506,7 +35559,8 @@ function removeCitizenCoverage(index) {
   renderCitizenCoverageList();
 }
 </script>
+
+</form>
+
 </body>
 </html>
-
-
