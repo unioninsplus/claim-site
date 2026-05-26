@@ -236,21 +236,20 @@ cursor:pointer;
   <label>지자체</label>
   <input id="claimRegionView" readonly placeholder="조회에서 선택한 지자체 자동표시">
 </div>
-          <div><label>이름</label><input id="claimName" placeholder="이름"></div>
-          <div><label>청구자</label><input id="claimDepositor" placeholder="청구자"></div>
-
+          <div><label>이름</label><input id="claimName" autocomplete="off" placeholder="이름"></div>
+          <div><label>청구자</label><input id="claimDepositor" autocomplete="off" placeholder="청구자"></div>
           <div>
   <label>주민등록번호</label>
-  <input id="claimRRN" type="text" maxlength="14"
+  <input id="claimRRN" type="text" maxlength="14" autocomplete="off"
   placeholder="예: 900101-1234567"
   oninput="formatRRN(this)">
 </div>
-          <div><label>전화번호</label><input id="claimPhone" placeholder="010-0000-0000"></div>
+          <div><label>전화번호</label><input id="claimPhone" autocomplete="off" placeholder="010-0000-0000"></div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
           <div>
 <label>사고일</label>
-<input id="claimAccidentDate" type="text" maxlength="10"
+<input id="claimAccidentDate" type="text" maxlength="10" autocomplete="off"
 oninput="formatDate8(this); setTimeout(checkAccidentDateInPolicyPeriod, 0);"
 placeholder="예: 2026-02-05">
 
