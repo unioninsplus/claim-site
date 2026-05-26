@@ -296,9 +296,9 @@ th{background:#f4f8ff;color:#12419e;}
   </div>
 </div>
 
-      <div><label>은행명</label><input id="claimBank" placeholder="예: 국민은행"></div>
-      <div><label>계좌번호</label><input id="claimBankAccount" placeholder="계좌번호 입력"></div>
-      <div><label>예금주</label><input id="claimAccountHolder" placeholder="예금주 입력"></div>
+      <div><label>은행명</label><input id="claimBank" autocomplete="off" placeholder="예: 국민은행"></div>
+      <div><label>계좌번호</label><input id="claimBankAccount" autocomplete="off" placeholder="계좌번호 입력"></div>
+      <div><label>예금주</label><input id="claimAccountHolder" autocomplete="off" placeholder="예금주 입력"></div>
 
       <div>
         <label>사고유형</label>
@@ -313,12 +313,12 @@ th{background:#f4f8ff;color:#12419e;}
 
     <div style="margin-top:14px;">
       <label>사고내용</label>
-      <textarea id="claimAccidentDesc" placeholder="사고 경위, 발생 장소, 상황 등을 입력해 주세요."></textarea>
+      <textarea id="claimAccidentDesc" autocomplete="off" placeholder="사고 경위, 발생 장소, 상황 등을 입력해 주세요."></textarea>
     </div>
 
     <div style="margin-top:14px;">
       <label>비고</label>
-      <input id="claimMemo" placeholder="추가 전달사항">
+      <input id="claimMemo" autocomplete="off" placeholder="추가 전달사항">
     </div>
 
     <div style="margin-top:14px;">
@@ -332,7 +332,11 @@ th{background:#f4f8ff;color:#12419e;}
   <label>자필서명</label>
 
   <input id="eSignName"
-    placeholder="성명을 직접 입력하세요">
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  placeholder="성명을 직접 입력하세요">
 
   <div style="margin-top:10px;">
     <canvas id="signaturePad"
