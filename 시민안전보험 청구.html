@@ -32414,10 +32414,7 @@ const DATASET = {
         "start_date": "2026-01-01 00:00:00",
         "population": "331786",
         "coverages": [
-          {
-            "name": "폭발화재붕괴산사태\n재난비용지원",
-            "detail": "메리츠:상해진단금(메리츠화재/현대해상)\n(전연령)\n4~5주: 15만원 \n6~7주: 20만원 \n8주이상: 35만원"
-          },
+          
           {
             "name": "상해사망\n(교통상해보장제외)",
             "detail": "현대:500 / 500"
@@ -34835,6 +34832,33 @@ function splitDetailAndAmount(detailText, amountText) {
     amount: ""
   };
 }
+
+function fixWrongDisasterCostCoverage(item) {
+  if (!item) return item;
+
+  const name = String(item.name || "");
+  const detail = String(item.detail || "");
+
+  const isCGL =
+    name.includes("영문종합배상책임") ||
+    name.includes("CGL");
+
+  const isDisasterCostDetail =
+    detail.includes("재난비용") ||
+    detail.includes("숙박") ||
+    detail.includes("임시거주") ||
+    detail.includes("소방") ||
+    detail.includes("피난");
+
+  if (isCGL && isDisasterCostDetail) {
+    return {
+      ...item,
+      name: "폭발화재붕괴산사태 재난비용지원"
+    };
+  }
+
+  return item;
+}
 function runLookup() {
   const year = document.getElementById("yearSelect").value;
   const sido = document.getElementById("sidoSelect").value;
@@ -34857,7 +34881,9 @@ function runLookup() {
     isLookupTargetForYear(year, DATASET[year][sido]["전체"])
   ) {
     block = DATASET[year][sido]["전체"];
-    items = (block.coverages || []).map(x => ({...x, region:"전체"}));
+    items = (block.coverages || [])
+  .map(fixWrongDisasterCostCoverage)
+  .map(x => ({...x, region:"전체"}));
   } else {
     block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
     items = [];
@@ -34869,7 +34895,9 @@ function runLookup() {
     const selectedBlock = DATASET[year][sido][sigungu];
     if (isLookupTargetForYear(year, selectedBlock)) {
       block = selectedBlock;
-      items = (block.coverages || []).map(x => ({...x, region:sigungu}));
+      items = (block.coverages || [])
+  .map(fixWrongDisasterCostCoverage)
+  .map(x => ({...x, region:sigungu}));
     } else {
       block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
       items = [];
