@@ -35205,6 +35205,7 @@ function submitClaimToSheet() {
   const accountHolder = document.getElementById('claimAccountHolder')?.value?.trim() || '';
   const signName = document.getElementById('eSignName')?.value?.trim() || '';
   const agreePrivacyCredit = document.getElementById('agreePrivacyCredit')?.checked ? 'Y' : '';
+  const signatureImage = document.getElementById('signatureImage')?.value || '';
 
   if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !accidentType) {
     alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
@@ -35258,6 +35259,7 @@ if (accidentError && accidentError.style.display !== 'none') {
     bankAccount,
     accountHolder,
     signName,
+    signatureImage,
     agreePrivacyCredit,
     email
   };
