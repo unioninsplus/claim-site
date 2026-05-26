@@ -244,7 +244,7 @@ cursor:pointer;
   placeholder="예: 900101-1234567"
   oninput="formatRRN(this)">
 </div>
-          <div><label>전화번호</label><input id="claimPhone" autocomplete="off" placeholder="010-0000-0000"></div>
+          <div><label>전화번호</label><input id="claimPhone" autocomplete="off" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)"></div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
           <div>
@@ -14842,6 +14842,40 @@ function checkAccidentDateInPolicyPeriod() {
   }
 
   return true;
+}
+function formatPhoneNumber(el){
+
+  let v = String(el.value || "")
+    .replace(/[^0-9]/g, "");
+
+  if(v.startsWith("02")){
+
+    if(v.length < 3){
+      el.value = v;
+    }
+    else if(v.length < 6){
+      el.value = v.replace(/(02)(\d+)/, "$1-$2");
+    }
+    else if(v.length < 10){
+      el.value = v.replace(/(02)(\d{3})(\d+)/, "$1-$2-$3");
+    }
+    else{
+      el.value = v.replace(/(02)(\d{4})(\d{4}).*/, "$1-$2-$3");
+    }
+
+  } else {
+
+    if(v.length < 4){
+      el.value = v;
+    }
+    else if(v.length < 8){
+      el.value = v.replace(/(\d{3})(\d+)/, "$1-$2");
+    }
+    else{
+      el.value = v.replace(/(\d{3})(\d{4})(\d{4}).*/, "$1-$2-$3");
+    }
+
+  }
 }
 </script>
 
