@@ -35519,7 +35519,7 @@ if (hasMedical && isInsured && !hasDeathOrDisabilityText) {
   return;
 }
 
-  const matchedCoverage = items.find(item => {
+  const matchedCoverages = items.filter(item => {
   const name = String(item.name || "").replace(/\s+/g, "");
 
   if (
@@ -35546,14 +35546,21 @@ if (hasMedical && isInsured && !hasDeathOrDisabilityText) {
   return false;
 });
 
-  if (matchedCoverage) {
-    goBtn.style.display = "inline-block";
-    result.innerHTML =
-      '<div style="color:#0a7a32;font-weight:700;">입력하신 사고는 선택 지자체 담보 중 <span style="color:#163b7a;">' +
-      matchedCoverage.name +
-      '</span> 담보와 관련되어 접수 가능성이 있습니다.<br>접수 후 약관 및 제출서류 기준에 따라 최종 심사됩니다.</div>';
-    return;
-  }
+if (matchedCoverages.length > 0) {
+
+  const names = [...new Set(
+    matchedCoverages.map(x => x.name)
+  )].join(", ");
+
+  goBtn.style.display = "inline-block";
+
+  result.innerHTML =
+    '<div style="color:#0a7a32;font-weight:700;">입력하신 사고는 선택 지자체 담보 중 <span style="color:#163b7a;">' +
+    names +
+    '</span> 담보와 관련되어 접수 가능성이 있습니다.<br>접수 후 약관 및 제출서류 기준에 따라 최종 심사됩니다.</div>';
+
+  return;
+}
 
   result.innerHTML =
     '<div style="color:red;font-weight:700;">입력하신 사고는 선택 담보 기준상 접수대상이 아닐 수 있습니다.<br>위 담보를 참고하시고 고객센터 확인 바랍니다.</div>';
