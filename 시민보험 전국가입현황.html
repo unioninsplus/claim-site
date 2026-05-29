@@ -383,8 +383,6 @@ line-height:1.5;
   transform:translate(-50%, -50%);
 
 
-
-
   background:#fff;
   border:1px solid #d9e8ff;
   border-radius:14px;
@@ -407,11 +405,10 @@ line-height:1.5;
     cursor:pointer;
   ">
 
-
     확인
   </button>
 </div>
-        
+     
       </div>
       <div class="card">
         <h3>청구 연동 요약</h3>
@@ -35393,6 +35390,14 @@ function fixWrongDisasterCostCoverage(item) {
 
   return item;
 }
+function showLookupNoticePopup() {
+  document.getElementById("lookupNoticePopup").style.display = "block";
+}
+
+function closeLookupNoticePopup() {
+  document.getElementById("lookupNoticePopup").style.display = "none";
+}
+
 function runLookup() {
   const year = document.getElementById("yearSelect").value;
   const sido = document.getElementById("sidoSelect").value;
@@ -35530,7 +35535,10 @@ if (detailedBurn) {
 }
   if (!items.length) {
     tbody.innerHTML = '<tr><td colspan="5">선택한 조건의 데이터가 없습니다.</td></tr>';
-  } else {
+
+    showLookupNoticePopup();
+
+} else {
     items.forEach((item, idx) => {
 
     const currentName = String(item.name || "")
@@ -36004,6 +36012,46 @@ function removeCitizenCoverage(index) {
 </script>
 
 </form>
+<div id="lookupNoticePopup" style="
+  display:none;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  background:#fff8e6;
+  border:1px solid #f2d38b;
+  border-radius:16px;
+  padding:24px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.15);
+  z-index:99999;
+  min-width:320px;
+  text-align:center;
+">
+  <div style="font-weight:700; color:#c62828; margin-bottom:14px;">
+    조회 결과 안내
+  </div>
+
+  <div style="font-size:14px; line-height:1.7; color:#444;">
+    본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.<br>
+    조회되지 않는 지자체는 접수처가 다를 수 있으므로<br>
+    해당 지자체로 문의하시기 바랍니다.
+  </div>
+
+  <button type="button"
+    onclick="closeLookupNoticePopup()"
+    style="
+      margin-top:15px;
+      padding:10px 18px;
+      border:none;
+      border-radius:10px;
+      background:#2d6cdf;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+    ">
+    확인
+  </button>
+</div>
 
 </body>
 </html>
