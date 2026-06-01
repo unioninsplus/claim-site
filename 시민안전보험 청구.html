@@ -35822,13 +35822,17 @@ function checkClaimPossible() {
     );
   });
 
-  const hasDiagnosis = items.some(item => {
+   const hasDiagnosis = items.some(item => {
     const name = String(item.name || "").replace(/\s+/g, "");
+
     return (
-      name.includes("상해진단금") ||
-      name.includes("상해사고진단금") ||
-      name.includes("진단위로금") ||
-      name.includes("진단금")
+      (
+        name.includes("상해진단금") ||
+        name.includes("상해사고진단금") ||
+        name.includes("진단위로금")
+      ) &&
+      !name.includes("사회재난") &&
+      !name.includes("자연재해")
     );
   });
 
@@ -35872,6 +35876,58 @@ const hasInjuryText =
   text.includes("통원") ||
   text.includes("수술") ||
   text.includes("진단");
+  
+const hasSocialDisasterDiagnosis = items.some(item => {
+    const name = String(item.name || "").replace(/\s+/g, "");
+    return name.includes("사회재난상해진단금");
+  });
+
+  const hasNaturalDisasterDiagnosis = items.some(item => {
+    const name = String(item.name || "").replace(/\s+/g, "");
+    return (
+      name.includes("자연재해상해진단금") ||
+      name.includes("자연재해상해사고진단금")
+    );
+  });
+
+  const hasSocialDisasterText =
+    text.includes("사회재난") ||
+    text.includes("재난선포") ||
+    text.includes("사회재난선포");
+
+  const hasNaturalDisasterText =
+    text.includes("자연재해") ||
+    text.includes("태풍") ||
+    text.includes("홍수") ||
+    text.includes("호우") ||
+    text.includes("폭우") ||
+    text.includes("폭설") ||
+    text.includes("지진") ||
+    text.includes("산사태");
+
+  if (hasSocialDisasterDiagnosis && !hasDiagnosis && !hasMedical) {
+    if (hasSocialDisasterText && hasFourWeeks && !hasDeathOrDisabilityText) {
+      goBtn.style.display = "inline-block";
+      result.innerHTML =
+        '<div style="color:#0a7a32;font-weight:700;">사회재난으로 선포된 사고와 관련되어 4주 이상 진단을 받은 경우 사회재난상해진단금 검토가 가능합니다.<br>접수 후 약관 및 재난 선포 여부 기준에 따라 최종 심사됩니다.</div>';
+    } else {
+      result.innerHTML =
+        '<div style="color:#c46a00;font-weight:700;line-height:1.7;">이 지자체는 일반 상해진단금이 아니라 <u>사회재난상해진단금</u> 담보입니다.<br>사회재난으로 선포된 사고인지와 진단 4주 이상 여부가 필요합니다.<br><br>예: 사회재난 선포 사고로 부상, 진단 4주</div>';
+    }
+    return;
+  }
+
+  if (hasNaturalDisasterDiagnosis && !hasDiagnosis && !hasMedical) {
+    if (hasNaturalDisasterText && hasFourWeeks && !hasDeathOrDisabilityText) {
+      goBtn.style.display = "inline-block";
+      result.innerHTML =
+        '<div style="color:#0a7a32;font-weight:700;">자연재해와 관련되어 4주 이상 진단을 받은 경우 자연재해상해진단금 검토가 가능합니다.<br>접수 후 약관 및 자연재해 관련 사고 여부 기준에 따라 최종 심사됩니다.</div>';
+    } else {
+      result.innerHTML =
+        '<div style="color:#c46a00;font-weight:700;line-height:1.7;">이 지자체는 일반 상해진단금이 아니라 <u>자연재해상해진단금</u> 담보입니다.<br>태풍·호우·지진·산사태 등 자연재해 관련 사고인지와 진단 4주 이상 여부가 필요합니다.<br><br>예: 태풍·호우·지진 등 자연재해로 부상, 진단 4주</div>';
+    }
+    return;
+  }
 
 if (
   (hasMedical || hasDiagnosis) &&
