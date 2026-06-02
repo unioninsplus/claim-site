@@ -14972,16 +14972,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const params = new URLSearchParams(window.location.search);
-    const email = params.get("email");
-    const emailEl = document.getElementById("claimEmail");
+const urlEmail = params.get("email") || "";
+const emailEl = document.getElementById("claimEmail");
+const hiddenEmail = document.getElementById("detectedEmail");
+const emailWrap = document.getElementById("emailWrap");
 
-if (email && emailEl) {
-  emailEl.value = email;
+if (emailWrap) {
+  emailWrap.style.display = "block";
 }
 
-setDetectedEmail(email || "");
+if (emailEl) {
+  emailEl.value = urlEmail;
+}
 
-if (!email) {
+if (hiddenEmail) {
+  hiddenEmail.value = urlEmail;
+}
+
+if (!urlEmail) {
   loadUserEmail();
 }
   } catch (e) {
@@ -15178,6 +15186,14 @@ function formatPhoneNumber(el){
 
   }
 }
+window.onload = function() {
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get("email");
+
+  if (email) {
+    document.getElementById("claimEmail").value = email;
+  }
+};
 </script>
 
 </body>
