@@ -15040,16 +15040,6 @@ function closeWin() {
 }
 function closeSaveMessage() {
   document.getElementById('saveMessage').style.display = 'none';
-
-  setTimeout(function () {
-    const nameInput = document.getElementById('claimName');
-
-    if (nameInput) {
-      nameInput.focus();
-      nameInput.blur();
-      nameInput.focus();
-    }
-  }, 100);
 }
 function openAmountPopup(typeName) {
   currentAmountTarget = typeName || '';
