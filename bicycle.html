@@ -14972,13 +14972,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const params = new URLSearchParams(window.location.search);
-const email = params.get("email");
-const emailEl = document.getElementById("claimEmail");
+    const email = params.get("email");
+    const emailEl = document.getElementById("claimEmail");
 
 if (email && emailEl) {
   emailEl.value = email;
-  setDetectedEmail(email);
 }
+
+setDetectedEmail(email || "");
 
 if (!email) {
   loadUserEmail();
