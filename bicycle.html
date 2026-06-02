@@ -14512,12 +14512,12 @@ function setDetectedEmail(email) {
   const detected = (email || "").trim();
   const emailWrap = document.getElementById("emailWrap");
   const hiddenEmail = document.getElementById("detectedEmail");
+  const claimEmail = document.getElementById("claimEmail");
 
-  hiddenEmail.value = detected;
+  if (hiddenEmail) hiddenEmail.value = detected;
+  if (claimEmail && detected) claimEmail.value = detected;
 
-  if (detected) {
-    emailWrap.style.display = "none";
-  } else {
+  if (emailWrap) {
     emailWrap.style.display = "block";
   }
 }
@@ -14972,11 +14972,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const params = new URLSearchParams(window.location.search);
-    const email = params.get("email");
-    const emailEl = document.getElementById("claimEmail");
-    if (email && emailEl) {
-      emailEl.value = email;
-    }
+const email = params.get("email");
+const emailEl = document.getElementById("claimEmail");
+
+if (email && emailEl) {
+  emailEl.value = email;
+  setDetectedEmail(email);
+}
+
+if (!email) {
+  loadUserEmail();
+}
   } catch (e) {
     console.error(e);
   }
