@@ -27265,21 +27265,23 @@ if (accidentError && accidentError.style.display !== 'none') {
   form.target = 'hidden_iframe';
   form.style.display = 'none';
 
-  const fields = {
-    year,
-    sido,
-    sigungu,
-    name,
-    claimant,
-    rrn,
-    phone,
-    receiptDate,
-    accidentDate,
-    accidentType,
-    accidentDetail,
-    note,
-    email
-  };
+ const fields = {
+  formMode: "internal",
+
+  year,
+  sido,
+  sigungu,
+  name,
+  claimant,
+  rrn,
+  phone,
+  receiptDate,
+  accidentDate,
+  accidentType,
+  accidentDetail,
+  note,
+  email
+};
 
   Object.entries(fields).forEach(([key, value]) => {
     const input = document.createElement('input');
