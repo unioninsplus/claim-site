@@ -236,8 +236,31 @@ cursor:pointer;
   <label>지자체</label>
   <input id="claimRegionView" readonly placeholder="조회에서 선택한 지자체 자동표시">
 </div>
-          <div><label>이름</label><input id="claimName" autocomplete="off" placeholder="이름"></div>
-          <div><label>청구자</label><input id="claimDepositor" autocomplete="off" placeholder="청구자"></div>
+         <div>
+  <label>이름</label>
+  <input
+    id="claimName"
+    type="text"
+    lang="ko"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    placeholder="이름">
+</div>
+
+<div>
+  <label>청구자</label>
+  <input
+    id="claimDepositor"
+    type="text"
+    lang="ko"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    placeholder="청구자">
+</div>
           <div>
   <label>주민등록번호</label>
   <input id="claimRRN" type="text" maxlength="14" autocomplete="off"
@@ -15017,8 +15040,17 @@ function closeWin() {
 }
 function closeSaveMessage() {
   document.getElementById('saveMessage').style.display = 'none';
-}
 
+  setTimeout(function () {
+    const nameInput = document.getElementById('claimName');
+
+    if (nameInput) {
+      nameInput.focus();
+      nameInput.blur();
+      nameInput.focus();
+    }
+  }, 100);
+}
 function openAmountPopup(typeName) {
   currentAmountTarget = typeName || '';
   document.getElementById('amountPopupType').textContent = currentAmountTarget;
