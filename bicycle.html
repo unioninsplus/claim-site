@@ -290,20 +290,7 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
   <label>이메일</label>
   <input id="claimEmail" type="email" autocomplete="email" placeholder="자동 확인이 안 되면 이메일 입력">
 </div>
-<script>
-(function () {
-  const params = new URLSearchParams(window.location.search);
-  const email = params.get("email") || "";
 
-  const emailEl = document.getElementById("claimEmail");
-  const hiddenEmail = document.getElementById("detectedEmail");
-  const emailWrap = document.getElementById("emailWrap");
-
-  if (emailWrap) emailWrap.style.display = "block";
-  if (emailEl && email) emailEl.value = email;
-  if (hiddenEmail && email) hiddenEmail.value = email;
-})();
-</script>
           <!-- 숨김/시트관리용 유지 -->
          
           <input id="claimPayoutAmount" type="hidden">
@@ -316,6 +303,16 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
           <input id="claimReceiptDate" type="hidden">
           <input id="claimAddress" type="hidden">
           <input id="detectedEmail" type="hidden" value="">
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const email = new URLSearchParams(window.location.search).get("email") || "";
+
+  if (email) {
+    document.getElementById("claimEmail").value = email;
+    document.getElementById("detectedEmail").value = email;
+  }
+});
+</script>
           <input id="agreePrivacy" type="hidden" value="Y">
           <input id="agreeProcess" type="hidden" value="Y">
           <input id="agreeTruth" type="hidden" value="Y">
