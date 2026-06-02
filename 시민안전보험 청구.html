@@ -35533,27 +35533,35 @@ if (accidentError && accidentError.style.display !== 'none') {
   form.style.display = 'none';
 
   const fields = {
-    year,
-    sido,
-    sigungu,
-    name,
-    claimant,
-    rrn,
-    phone,
-    receiptDate,
-    accidentDate,
-    accidentType,
-    accidentDetail,
-    note,
-    bank,
-    bankAccount,
-    accountHolder,
-    signName,
-    signatureImage,
-    agreePrivacyCredit,
-    email
-  };
+  formMode: "external",
 
+  year,
+  sido,
+  sigungu,
+
+  name,
+  claimant,
+  rrn,
+  phone,
+
+  receiptDate,
+  accidentDate,
+
+  accidentType,
+  accidentDetail,
+  note,
+
+  bank,
+  bankAccount,
+  accountHolder,
+
+  signName,
+  signatureImage,
+
+  agreePrivacyCredit,
+
+  email
+};
   Object.entries(fields).forEach(([key, value]) => {
     const input = document.createElement('input');
     input.type = 'hidden';
