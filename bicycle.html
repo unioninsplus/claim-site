@@ -75,6 +75,7 @@ th { background:#f4f8ff; color:#12419e; }
 </style>
 </head>
 <body>
+<form autocomplete="off">
 
 <button onclick="closeWin()" style="
 position:fixed;
@@ -236,16 +237,19 @@ cursor:pointer;
   <label>지자체</label>
   <input id="claimRegionView" readonly placeholder="조회에서 선택한 지자체 자동표시">
 </div>
-         <div>
+       <div>
   <label>이름</label>
   <input
     id="claimName"
     type="text"
     lang="ko"
+    inputmode="text"
     autocomplete="off"
     autocorrect="off"
     autocapitalize="off"
     spellcheck="false"
+    name="no-autofill-name"
+    style="ime-mode:active;"
     placeholder="이름">
 </div>
 
@@ -255,10 +259,13 @@ cursor:pointer;
     id="claimDepositor"
     type="text"
     lang="ko"
+    inputmode="text"
     autocomplete="off"
     autocorrect="off"
     autocapitalize="off"
     spellcheck="false"
+    name="no-autofill-claimant"
+    style="ime-mode:active;"
     placeholder="청구자">
 </div>
           <div>
@@ -15220,6 +15227,8 @@ function formatPhoneNumber(el){
 }
 
 </script>
+
+</form>
 
 </body>
 </html>
