@@ -290,7 +290,20 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
   <label>이메일</label>
   <input id="claimEmail" type="email" autocomplete="email" placeholder="자동 확인이 안 되면 이메일 입력">
 </div>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get("email") || "";
 
+  const emailEl = document.getElementById("claimEmail");
+  const hiddenEmail = document.getElementById("detectedEmail");
+  const emailWrap = document.getElementById("emailWrap");
+
+  if (emailWrap) emailWrap.style.display = "block";
+  if (emailEl && email) emailEl.value = email;
+  if (hiddenEmail && email) hiddenEmail.value = email;
+})();
+</script>
           <!-- 숨김/시트관리용 유지 -->
          
           <input id="claimPayoutAmount" type="hidden">
@@ -15186,14 +15199,7 @@ function formatPhoneNumber(el){
 
   }
 }
-window.onload = function() {
-  const params = new URLSearchParams(window.location.search);
-  const email = params.get("email");
 
-  if (email) {
-    document.getElementById("claimEmail").value = email;
-  }
-};
 </script>
 
 </body>
