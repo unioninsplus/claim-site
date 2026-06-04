@@ -288,28 +288,26 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
   해당 증권 기간 사고일이 아닙니다.
 </div>
 </div>
-
 <div style="grid-column:1/-1;">
-    <label>구분</label>
-    <select id="accidentCategorySelect">
-      <option value="">구분 선택</option>
-      <option value="개인">개인</option>
-      <option value="공공">공공</option>
-      <option value="PM">PM</option>
-    </select>
+  <label>구분</label>
+  <select id="accidentCategorySelect" style="width:90px;">
+    <option value="">구분 선택</option>
+    <option value="개인">개인</option>
+    <option value="공공">공공</option>
+    <option value="PM">PM</option>
+  </select>
 
   <div style="grid-column:1/-1; display:flex; gap:10px; align-items:flex-start;">
-  <div style="flex:1;">
+    <div style="flex:1; margin-top:12px;">
     <label>사고유형</label>
-    <select id="accidentTypeSelect" onchange="openAmountPopup(this.value)"></select>
-  </div>
+      <select id="accidentTypeSelect" onchange="openAmountPopup(this.value)"></select>
+    </div>
 
-  <div style="flex:1;">
-    <label>선택 담보</label>
-   <div id="selectedCoverageList" style="min-height:90px;max-height:140px;border:1px solid #ccd8eb;border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;overflow-y:auto;"></div>
+    <div style="flex:1;">
+      <label>선택 담보</label>
+      <div id="selectedCoverageList" style="min-height:90px;max-height:140px;border:1px solid #ccd8eb;border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;overflow-y:auto;"></div>
+    </div>
   </div>
-</div>
-
 </div>
           
           <div style="grid-column:1/-1;"><label>사고내용</label><textarea id="claimAccidentDesc" placeholder="사고 경위, 발생 장소, 상황 등을 상세히 입력"></textarea></div>
