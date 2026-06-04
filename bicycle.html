@@ -195,11 +195,11 @@ cursor:pointer;
         <table>
           <thead>
             <tr>
-              <th style="width:8%;">번호</th>
-              <th style="width:22%;">보장항목명</th>
-              <th style="width:14%;">증권번호</th>
-              <th style="width:40%;">보장내용</th>
-              <th style="width:12%;">보장금액</th>
+              <th style="width:6%;">번호</th>
+<th style="width:6%;">보장항목명</th>
+<th style="width:22%;">증권번호</th>
+<th style="width:37%;">보장내용</th>
+<th style="width:30%;">보장금액</th>
             </tr>
           </thead>
           <tbody id="coverageTableBody">
@@ -14800,7 +14800,7 @@ function runLookup() {
   } else {
     items.forEach((item, idx) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${idx+1}</td><td>${item.name}</td><td style="white-space:pre-line;">${item.policyNo || "-"}</td><td style="white-space:pre-line;">${item.detail || "-"}</td><td style="white-space:pre-line;">${item.amount || extractAmount(item.detail || "")}</td>`;
+      tr.innerHTML = `<td style="width:6%;">${idx+1}</td><td style="width:6%; white-space:normal; word-break:keep-all;">${item.name}</td><td style="width:22%; white-space:pre-line;">${item.policyNo || "-"}</td><td style="width:36%; white-space:pre-line;">${item.detail || "-"}</td><td style="width:30%; white-space:pre-line;">${item.amount || extractAmount(item.detail || "")}</td>`;
       tbody.appendChild(tr);
     });
   }
