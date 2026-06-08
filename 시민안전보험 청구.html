@@ -35706,22 +35706,23 @@ function checkClaimPossible() {
       body +
       '</div>'
     );
+
     if (ok) canGo = true;
   }
 
   const accident = {
     death: text.includes("사망") || text.includes("숨짐") || text.includes("질식사"),
     disability: text.includes("후유장해") || text.includes("장해진단") || text.includes("장해판정") || text.includes("장애"),
+    disease:
+      text.includes("질병") || text.includes("병") || text.includes("감기") ||
+      text.includes("암") || text.includes("뇌졸중") || text.includes("뇌경색") ||
+      text.includes("심근경색") || text.includes("고혈압") || text.includes("당뇨"),
     injury:
       text.includes("다침") || text.includes("다쳐") || text.includes("부상") ||
       text.includes("상해") || text.includes("골절") || text.includes("넘어") ||
       text.includes("치료") || text.includes("입원") || text.includes("통원") ||
-      text.includes("수술") || text.includes("진단") || text.includes("봉합"),
-    burn: text.includes("화상"),
-    fire:
-      text.includes("화재") || text.includes("불") || text.includes("연기") ||
-      text.includes("질식") || text.includes("폭발") || text.includes("붕괴") ||
-      text.includes("산사태"),
+      text.includes("수술") || text.includes("진단") || text.includes("봉합") ||
+      text.includes("물림") || text.includes("화상"),
     traffic:
       text.includes("교통") || text.includes("차량") || text.includes("자동차") ||
       text.includes("오토바이") || text.includes("자전거") || text.includes("킥보드") ||
@@ -35729,21 +35730,24 @@ function checkClaimPossible() {
     publicTransport:
       text.includes("대중교통") || text.includes("버스") || text.includes("지하철") ||
       text.includes("전철") || text.includes("기차") || text.includes("택시"),
-    pm: text.includes("PM") || text.includes("킥보드") || text.includes("전동킥보드"),
     dog:
       text.includes("개물림") || text.includes("개에게물림") || text.includes("개한테물림") ||
       text.includes("개에물림") || text.includes("강아지") || text.includes("반려견") ||
       text.includes("유기견") || text.includes("들개") || (text.includes("개") && text.includes("물림")),
+    burn: text.includes("화상"),
+    fire:
+      text.includes("화재") || text.includes("불") || text.includes("연기") ||
+      text.includes("질식") || text.includes("폭발") || text.includes("붕괴") ||
+      text.includes("산사태"),
+    pm: text.includes("PM") || text.includes("킥보드") || text.includes("전동킥보드"),
     schoolZone: text.includes("스쿨존"),
     silverZone: text.includes("실버존"),
-    childWalkingTraffic:
-      text.includes("어린이") && text.includes("보행") && text.includes("교통"),
+    childWalkingTraffic: text.includes("어린이") && text.includes("보행") && text.includes("교통"),
     natural:
       text.includes("자연재해") || text.includes("태풍") || text.includes("홍수") ||
       text.includes("호우") || text.includes("폭우") || text.includes("폭설") ||
       text.includes("지진") || text.includes("산사태"),
-    social:
-      text.includes("사회재난") || text.includes("재난선포") || text.includes("사회재난선포"),
+    social: text.includes("사회재난") || text.includes("재난선포") || text.includes("사회재난선포"),
     drowning: text.includes("익사"),
     farm: text.includes("농기계"),
     electric: text.includes("감전")
@@ -35774,8 +35778,6 @@ function checkClaimPossible() {
   function isMedicalCoverage(t) {
     return (
       t.includes("상해의료비") ||
-      t.includes("의료비") ||
-      t.includes("치료비") ||
       t.includes("CGL") ||
       t.includes("영문종합배상책임")
     );
@@ -35792,10 +35794,12 @@ function checkClaimPossible() {
   }
 
   function isTrafficExcluded(t) {
-    return t.includes("교통상해보장제외") ||
-           t.includes("교통상해제외") ||
-           t.includes("교통사고제외") ||
-           t.includes("교통상해는제외");
+    return (
+      t.includes("교통상해보장제외") ||
+      t.includes("교통상해제외") ||
+      t.includes("교통사고제외") ||
+      t.includes("교통상해는제외")
+    );
   }
 
   function hasAgeCondition(t) {
@@ -35806,7 +35810,7 @@ function checkClaimPossible() {
     );
   }
 
-  function coverageCondition(t) {
+  function specialCondition(t) {
     if (t.includes("개물림")) return "dog";
     if (t.includes("대중교통") || t.includes("전세버스")) return "publicTransport";
     if (t.includes("어린이보행")) return "childWalkingTraffic";
@@ -35823,7 +35827,7 @@ function checkClaimPossible() {
     return "general";
   }
 
-  function conditionMatches(cond) {
+  function specialMatches(cond) {
     if (cond === "general") return true;
     if (cond === "dog") return accident.dog;
     if (cond === "publicTransport") return accident.publicTransport;
@@ -35845,64 +35849,69 @@ function checkClaimPossible() {
     if (!hasPay(item)) return;
 
     const t = fullText(item);
-    const cond = coverageCondition(t);
-
-    if (!conditionMatches(cond)) return;
-
-    if (accident.traffic && isTrafficExcluded(t)) return;
+    const cond = specialCondition(t);
 
     const deathCov = isDeathCoverage(t);
     const disabilityCov = isDisabilityCoverage(t);
     const medicalCov = isMedicalCoverage(t);
     const diagnosisCov = isDiagnosisCoverage(t);
+    const trafficExcluded = isTrafficExcluded(t);
 
     const ageNote = hasAgeCondition(t)
       ? '<br><span style="color:#c46a00;">연령 조건이 있는 담보입니다. 해당 연령 여부를 확인해 주세요.</span>'
       : '';
 
     if (deathCov) {
-      if (accident.death) {
+      if (accident.death && specialMatches(cond)) {
         add(item, '사망 사고 관련 담보가 확인됩니다.<br>사망 사고는 진단 주수 확인 대상이 아닙니다.', true);
       }
       return;
     }
 
+    if (accident.death) return;
+
+    if (medicalCov) {
+      if (accident.disease) return;
+      if (accident.traffic) return;
+      if (!accident.injury) return;
+
+      if (isNotInsured) {
+        add(item, '상해의료비/CGL 담보가 확인됩니다.<br>실손 미가입자로 확인되어 접수 가능성을 검토할 수 있습니다.', true);
+      } else if (isInsured) {
+        add(item, '상해의료비/CGL 담보가 확인됩니다.<br>실손 가입자는 청구 대상이 아닐 수 있습니다.', false);
+      } else {
+        add(item, '상해의료비/CGL 담보가 확인됩니다.<br>질병·교통사고를 제외한 상해사고는 검토 대상입니다. 실손보험 가입 여부 확인이 필요합니다.', false);
+      }
+      return;
+    }
+
+    if (diagnosisCov) {
+      if (!accident.injury) return;
+      if (accident.traffic && trafficExcluded) return;
+      if (cond !== "general" && !specialMatches(cond)) return;
+
+      if (hasFourWeeks) {
+        add(item, '상해진단금/상해진단위로금 담보 기준으로 검토 가능합니다.<br>진단 4주 이상 내용이 확인됩니다.' + ageNote, true);
+      } else {
+        add(item, '상해진단금/상해진단위로금 담보가 있습니다.<br>진단 4주 이상 여부 확인이 필요합니다.' + ageNote, false);
+      }
+      return;
+    }
+
     if (disabilityCov) {
+      if (!accident.injury && !accident.disability) return;
+      if (accident.traffic && trafficExcluded) return;
+      if (cond !== "general" && !specialMatches(cond)) return;
+
       if (accident.disability) {
-        add(item, '후유장해 사고 관련 담보가 확인됩니다.<br>후유장해 진단서 및 장해 판정 여부 확인 후 접수 가능성을 검토해 주세요.', true);
-      } else if (accident.injury) {
+        add(item, '후유장해 담보가 확인됩니다.<br>후유장해 진단서 및 장해 판정 여부 확인 후 접수 가능성을 검토해 주세요.', true);
+      } else {
         add(item, '현재는 상해사고로 보입니다.<br>치료 종료 후 의사 장해진단이 있는 경우 후유장해 담보도 추후 검토 가능합니다.', false);
       }
       return;
     }
 
-    if (accident.injury && diagnosisCov) {
-      if (hasFourWeeks) {
-        add(item,
-          '상해진단금/상해진단위로금 담보 기준으로 검토 가능합니다.<br>진단 4주 이상 내용이 확인됩니다.' + ageNote,
-          true
-        );
-      } else {
-        add(item,
-          '상해진단금/상해진단위로금 담보가 있습니다.<br>진단 4주 이상 여부 확인이 필요합니다.' + ageNote,
-          false
-        );
-      }
-      return;
-    }
-
-    if (accident.injury && medicalCov) {
-      if (isNotInsured) {
-        add(item, '실손 미가입자로 확인되어 상해의료비/치료비 담보 접수 가능성을 검토할 수 있습니다.', true);
-      } else if (isInsured) {
-        add(item, '실손 가입자는 상해의료비/치료비 담보 청구 대상이 아닐 수 있습니다.', false);
-      } else {
-        add(item, '상해의료비/치료비 담보가 있습니다.<br>실손보험 가입 여부 확인이 필요합니다. 실손가입 / 실손미가입을 사고내용에 추가해 주세요.', false);
-      }
-      return;
-    }
-
-    if (cond !== "general") {
+    if (cond !== "general" && specialMatches(cond)) {
       add(item, '입력한 사고내용과 담보조건이 일치하는 담보가 확인됩니다.<br>세부 약관 조건 확인 후 접수 가능성을 검토해 주세요.', true);
     }
   });
