@@ -35700,16 +35700,15 @@ function resetClaimCheckResult() {
   }
 
   function add(item, body, ok) {
-    messages.push(
-      '<div style="margin-bottom:12px;padding:10px;border:1px solid #d9e8ff;border-radius:10px;background:#f8fbff;">' +
-      '<b style="color:' + (ok ? '#0a7a32' : '#c46a00') + ';">' + (item.name || "-") + '</b><br>' +
-      body +
-      '<br><span style="color:#667085;white-space:pre-line;">보장내용: ' + (item.detail || "-") + '</span>' +
-      '<br><span style="color:#667085;white-space:pre-line;">보장금액: ' + (item.amount || "-") + '</span>' +
-      '</div>'
-    );
-    if (ok) canGo = true;
-  }
+  messages.push(
+    '<div style="margin-bottom:12px;padding:10px;border:1px solid #d9e8ff;border-radius:10px;background:#f8fbff;">' +
+    '<b style="color:' + (ok ? '#0a7a32' : '#c46a00') + ';">' + (item.name || "-") + '</b><br>' +
+    body +
+    '</div>'
+  );
+
+  if (ok) canGo = true;
+}
 
   const hasDeath =
     text.includes("사망") || text.includes("숨짐") || text.includes("질식사");
@@ -35998,14 +35997,13 @@ function resetClaimCheckResult() {
   });
 
   if (messages.length > 0) {
-    result.innerHTML =
-      '<div style="font-weight:700;color:#163b7a;margin-bottom:8px;">담보별 자동 확인 결과</div>' +
-      '<div style="color:#667085;margin-bottom:10px;">현재 조회된 해당 지자체 담보명·보장내용·보장금액 기준으로 확인했습니다.</div>' +
-      messages.join('');
+  result.innerHTML =
+    '<div style="font-weight:700;color:#163b7a;margin-bottom:8px;">담보별 자동 확인 결과</div>' +
+    messages.join('');
 
-    if (canGo) goBtn.style.display = "inline-block";
-    return;
-  }
+  if (canGo) goBtn.style.display = "inline-block";
+  return;
+}
 
   result.innerHTML =
     '<div style="color:red;font-weight:700;">입력하신 사고는 현재 조회된 해당 지자체 담보 기준상 접수대상이 아닐 수 있습니다.<br>위 담보를 참고하시고 고객센터 확인 바랍니다.</div>';
