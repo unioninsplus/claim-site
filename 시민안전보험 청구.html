@@ -35637,7 +35637,7 @@ function resetClaimCheckResult() {
 
   goBtn.style.display = "none";
 }
-function checkClaimPossible() {
+ function checkClaimPossible() {
   const textRaw = document.getElementById("claimCheckText")?.value || "";
   const text = textRaw.replace(/\s+/g, "");
 
@@ -35652,7 +35652,31 @@ function checkClaimPossible() {
     return;
   }
 
+  const year = document.getElementById("yearSelect")?.value?.trim() || "";
+  const sido = document.getElementById("sidoSelect")?.value?.trim() || "";
+  const sigungu = document.getElementById("sigunguSelect")?.value?.trim() || "";
+
+  if (!year || !sido || !sigungu) {
+    result.innerHTML = '<div style="color:#c46a00;font-weight:700;">먼저 연도/시도/시군구를 선택하고 조회해 주세요.</div>';
+    return;
+  }
+
+  if (sigungu === "전체") {
+    result.innerHTML =
+      '<div style="color:#c46a00;font-weight:700;">접수 가능 여부 확인은 시군구를 선택한 후 이용해 주세요.</div>' +
+      '<div style="margin-top:6px;color:#667085;">시도 전체 조회 상태에서는 지자체별 담보가 서로 달라 정확한 판단이 어렵습니다.</div>';
+    return;
+  }
+
   const items = window.currentItems || [];
+
+  if (!items.length) {
+    result.innerHTML =
+      '<div style="color:#c46a00;font-weight:700;">먼저 해당 지자체를 조회해 주세요.</div>' +
+      '<div style="margin-top:6px;color:#667085;">접수 가능 여부는 조회 화면에 표시된 해당 지자체 담보 기준으로만 판단합니다.</div>';
+    return;
+  }
+
   const messages = [];
   let canGo = false;
 
@@ -35660,17 +35684,28 @@ function checkClaimPossible() {
     return String(v || "").replace(/\s+/g, "");
   }
 
+  function fullText(item) {
+    return clean(
+      (item.name || "") + " " +
+      (item.detail || "") + " " +
+      (item.amount || "") + " " +
+      (item.policyNo || "") + " " +
+      (item.policy_no || "")
+    );
+  }
+
   function hasPay(item) {
-    const d = clean(item.detail);
+    const d = clean((item.detail || "") + " " + (item.amount || ""));
     return d && d !== "0" && d !== "-";
   }
 
   function add(item, body, ok) {
     messages.push(
-      '<div style="margin-bottom:12px;">' +
-      '<b style="color:' + (ok ? '#0a7a32' : '#c46a00') + ';">' + item.name + '</b><br>' +
+      '<div style="margin-bottom:12px;padding:10px;border:1px solid #d9e8ff;border-radius:10px;background:#f8fbff;">' +
+      '<b style="color:' + (ok ? '#0a7a32' : '#c46a00') + ';">' + (item.name || "-") + '</b><br>' +
       body +
-      '<br><span style="color:#667085;">보장내용: ' + (item.detail || "-") + '</span>' +
+      '<br><span style="color:#667085;white-space:pre-line;">보장내용: ' + (item.detail || "-") + '</span>' +
+      '<br><span style="color:#667085;white-space:pre-line;">보장금액: ' + (item.amount || "-") + '</span>' +
       '</div>'
     );
     if (ok) canGo = true;
@@ -35680,7 +35715,7 @@ function checkClaimPossible() {
     text.includes("사망") || text.includes("숨짐") || text.includes("질식사");
 
   const hasDisability =
-    text.includes("후유") || text.includes("장해") || text.includes("후유장해");
+    text.includes("후유") || text.includes("장해") || text.includes("후유장해") || text.includes("장애");
 
   const hasInjury =
     text.includes("부상") || text.includes("상해") || text.includes("골절") ||
@@ -35715,8 +35750,8 @@ function checkClaimPossible() {
     text.includes("PM") || text.includes("킥보드") || text.includes("전동킥보드");
 
   const hasFire =
-    text.includes("화재") || text.includes("불") || text.includes("불이") ||
-    text.includes("연기") || text.includes("질식") || text.includes("화상") ||
+    text.includes("화재") || text.includes("불") || text.includes("연기") ||
+    text.includes("질식") || text.includes("화상") ||
     text.includes("폭발") || text.includes("붕괴") || text.includes("산사태");
 
   const hasNatural =
@@ -35727,135 +35762,148 @@ function checkClaimPossible() {
   const hasSocial =
     text.includes("사회재난") || text.includes("재난선포") || text.includes("사회재난선포");
 
-  function isFireCoverage(name) {
-    return name.includes("화재") || name.includes("폭발") || name.includes("붕괴") || name.includes("산사태");
+  const hasDogBite =
+    text.includes("개물림") ||
+    text.includes("개에게물림") ||
+    text.includes("개한테물림") ||
+    text.includes("개에물림") ||
+    text.includes("강아지") ||
+    text.includes("반려견") ||
+    text.includes("유기견") ||
+    text.includes("들개") ||
+    (text.includes("개") && text.includes("물림"));
+
+  function isFireCoverage(t) {
+    return t.includes("화재") || t.includes("폭발") || t.includes("붕괴") || t.includes("산사태") || t.includes("감전");
   }
 
-  function isPublicTransportCoverage(name) {
-    return name.includes("대중교통") || name.includes("전세버스");
+  function isPublicTransportCoverage(t) {
+    return t.includes("대중교통") || t.includes("전세버스");
   }
 
-  function isPMCoverage(name) {
-    return name.includes("PM") || name.includes("피엠") || name.includes("공유형");
+  function isPMCoverage(t) {
+    return t.includes("PM") || t.includes("피엠") || t.includes("공유형");
   }
 
-  function isNaturalCoverage(name) {
-    return name.includes("자연재해");
+  function isNaturalCoverage(t) {
+    return t.includes("자연재해") || t.includes("태풍") || t.includes("호우") || t.includes("지진") || t.includes("폭설");
   }
 
-  function isSocialCoverage(name) {
-    return name.includes("사회재난");
+  function isSocialCoverage(t) {
+    return t.includes("사회재난") || t.includes("재난선포") || t.includes("감염병");
   }
 
-  function isMedicalCoverage(name) {
-    return name.includes("상해의료비") || name.includes("의료비") ||
-           name.includes("CGL") || name.includes("영문종합배상책임");
+  function isDogBiteCoverage(t) {
+    return t.includes("개물림") || t.includes("개물림사고") || t.includes("응급실") || t.includes("비응급");
   }
 
-  function isNormalDiagnosisCoverage(name) {
-  return (
-    name.includes("상해진단금") ||
-    name.includes("상해사고진단금") ||
-    name.includes("상해진단위로금") ||
-    name.includes("상해사고진단위로금") ||
-    (
-      name.includes("진단위로금") &&
-      !name.includes("사회재난") &&
-      !name.includes("자연재해")
-    )
-  ) &&
-  !name.includes("사회재난") &&
-  !name.includes("자연재해");
-}
-
-  function isSocialDiagnosisCoverage(name) {
-    return name.includes("사회재난상해진단금") || name.includes("사회재난상해진단위로금");
+  function isMedicalCoverage(t) {
+    return t.includes("상해의료비") || t.includes("의료비") ||
+           t.includes("치료비") || t.includes("응급실") ||
+           t.includes("CGL") || t.includes("영문종합배상책임");
   }
 
-  function isNaturalDiagnosisCoverage(name) {
-    return name.includes("자연재해상해진단금") ||
-           name.includes("자연재해상해사고진단금") ||
-           name.includes("자연재해상해진단위로금");
+  function isNormalDiagnosisCoverage(t) {
+    return (
+      t.includes("상해진단금") ||
+      t.includes("상해사고진단금") ||
+      t.includes("상해진단위로금") ||
+      t.includes("상해사고진단위로금") ||
+      (
+        t.includes("진단위로금") &&
+        !t.includes("사회재난") &&
+        !t.includes("자연재해")
+      )
+    ) &&
+    !t.includes("사회재난") &&
+    !t.includes("자연재해") &&
+    !t.includes("재난선포") &&
+    !t.includes("감염병");
   }
 
-  function accidentMatchesCoverage(name) {
-    if (hasFire && isFireCoverage(name)) return true;
-    if (hasPublicTransport && isPublicTransportCoverage(name)) return true;
-    if (hasPM && isPMCoverage(name)) return true;
-    if (hasNatural && isNaturalCoverage(name)) return true;
-    if (hasSocial && isSocialCoverage(name)) return true;
+  function isSocialDiagnosisCoverage(t) {
+    return t.includes("사회재난상해진단금") ||
+           t.includes("사회재난상해진단위로금") ||
+           (t.includes("사회재난") && t.includes("진단"));
+  }
 
-    if (text.includes("익사") && name.includes("익사")) return true;
-    if (text.includes("감전") && name.includes("감전")) return true;
-    if (text.includes("농기계") && name.includes("농기계")) return true;
-    if (text.includes("개물림") && name.includes("개물림")) return true;
-    if (text.includes("화상") && name.includes("화상")) return true;
-    if (text.includes("스쿨존") && name.includes("스쿨존")) return true;
+  function isNaturalDiagnosisCoverage(t) {
+    return t.includes("자연재해상해진단금") ||
+           t.includes("자연재해상해사고진단금") ||
+           t.includes("자연재해상해진단위로금") ||
+           (t.includes("자연재해") && t.includes("진단"));
+  }
+
+  function hasAgeCondition(t) {
+    return (
+      t.includes("12세") ||
+      t.includes("60세") ||
+      t.includes("65세") ||
+      t.includes("이하") ||
+      t.includes("이상") ||
+      t.includes("어린이") ||
+      t.includes("노인") ||
+      t.includes("고령")
+    );
+  }
+
+  function accidentMatchesCoverage(t) {
+    if (hasDogBite && isDogBiteCoverage(t)) return true;
+    if (hasFire && isFireCoverage(t)) return true;
+    if (hasPublicTransport && isPublicTransportCoverage(t)) return true;
+    if (hasPM && isPMCoverage(t)) return true;
+    if (hasNatural && isNaturalCoverage(t)) return true;
+    if (hasSocial && isSocialCoverage(t)) return true;
+
+    if (text.includes("익사") && t.includes("익사")) return true;
+    if (text.includes("감전") && t.includes("감전")) return true;
+    if (text.includes("농기계") && t.includes("농기계")) return true;
+    if (text.includes("화상") && t.includes("화상")) return true;
+    if (text.includes("스쿨존") && t.includes("스쿨존")) return true;
+    if (text.includes("실버존") && t.includes("실버존")) return true;
 
     return false;
-  }
-
-  function hasAgeCondition(detail) {
-    return (
-      detail.includes("12세") ||
-      detail.includes("60세") ||
-      detail.includes("65세") ||
-      detail.includes("이하") ||
-      detail.includes("이상") ||
-      detail.includes("어린이") ||
-      detail.includes("노인") ||
-      detail.includes("고령")
-    );
   }
 
   items.forEach(item => {
     if (!hasPay(item)) return;
 
-    const name = clean(item.name);
-    const detail = String(item.detail || "");
+    const t = fullText(item);
 
-    const deathCoverage = name.includes("사망");
-    const disabilityCoverage = name.includes("후유") || name.includes("장해");
-    const medical = isMedicalCoverage(name);
-    const normalDiagnosis = isNormalDiagnosisCoverage(name);
-    const socialDiagnosis = isSocialDiagnosisCoverage(name);
-    const naturalDiagnosis = isNaturalDiagnosisCoverage(name);
-    const relatedAccident = accidentMatchesCoverage(name);
+    const deathCoverage = t.includes("사망");
+    const disabilityCoverage = t.includes("후유") || t.includes("장해") || t.includes("장애");
+    const medical = isMedicalCoverage(t);
+    const normalDiagnosis = isNormalDiagnosisCoverage(t);
+    const socialDiagnosis = isSocialDiagnosisCoverage(t);
+    const naturalDiagnosis = isNaturalDiagnosisCoverage(t);
+    const relatedAccident = accidentMatchesCoverage(t);
 
-    const ageNote = hasAgeCondition(detail)
+    const ageNote = hasAgeCondition(t)
       ? '<br><span style="color:#c46a00;">연령 조건이 있는 담보입니다. 12세 이하 / 60세 이상 / 65세 이상 등 해당 여부를 확인해 주세요.</span>'
       : '';
 
-    if (hasDeath && deathCoverage && relatedAccident) {
+    if (hasDogBite && isDogBiteCoverage(t)) {
       add(
         item,
-        '사고내용과 담보명이 일치하는 사망 사고로 확인됩니다.<br>사망 사고는 진단 주수 확인 대상이 아닙니다.',
+        '개물림 사고 관련 담보가 확인됩니다.<br>응급/비응급, 치료비 또는 응급실 내원 조건 등 세부 약관 확인 후 접수 가능합니다.',
         true
       );
       return;
     }
 
-    if (
-      hasDeath &&
-      deathCoverage &&
-      !hasFire &&
-      !hasPublicTransport &&
-      !hasPM &&
-      !hasNatural &&
-      !hasSocial
-    ) {
+    if (hasDeath && deathCoverage && (relatedAccident || (!hasFire && !hasPublicTransport && !hasPM && !hasNatural && !hasSocial && !hasDogBite))) {
       add(
         item,
-        '사망 사고로 확인됩니다. 사고 원인에 맞는 사망 담보인지 확인해 주세요.<br>사망 사고는 진단 주수 확인 대상이 아닙니다.',
+        '사망 사고 관련 담보가 확인됩니다.<br>사망 사고는 진단 주수 확인 대상이 아닙니다.',
         true
       );
       return;
     }
 
-    if (!hasDeath && hasDisability && disabilityCoverage && (relatedAccident || (!hasFire && !hasPublicTransport && !hasPM && !hasNatural && !hasSocial))) {
+    if (!hasDeath && hasDisability && disabilityCoverage && (relatedAccident || (!hasFire && !hasPublicTransport && !hasPM && !hasNatural && !hasSocial && !hasDogBite))) {
       add(
         item,
-        '후유장해 사고로 확인됩니다. 후유장해 진단서 및 장해 판정 여부 확인 후 접수 가능성을 검토해 주세요.' +
+        '후유장해 사고 관련 담보가 확인됩니다.<br>후유장해 진단서 및 장해 판정 여부 확인 후 접수 가능성을 검토해 주세요.' +
         (hasTraffic ? '<br><span style="color:#c46a00;">단, 교통상해 제외 담보일 수 있으므로 담보조건 확인이 필요합니다.</span>' : ''),
         true
       );
@@ -35887,19 +35935,19 @@ function checkClaimPossible() {
       if (isNotInsured) {
         add(
           item,
-          '실손 미가입자로 확인되어 상해의료비 담보 접수 가능성을 검토할 수 있습니다.',
+          '실손 미가입자로 확인되어 상해의료비/치료비 담보 접수 가능성을 검토할 수 있습니다.',
           true
         );
       } else if (isInsured) {
         add(
           item,
-          '실손 가입자는 상해의료비 담보 청구 대상이 아닐 수 있습니다.',
+          '실손 가입자는 상해의료비/치료비 담보 청구 대상이 아닐 수 있습니다.',
           false
         );
       } else {
         add(
           item,
-          '상해의료비 담보가 있습니다.<br>실손보험 가입 여부 확인이 필요합니다. 실손가입 / 실손미가입을 사고내용에 추가해 주세요.',
+          '상해의료비/치료비 담보가 있습니다.<br>실손보험 가입 여부 확인이 필요합니다. 실손가입 / 실손미가입을 사고내용에 추가해 주세요.',
           false
         );
       }
@@ -35952,6 +36000,7 @@ function checkClaimPossible() {
   if (messages.length > 0) {
     result.innerHTML =
       '<div style="font-weight:700;color:#163b7a;margin-bottom:8px;">담보별 자동 확인 결과</div>' +
+      '<div style="color:#667085;margin-bottom:10px;">현재 조회된 해당 지자체 담보명·보장내용·보장금액 기준으로 확인했습니다.</div>' +
       messages.join('');
 
     if (canGo) goBtn.style.display = "inline-block";
@@ -35959,9 +36008,8 @@ function checkClaimPossible() {
   }
 
   result.innerHTML =
-    '<div style="color:red;font-weight:700;">입력하신 사고는 선택 담보 기준상 접수대상이 아닐 수 있습니다.<br>위 담보를 참고하시고 고객센터 확인 바랍니다.</div>';
+    '<div style="color:red;font-weight:700;">입력하신 사고는 현재 조회된 해당 지자체 담보 기준상 접수대상이 아닐 수 있습니다.<br>위 담보를 참고하시고 고객센터 확인 바랍니다.</div>';
 }
- 
 
 function openClaimForm() {
 
