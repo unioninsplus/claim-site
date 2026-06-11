@@ -385,18 +385,22 @@ th{background:#f4f8ff;color:#12419e;}
 </div>
     </div>
 
-    <div style="margin-top:20px; text-align:center;">
-  <button class="primary" type="button" onclick="submitClaimToSheet()"
-          style="width:auto; min-width:130px;">
-    접수 저장
-  </button>
-</div>
-<div style="margin-top:20px; text-align:center;">
-  <button onclick="closeWin()">
-    창 닫기
-  </button>
-</div>
+    <div id="claimButtons" style="display:none;">
 
+  <div style="margin-top:20px; text-align:center;">
+    <button class="primary" type="button" onclick="submitClaimToSheet()"
+            style="width:auto; min-width:130px;">
+      접수 저장
+    </button>
+  </div>
+
+  <div style="margin-top:20px; text-align:center;">
+    <button onclick="closeWin()">
+      창 닫기
+    </button>
+  </div>
+
+</div>
 <script>
 function closeWin(){
   if(window.opener){
@@ -447,7 +451,7 @@ cursor:pointer;
 </div>
   </section>
 
-  <div class="footer">(주)유니온인스플러스 · 시민안전보험 외부 접수창</div>
+  <div class="footer">(주)유니온인스플러스 · 시민안전보험  </div>
 
 </div>
 
@@ -35917,6 +35921,9 @@ function escapeHtml(v) {
 function openClaimForm() {
 
   document.getElementById("claim").style.display = "block";
+
+  const claimButtons = document.getElementById("claimButtons");
+  if (claimButtons) claimButtons.style.display = "block";
 
   document.getElementById("claimCheckBox").style.display = "none";
 
