@@ -35379,7 +35379,7 @@ if (
   const parts = detailText.split("/");
   const lastPart = String(parts[parts.length - 1] || "").trim();
 
-  if (lastPart && lastPart.includes("만원")) {
+  if (lastPart && lastPart.includes("만원") && !String(item.amount || "").trim()) {
     displayAmount = lastPart;
     diagnosisDetail = parts.slice(0, -1).join("/").trim();
   }
