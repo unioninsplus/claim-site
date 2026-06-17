@@ -35679,13 +35679,15 @@ function claimNorm(v) {
 }
 
 function judgeClaimCoverage(accidentText, coverageText) {
+
   let score = 0;
 
-  const words = accidentText.match(/[가-힣a-z0-9]{2,}/g) || [];
+  const isDeath = /사망|숨짐|죽음/.test(accidentText);
+  const isDisability = /후유장해|후유|장해|장애/.test(accidentText);
 
-  words.forEach(word => {
-    if (coverageText.includes(word)) score += 30;
-  });
+  const isFire = /화재|불|폭발|붕괴|산사태/.test(accidentText);
+  const isPublicTransport = /버스|지하철|전철|기차|열차|택시|대중교통/.test(accidentText);
+  const isPM = /킥보드|전동킥보드|pm|피엠/.test(accidentText);
 
   const ruleMap = [
     { accident:["화상","데임","뜨거운물","열상","수술"], coverage:["화상","수술"] },
@@ -35705,15 +35707,44 @@ function judgeClaimCoverage(accidentText, coverageText) {
     { accident:["후유장해","장해","장애"], coverage:["후유","장해","장애"] },
     { accident:["골절","진단","4주","5주","6주","7주","8주"], coverage:["진단","진단금","진단위로금"] },
     { accident:["입원"], coverage:["입원","입원위로금"] },
-    { accident:["치료","통원","병원","응급실"], coverage:["의료비","치료비","cgl","영문종합배상"] }
-  ];
+    { accident:["치료","통원","병원","응급실"], coverage:["의료비","치료비","cgl","영문종합배상"] },
+    { accident:["넘어짐","넘어져","넘어","낙상","미끄러짐","미끄러져","계단","길가다","보행중","부딪힘","부딪쳐","상해","다침"],
+  coverage:["상해","의료비","치료비","cgl","영문종합배상","진단","진단금","진단위로금","입원","입원위로금"] }
+];
 
   ruleMap.forEach(rule => {
     const aHit = rule.accident.some(k => accidentText.includes(k));
     const cHit = rule.coverage.some(k => coverageText.includes(k));
+
     if (aHit && cHit) score += 100;
   });
 
+  // 사망인데 후유장해 담보 제거
+  if (isDeath && /후유|장해|장애/.test(coverageText)) {
+    return 0;
+  }
+
+  // 후유장해인데 사망 담보 제거
+  if (isDisability && /사망/.test(coverageText)) {
+    return 0;
+  }
+
+  // 대중교통 담보 제거
+  if (/대중교통|전세버스/.test(coverageText) && !isPublicTransport) {
+    return 0;
+  }
+
+  // PM 담보 제거
+  if (/pm|피엠|킥보드|개인형이동장치/.test(coverageText) && !isPM) {
+    return 0;
+  }
+
+  // 화재 담보 제거
+  if (/화재|폭발|붕괴|산사태/.test(coverageText) && !isFire) {
+    return 0;
+  }
+
+  // 교통상해 제외 진단금
   if (
     /버스|지하철|전철|기차|열차|택시|대중교통|교통|자동차|차량|오토바이|자전거|킥보드|pm/.test(accidentText) &&
     /상해.*진단|상해사고진단|진단위로금/.test(coverageText) &&
@@ -35722,6 +35753,7 @@ function judgeClaimCoverage(accidentText, coverageText) {
     return 0;
   }
 
+  // 재난 아닌데 재난담보 제거
   if (
     !/자연재해|태풍|호우|폭우|폭설|홍수|지진|낙뢰|강풍|침수|해일|사회재난|재난선포|특별재난/.test(accidentText) &&
     /자연재해|사회재난|재난/.test(coverageText)
@@ -35731,7 +35763,6 @@ function judgeClaimCoverage(accidentText, coverageText) {
 
   return score;
 }
-
 
 function makeClaimNotes(item) {
   const notes = [];
