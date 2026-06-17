@@ -35641,9 +35641,31 @@ function checkClaimPossible() {
 
     if (!coverageText || coverageText === "0" || coverageText === "-") return;
 
-    const decision = judgeClaimCoverage(accident, coverageText);
+   const decision = judgeClaimCoverage(accident, coverageText);
 
-    if (!decision.match) return;
+if (!decision.match) return;
+
+if (
+  accident.isTraffic &&
+  /상해.*진단|상해사고진단|진단위로금/.test(coverageText) &&
+  /교통상해.*제외|교통상해보장제외|교통.*제외/.test(coverageText)
+) {
+  return;
+}
+
+if (
+  accident.isGeneralInjury &&
+  /자연재해|사회재난|재난/.test(coverageText)
+) {
+  return;
+}
+
+if (
+  accident.isPublicTransport &&
+  !/대중교통|버스|지하철|전철|기차|택시/.test(coverageText)
+) {
+  return;
+}
 
     matched.push({
       item,
@@ -35689,7 +35711,6 @@ function claimNorm(v) {
 }
 
 
-
 function analyzeAccidentCause(t) {
   const cause = {
     fire: /(화재|불|폭발|붕괴|산사태|연기|질식)/.test(t),
@@ -35708,6 +35729,24 @@ function analyzeAccidentCause(t) {
     schoolZone: /(스쿨존|어린이보호구역)/.test(t),
     silverZone: /(실버존|노인보호구역)/.test(t)
   };
+
+  const isPublicTransport = cause.publicTransport;
+  const isTraffic = cause.publicTransport || cause.traffic || cause.bicycle || cause.pm;
+  const isDisaster = cause.natural || cause.social;
+  const isSpecial =
+    cause.fire || cause.farm || cause.drowning || cause.waterPlay ||
+    cause.dog || cause.electric || cause.burn ||
+    cause.schoolZone || cause.silverZone;
+
+  const isGeneralInjury =
+    !isTraffic &&
+    !isDisaster &&
+    !cause.fire &&
+    !cause.farm &&
+    !cause.drowning &&
+    !cause.waterPlay &&
+    !cause.schoolZone &&
+    !cause.silverZone;
 
   const mainCause =
     cause.fire ? "fire" :
@@ -35732,6 +35771,12 @@ function analyzeAccidentCause(t) {
     cause: mainCause,
     causeFlags: cause,
 
+    isTraffic: isTraffic,
+    isPublicTransport: isPublicTransport,
+    isGeneralInjury: isGeneralInjury,
+    isDisaster: isDisaster,
+    isSpecial: isSpecial,
+
     death: /(사망|숨짐|죽음|돌아가심|사망함|질식사|익사사망)/.test(t),
     disability: /(후유장해|장해|장애|장해진단|장해판정|장해율)/.test(t),
     injury: /(상해|부상|수상|다침|다쳐|골절|넘어|넘어져|미끄러|낙상|치료|입원|통원|수술|진단|봉합|염좌|타박|화상|물림)/.test(t),
@@ -35742,7 +35787,6 @@ function analyzeAccidentCause(t) {
     notInsured: /(실손미가입|실비미가입|실손없|실비없)/.test(t)
   };
 }
-
 
 
 function getCoverageCause(c) {
@@ -35766,7 +35810,6 @@ function getCoverageCause(c) {
 }
 
 
-
 function causeMatches(a, coverageCause) {
   if (coverageCause === "general") {
     return a.cause === "general" || a.cause === "dog" || a.cause === "burn" || a.cause === "electric";
@@ -35774,6 +35817,18 @@ function causeMatches(a, coverageCause) {
 
   if (coverageCause === "traffic") {
     return a.cause === "traffic";
+  }
+
+  if (coverageCause === "publicTransport") {
+    return a.cause === "publicTransport";
+  }
+
+  if (coverageCause === "bicycle") {
+    return a.cause === "bicycle";
+  }
+
+  if (coverageCause === "pm") {
+    return a.cause === "pm";
   }
 
   if (coverageCause === "schoolZone") {
@@ -35786,8 +35841,6 @@ function causeMatches(a, coverageCause) {
 
   return a.cause === coverageCause;
 }
-
-
 
 function judgeClaimCoverage(a, c) {
   const coverageCause = getCoverageCause(c);
@@ -35803,6 +35856,28 @@ function judgeClaimCoverage(a, c) {
   const admissionCov = /(상해입원|입원위로금|입원)/.test(c);
 
   if (a.disease && (medicalCov || diagnosisCov || admissionCov)) {
+    return { match:false, score:0, cause:coverageCause };
+  }
+
+  if (
+    a.isTraffic &&
+    diagnosisCov &&
+    /교통상해.*제외|교통상해보장제외|교통.*제외/.test(c)
+  ) {
+    return { match:false, score:0, cause:coverageCause };
+  }
+
+  if (
+    a.isGeneralInjury &&
+    /(자연재해|사회재난|재난)/.test(c)
+  ) {
+    return { match:false, score:0, cause:coverageCause };
+  }
+
+  if (
+    a.isPublicTransport &&
+    !/(대중교통|버스|지하철|전철|기차|열차|택시)/.test(c)
+  ) {
     return { match:false, score:0, cause:coverageCause };
   }
 
@@ -35828,7 +35903,6 @@ function judgeClaimCoverage(a, c) {
 
   return { match:false, score:0, cause:coverageCause };
 }
-
 
 
 function makeClaimNotes(a, c, d) {
