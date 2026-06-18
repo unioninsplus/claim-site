@@ -27389,6 +27389,34 @@ function removeCitizenCoverage(index) {
 }
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("keydown", function(e){
+
+    if(e.key !== "Enter") return;
+
+    const el = document.activeElement;
+
+    if(el.tagName === "TEXTAREA") return;
+
+    e.preventDefault();
+
+    const fields = Array.from(
+      document.querySelectorAll(
+        'input:not([type="hidden"]):not([readonly]), select, textarea'
+      )
+    ).filter(x => x.offsetParent !== null);
+
+    const idx = fields.indexOf(el);
+
+    if(idx > -1 && idx < fields.length - 1){
+      fields[idx + 1].focus();
+    }
+
+    return false;
+  });
+});
+</script>
 </form>
 
 </body>
