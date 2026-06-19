@@ -35634,7 +35634,7 @@ function checkClaimPossible() {
     matched.push({
       item,
       score,
-      notes: makeClaimNotes(item)
+      notes: makeClaimNotes(item, accidentText)
     });
   });
 
@@ -35690,10 +35690,12 @@ function analyzeAccident(accidentText) {
     farm: /농기계|경운기|트랙터|콤바인|예초기/.test(accidentText),
 
     diagnosis: /골절|진단|4주|5주|6주|7주|8주/.test(accidentText),
-    hospital: /입원/.test(accidentText),
-    medical: /치료|통원|병원|응급실/.test(accidentText),
-    damageCost: /피해|파손|소실|전소|반소|수리|복구|도배|장판|인테리어|숙박|식대|재난비용/.test(accidentText),
-
+diagnosisWeeks: /4주|5주|6주|7주|8주/.test(accidentText),
+hospital: /입원/.test(accidentText),
+medical: /치료|통원|병원|응급실|진료|수술/.test(accidentText),
+noActualLoss: /실손미가입|실손없음|실손안함|실비미가입|실비없음/.test(accidentText),
+hasActualLoss: /실손가입|실손있음|실비가입|실비있음/.test(accidentText),
+damageCost: /피해|파손|소실|전소|반소|수리|복구|도배|장판|인테리어|숙박|식대|재난비용/.test(accidentText),
     generalInjury: /넘어짐|넘어져|넘어|낙상|미끄러짐|미끄러져|계단|길가다|보행중|부딪힘|부딪쳐|상해|다침/.test(accidentText)
   };
 
@@ -35795,8 +35797,14 @@ function judgeClaimCoverage(accidentText, coverageText) {
   if (a.farm && c.farm) score += 180;
 
   if (a.diagnosis && c.diagnosis) score += 120;
+  if (a.diagnosisWeeks && c.diagnosis) score += 150;
+
   if (a.hospital && c.hospital) score += 120;
+
   if (a.medical && c.medical) score += 120;
+  if (a.noActualLoss && c.medical) score += 150;
+
+  if (a.hasActualLoss && c.medical) score += 50;
 
   if (a.damageCost && c.damageCost) score += 120;
 
@@ -35806,17 +35814,60 @@ function judgeClaimCoverage(accidentText, coverageText) {
 
   return score;
 }
-function makeClaimNotes(item) {
+
+function makeClaimNotes(item, accidentText) {
   const notes = [];
+
+  const txt = claimNorm(
+    (item.name || "") + " " +
+    (item.detail || "") + " " +
+    (item.amount || "")
+  );
+
+  const hasDiagnosisWeeks = /4주|5주|6주|7주|8주/.test(accidentText);
+  const noActualLoss = /실손미가입|실손없음|실손안함|실비미가입|실비없음/.test(accidentText);
+  const hasActualLoss = /실손가입|실손있음|실비가입|실비있음/.test(accidentText);
 
   notes.push("사고내용과 해당 지자체 담보명·보장내용이 일치하는 담보가 확인됩니다.");
 
+  if (/진단|진단금|진단위로금/.test(txt)) {
+    if (hasDiagnosisWeeks) {
+      notes.push("※ 사고내용에 진단 주수가 확인됩니다.");
+    } else {
+      notes.push("※ 진단 주수(4주·6주·8주 등) 확인이 필요합니다.");
+    }
+  }
+
+  if (/의료비|치료비|cgl|영문종합배상/.test(txt)) {
+    if (noActualLoss) {
+      notes.push("※ 사고내용에 실손보험 미가입이 확인됩니다.");
+    } else if (hasActualLoss) {
+      notes.push("※ 사고내용에 실손보험 가입이 확인됩니다. 중복보상 여부 확인이 필요합니다.");
+    } else {
+      notes.push("※ 실손보험 가입 여부 확인이 필요합니다.");
+    }
+  }
+
+  if (/입원|입원위로금/.test(txt)) {
+    if (/입원/.test(accidentText)) {
+      notes.push("※ 사고내용에 입원 사실이 확인됩니다.");
+    } else {
+      notes.push("※ 입원 여부 확인이 필요합니다.");
+    }
+  }
+
+  if (/재난비용|비용지원|숙박|식대|도배|장판|인테리어|소방서추산/.test(txt)) {
+    notes.push("※ 피해금액 및 증빙서류 확인이 필요합니다.");
+  }
+
   if (item.detail) notes.push(escapeHtml(item.detail));
-  if (item.amount) notes.push("보장금액 : " + escapeHtml(item.amount));
+
+  if (item.amount) {
+    notes.push("보장금액 : " + escapeHtml(item.amount));
+  }
 
   return notes;
 }
-
 function escapeHtml(v) {
   return String(v || "")
     .replace(/&/g, "&amp;")
