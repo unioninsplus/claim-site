@@ -35745,11 +35745,29 @@ function coverageMatches(accident, coverage) {
   }
 
   if (accident.causes.includes("일반상해")) {
-    if (!(coverage.causes.includes("일반상해") || coverage.results.includes("의료비"))) return false;
-    return resultMatches(accident, coverage);
-  }
+
+  const specialCauseCoverage =
+    coverage.causes.includes("화재폭발붕괴산사태") ||
+    coverage.causes.includes("대중교통") ||
+    coverage.causes.includes("자전거") ||
+    coverage.causes.includes("PM") ||
+    coverage.causes.includes("스쿨존") ||
+    coverage.causes.includes("실버존") ||
+    coverage.causes.includes("개물림") ||
+    coverage.causes.includes("농기계") ||
+    coverage.causes.includes("익사") ||
+    coverage.causes.includes("감전") ||
+    coverage.causes.includes("화상") ||
+    coverage.causes.includes("자연재난") ||
+    coverage.causes.includes("사회재난") ||
+    coverage.causes.includes("범죄");
+
+  if (specialCauseCoverage) return false;
 
   return resultMatches(accident, coverage);
+}
+
+return resultMatches(accident, coverage);
 }
 
 function resultMatches(accident, coverage) {
