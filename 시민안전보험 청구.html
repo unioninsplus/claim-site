@@ -23557,7 +23557,7 @@ const DATASET = {
             "detail": "KB:500 / 메리츠:500 / 1000"
           },
           {
-            "name": "강력범죄피해보상금(II) 군산,김제,영광,함양-DB",
+            "name": "강력범죄피해보상금(II)",
             "detail": "디비:100 / 100"
           },
           {
@@ -23588,14 +23588,7 @@ const DATASET = {
             "name": "강도상해후유",
             "detail": "KB:500 / 메리츠:500 / 1000"
           },
-          {
-            "name": "강력범죄피해보상금(III) 성남,함양,영광,김제 15세미만 (사망 미포함)",
-            "detail": "디비:100 / 100"
-          },
-          {
-            "name": "의료사고",
-            "detail": "KB:1000 / 1000"
-          },
+         
           {
             "name": "자연재해후유장해",
             "detail": "현대:1000 / 1000"
@@ -35676,94 +35669,103 @@ function claimNorm(v) {
 }
 
 function analyzeAccident(accidentText) {
-  return {
-    death: /사망|숨짐|죽음/.test(accidentText),
+  const a = {
+    death: /사망|숨짐|죽음|사망함/.test(accidentText),
     disability: /후유장해|후유|장해|장애/.test(accidentText),
 
-    fire: /화재|불|폭발|붕괴|산사태/.test(accidentText),
+    fire: /주택화재|화재|불|폭발|붕괴|산사태/.test(accidentText),
     transport: /버스|지하철|전철|기차|열차|택시|대중교통|전세버스/.test(accidentText),
     pm: /킥보드|전동킥보드|pm|피엠|개인형이동장치/.test(accidentText),
+    bicycle: /자전거|전기자전거|따릉이/.test(accidentText),
     school: /스쿨존|어린이보호구역/.test(accidentText),
     silver: /실버존|노인보호구역/.test(accidentText),
     natural: /태풍|호우|폭우|폭설|홍수|지진|낙뢰|강풍|침수|해일|자연재해/.test(accidentText),
     social: /사회재난|재난선포|특별재난/.test(accidentText),
+    crime: /강도|강력범죄|범죄|폭행|상해범죄|흉기|칼|살인/.test(accidentText),
 
     burn: /화상|데임|뜨거운물|열상|수술/.test(accidentText),
     dog: /개물림|개에게물림|개한테물림|개|물림/.test(accidentText),
     electric: /감전|전기/.test(accidentText),
     drowning: /익사|물에빠|하천|계곡|바다/.test(accidentText),
     farm: /농기계|경운기|트랙터|콤바인|예초기/.test(accidentText),
-    bicycle: /자전거|전기자전거|따릉이/.test(accidentText),
 
     diagnosis: /골절|진단|4주|5주|6주|7주|8주/.test(accidentText),
     hospital: /입원/.test(accidentText),
     medical: /치료|통원|병원|응급실/.test(accidentText),
+    damageCost: /피해|파손|소실|전소|반소|수리|복구|도배|장판|인테리어|숙박|식대|재난비용/.test(accidentText),
 
     generalInjury: /넘어짐|넘어져|넘어|낙상|미끄러짐|미끄러져|계단|길가다|보행중|부딪힘|부딪쳐|상해|다침/.test(accidentText)
   };
+
+  return a;
 }
 
 function analyzeCoverage(coverageText) {
-  const c = {
-    death: /사망/.test(coverageText),
+  const noDeath = /사망미포함|사망제외|사망은제외|사망불포함/.test(coverageText);
+
+  return {
+    death: /사망/.test(coverageText) && !noDeath,
     disability: /후유|장해|장애/.test(coverageText),
 
     fire: /화재|폭발|붕괴|산사태/.test(coverageText),
     transport: /대중교통|전세버스/.test(coverageText),
     pm: /pm|피엠|킥보드|개인형이동장치/.test(coverageText),
+    bicycle: /자전거/.test(coverageText),
     school: /스쿨존|어린이보호구역/.test(coverageText),
     silver: /실버존|노인보호구역/.test(coverageText),
     natural: /자연재해|태풍|호우|폭우|폭설|홍수|지진|낙뢰|강풍|침수|해일/.test(coverageText),
     social: /사회재난|재난선포|특별재난/.test(coverageText),
+    crime: /강도|강력범죄|범죄피해|범죄|폭행|상해범죄/.test(coverageText),
 
     burn: /화상|수술/.test(coverageText),
     dog: /개물림|견물림|반려견|유기견|동물/.test(coverageText),
     electric: /감전/.test(coverageText),
     drowning: /익사/.test(coverageText),
     farm: /농기계/.test(coverageText),
-    bicycle: /자전거/.test(coverageText),
 
     diagnosis: /진단|진단금|진단위로금/.test(coverageText),
     hospital: /입원|입원위로금/.test(coverageText),
     medical: /의료비|치료비|cgl|영문종합배상/.test(coverageText),
+    damageCost: /재난비용|비용지원|숙박|식대|도배|장판|인테리어|소방서추산/.test(coverageText),
 
     general: /상해의료비|의료비|치료비|cgl|영문종합배상|상해사고진단|상해진단|상해입원|입원위로금/.test(coverageText),
 
     excludeTraffic: /교통상해.*제외|교통상해보장제외|교통.*제외/.test(coverageText)
   };
-
-  return c;
 }
 
 function judgeClaimCoverage(accidentText, coverageText) {
   const a = analyzeAccident(accidentText);
   const c = analyzeCoverage(coverageText);
 
-  // 결과 불일치 제거
-  if (a.death && c.disability) return 0;
-  if (a.disability && c.death) return 0;
-
-  // 특정 담보는 사고내용에 해당 원인이 있어야만 통과
+  // 원인 불일치 제거
   if (c.school && !a.school) return 0;
   if (c.silver && !a.silver) return 0;
   if (c.transport && !a.transport) return 0;
   if (c.pm && !a.pm) return 0;
+  if (c.bicycle && !a.bicycle) return 0;
   if (c.fire && !a.fire) return 0;
   if (c.natural && !a.natural) return 0;
   if (c.social && !a.social) return 0;
-  if (c.bicycle && !a.bicycle) return 0;
+  if (c.crime && !a.crime) return 0;
   if (c.farm && !a.farm) return 0;
   if (c.drowning && !a.drowning) return 0;
   if (c.electric && !a.electric) return 0;
   if (c.dog && !a.dog) return 0;
   if (c.burn && !a.burn) return 0;
 
-  // 일반상해 사고인데 일반상해 담보가 아니면 제외
+  // 결과 불일치 제거
+  if (a.death && !c.death) return 0;
+  if (a.disability && !c.disability) return 0;
+  if (a.death && c.disability) return 0;
+  if (a.disability && c.death) return 0;
+
+  // 일반상해 사고는 일반상해/의료비/진단/입원 담보가 있을 때만
   if (a.generalInjury) {
     if (!(c.general || c.medical || c.diagnosis || c.hospital)) return 0;
   }
 
-  // 교통상해 제외 담보
+  // 교통상해 제외
   if (
     c.excludeTraffic &&
     (a.transport || a.pm || a.bicycle || /교통|자동차|차량|오토바이/.test(accidentText))
@@ -35771,38 +35773,39 @@ function judgeClaimCoverage(accidentText, coverageText) {
     return 0;
   }
 
-  // 점수 부여
   let score = 0;
 
-  if (a.death && c.death) score += 200;
-  if (a.disability && c.disability) score += 200;
+  if (a.death && c.death) score += 300;
+  if (a.disability && c.disability) score += 300;
 
-  if (a.fire && c.fire) score += 200;
-  if (a.transport && c.transport) score += 200;
-  if (a.pm && c.pm) score += 200;
-  if (a.school && c.school) score += 200;
-  if (a.silver && c.silver) score += 200;
-  if (a.natural && c.natural) score += 200;
-  if (a.social && c.social) score += 200;
+  if (a.fire && c.fire) score += 250;
+  if (a.transport && c.transport) score += 250;
+  if (a.pm && c.pm) score += 250;
+  if (a.bicycle && c.bicycle) score += 250;
+  if (a.school && c.school) score += 250;
+  if (a.silver && c.silver) score += 250;
+  if (a.natural && c.natural) score += 250;
+  if (a.social && c.social) score += 250;
+  if (a.crime && c.crime) score += 250;
 
-  if (a.burn && c.burn) score += 150;
-  if (a.dog && c.dog) score += 150;
-  if (a.electric && c.electric) score += 150;
-  if (a.drowning && c.drowning) score += 150;
-  if (a.farm && c.farm) score += 150;
-  if (a.bicycle && c.bicycle) score += 150;
+  if (a.burn && c.burn) score += 180;
+  if (a.dog && c.dog) score += 180;
+  if (a.electric && c.electric) score += 180;
+  if (a.drowning && c.drowning) score += 180;
+  if (a.farm && c.farm) score += 180;
 
-  if (a.diagnosis && c.diagnosis) score += 100;
-  if (a.hospital && c.hospital) score += 100;
-  if (a.medical && c.medical) score += 100;
+  if (a.diagnosis && c.diagnosis) score += 120;
+  if (a.hospital && c.hospital) score += 120;
+  if (a.medical && c.medical) score += 120;
+
+  if (a.damageCost && c.damageCost) score += 120;
 
   if (a.generalInjury && (c.general || c.medical || c.diagnosis || c.hospital)) {
-    score += 100;
+    score += 120;
   }
 
   return score;
 }
-
 function makeClaimNotes(item) {
   const notes = [];
 
