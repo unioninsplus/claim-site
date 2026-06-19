@@ -35771,12 +35771,39 @@ return resultMatches(accident, coverage);
 }
 
 function resultMatches(accident, coverage) {
-  if (accident.results.includes("사망")) return coverage.results.includes("사망");
-  if (accident.results.includes("후유장해")) return coverage.results.includes("후유장해");
-  if (accident.results.includes("진단")) return coverage.results.includes("진단");
-  if (accident.results.includes("입원")) return coverage.results.includes("입원");
-  if (accident.results.includes("의료비")) return coverage.results.includes("의료비");
-  if (accident.results.includes("재난비용")) return coverage.results.includes("재난비용");
+
+  if (accident.results.includes("사망")) {
+    return coverage.results.includes("사망");
+  }
+
+  if (accident.results.includes("후유장해")) {
+    return coverage.results.includes("후유장해");
+  }
+
+  // 일반상해인데 결과가 불명확한 경우
+  if (accident.causes.includes("일반상해")) {
+    return (
+      coverage.results.includes("의료비") ||
+      coverage.results.includes("진단") ||
+      coverage.results.includes("입원")
+    );
+  }
+
+  if (accident.results.includes("진단")) {
+    return coverage.results.includes("진단");
+  }
+
+  if (accident.results.includes("입원")) {
+    return coverage.results.includes("입원");
+  }
+
+  if (accident.results.includes("의료비")) {
+    return coverage.results.includes("의료비");
+  }
+
+  if (accident.results.includes("재난비용")) {
+    return coverage.results.includes("재난비용");
+  }
 
   return false;
 }
@@ -35788,26 +35815,40 @@ function makeClaimNotes(item, accidentText) {
 
   notes.push("사고내용, 담보명, 보장내용 및 약관조건 기준으로 적용 가능성이 확인됩니다.");
 
-  if (coverage.results.includes("진단")) {
-    if (accident.hasDiagnosisWeeks) {
-      notes.push("※ 사고내용에 진단 주수가 확인됩니다.");
-    } else {
-      notes.push("※ 진단 주수 확인이 필요합니다.");
+  if (accident.causes.includes("일반상해")) {
+    if (coverage.results.includes("의료비")) {
+      notes.push("※ 병원 치료 여부, 실손보험 가입 여부 확인이 필요합니다.");
     }
-  }
 
-  if (coverage.results.includes("의료비")) {
-    if (accident.noActualLoss) {
-      notes.push("※ 사고내용에 실손보험 미가입이 확인됩니다.");
-    } else if (accident.hasActualLoss) {
-      notes.push("※ 실손보험 가입이 확인됩니다. 중복보상 여부 확인이 필요합니다.");
-    } else {
-      notes.push("※ 실손보험 가입 여부 확인이 필요합니다.");
+    if (coverage.results.includes("진단")) {
+      notes.push("※ 진단서 발급 여부와 진단 주수 확인이 필요합니다.");
     }
-  }
 
-  if (coverage.results.includes("입원")) {
-    notes.push("※ 입원 여부 확인이 필요합니다.");
+    if (coverage.results.includes("입원")) {
+      notes.push("※ 입원 여부 확인이 필요합니다.");
+    }
+  } else {
+    if (coverage.results.includes("진단")) {
+      if (accident.hasDiagnosisWeeks) {
+        notes.push("※ 사고내용에 진단 주수가 확인됩니다.");
+      } else {
+        notes.push("※ 진단 주수 확인이 필요합니다.");
+      }
+    }
+
+    if (coverage.results.includes("의료비")) {
+      if (accident.noActualLoss) {
+        notes.push("※ 사고내용에 실손보험 미가입이 확인됩니다.");
+      } else if (accident.hasActualLoss) {
+        notes.push("※ 실손보험 가입이 확인됩니다. 중복보상 여부 확인이 필요합니다.");
+      } else {
+        notes.push("※ 실손보험 가입 여부 확인이 필요합니다.");
+      }
+    }
+
+    if (coverage.results.includes("입원")) {
+      notes.push("※ 입원 여부 확인이 필요합니다.");
+    }
   }
 
   if (coverage.results.includes("재난비용")) {
@@ -35819,7 +35860,6 @@ function makeClaimNotes(item, accidentText) {
 
   return notes;
 }
-
 function getMatchedCoverages(items, accidentText) {
   const accident = analyzeAccident(accidentText);
   const matched = [];
