@@ -35591,6 +35591,234 @@ function resetClaimCheckResult() {
   goBtn.style.display = "none";
 }
 
+function claimNorm(v) {
+  return String(v || "")
+    .replace(/\s+/g, "")
+    .replace(/[()［］\[\]{}·ㆍ,\/_\-]/g, "")
+    .toLowerCase();
+}
+
+function hasAny(text, arr) {
+  return arr.some(k => text.includes(claimNorm(k)));
+}
+
+function analyzeAccident(accidentText) {
+  const t = claimNorm(accidentText);
+
+  const a = {
+    causes: [],
+    results: [],
+    isTraffic: false,
+    hasDiagnosisWeeks: /4주|5주|6주|7주|8주/.test(t),
+    noActualLoss: /실손미가입|실손없음|실손안함|실비미가입|실비없음/.test(t),
+    hasActualLoss: /실손가입|실손있음|실비가입|실비있음/.test(t)
+  };
+
+  if (hasAny(t, ["화재", "불", "주택화재"])) a.causes.push("화재");
+  if (hasAny(t, ["폭발"])) a.causes.push("폭발");
+  if (hasAny(t, ["붕괴", "무너짐"])) a.causes.push("붕괴");
+  if (hasAny(t, ["산사태"])) a.causes.push("산사태");
+
+  if (hasAny(t, ["버스", "지하철", "전철", "기차", "열차", "택시", "대중교통", "전세버스"])) a.causes.push("대중교통");
+  if (hasAny(t, ["자전거", "전기자전거", "따릉이"])) a.causes.push("자전거");
+  if (hasAny(t, ["킥보드", "전동킥보드", "pm", "피엠", "개인형이동장치"])) a.causes.push("PM");
+  if (hasAny(t, ["스쿨존", "어린이보호구역"])) a.causes.push("스쿨존");
+  if (hasAny(t, ["실버존", "노인보호구역"])) a.causes.push("실버존");
+
+  if (hasAny(t, ["개물림", "개에게물림", "개한테물림", "견물림"])) a.causes.push("개물림");
+  if (hasAny(t, ["농기계", "경운기", "트랙터", "콤바인", "예초기"])) a.causes.push("농기계");
+  if (hasAny(t, ["익사", "물에빠", "하천", "계곡", "바다"])) a.causes.push("익사");
+  if (hasAny(t, ["감전", "전기"])) a.causes.push("감전");
+  if (hasAny(t, ["화상", "데임", "뜨거운물", "열상"])) a.causes.push("화상");
+
+  if (hasAny(t, ["태풍", "호우", "폭우", "폭설", "홍수", "지진", "낙뢰", "강풍", "침수", "해일", "자연재해", "자연재난"])) a.causes.push("자연재난");
+  if (hasAny(t, ["사회재난", "재난선포", "특별재난"])) a.causes.push("사회재난");
+  if (hasAny(t, ["강도", "강력범죄", "범죄", "폭행", "상해범죄", "흉기", "칼", "살인"])) a.causes.push("범죄");
+
+  if (hasAny(t, ["사망", "숨짐", "죽음", "사망함", "질식사"])) a.results.push("사망");
+  if (hasAny(t, ["후유장해", "후유", "장해", "장애"])) a.results.push("후유장해");
+  if (hasAny(t, ["진단", "4주", "5주", "6주", "7주", "8주", "골절"])) a.results.push("진단");
+  if (hasAny(t, ["입원"])) a.results.push("입원");
+  if (hasAny(t, ["치료", "통원", "병원", "응급실", "진료", "수술", "의료비"])) a.results.push("의료비");
+  if (hasAny(t, ["피해", "파손", "소실", "전소", "반소", "수리", "복구", "도배", "장판", "인테리어", "숙박", "식대", "재난비용"])) a.results.push("재난비용");
+
+  a.isTraffic = hasAny(t, ["교통", "자동차", "차량", "오토바이", "버스", "택시", "자전거", "킥보드", "pm", "피엠", "도로", "보행중"]);
+
+  if (!a.causes.length && hasAny(t, ["넘어짐", "넘어져", "낙상", "미끄러짐", "미끄러져", "계단", "길가다", "부딪힘", "상해", "다침"])) {
+    a.causes.push("일반상해");
+  }
+
+  return a;
+}
+
+function classifyCoverage(item) {
+  const t = claimNorm(
+    (item.name || "") + " " +
+    (item.detail || "") + " " +
+    (item.amount || "") + " " +
+    (item.policyNo || "") + " " +
+    (item.policy_no || "")
+  );
+
+  const c = {
+    raw: t,
+    causes: [],
+    results: [],
+    excludeTraffic: /교통상해.*제외|교통상해보장제외|교통.*제외/.test(t)
+  };
+
+  if (!t || t === "0" || t === "-") return c;
+
+  if (hasAny(t, ["화재", "폭발", "붕괴", "산사태"])) c.causes.push("화재폭발붕괴산사태");
+  if (hasAny(t, ["대중교통", "전세버스"])) c.causes.push("대중교통");
+  if (hasAny(t, ["자전거"])) c.causes.push("자전거");
+  if (hasAny(t, ["pm", "피엠", "킥보드", "개인형이동장치"])) c.causes.push("PM");
+  if (hasAny(t, ["스쿨존", "어린이보호구역"])) c.causes.push("스쿨존");
+  if (hasAny(t, ["실버존", "노인보호구역"])) c.causes.push("실버존");
+  if (hasAny(t, ["개물림", "견물림", "반려견", "유기견", "동물"])) c.causes.push("개물림");
+  if (hasAny(t, ["농기계"])) c.causes.push("농기계");
+  if (hasAny(t, ["익사"])) c.causes.push("익사");
+  if (hasAny(t, ["감전"])) c.causes.push("감전");
+  if (hasAny(t, ["화상"])) c.causes.push("화상");
+  if (hasAny(t, ["자연재해", "자연재난", "태풍", "호우", "지진", "폭우", "폭설"])) c.causes.push("자연재난");
+  if (hasAny(t, ["사회재난", "재난선포", "특별재난"])) c.causes.push("사회재난");
+  if (hasAny(t, ["강도", "강력범죄", "범죄피해", "범죄", "폭행", "상해범죄"])) c.causes.push("범죄");
+
+  const noDeath = /사망미포함|사망제외|사망은제외|사망불포함/.test(t);
+
+  if (/사망/.test(t) && !noDeath) c.results.push("사망");
+  if (/후유|장해|장애/.test(t)) c.results.push("후유장해");
+  if (/진단|진단금|진단위로금|상해사고진단|상해진단/.test(t)) c.results.push("진단");
+  if (/입원|입원위로금/.test(t)) c.results.push("입원");
+  if (/의료비|치료비|cgl|영문종합배상|배상책임/.test(t)) c.results.push("의료비");
+  if (/재난비용|비용지원|숙박|식대|도배|장판|인테리어|소방서추산/.test(t)) c.results.push("재난비용");
+
+  if (!c.causes.length && /상해/.test(t)) c.causes.push("일반상해");
+
+  return c;
+}
+
+function coverageMatches(accident, coverage) {
+  if (!coverage.raw || coverage.raw === "0" || coverage.raw === "-") return false;
+
+  if (coverage.excludeTraffic && accident.isTraffic) return false;
+
+  if (accident.results.includes("사망")) {
+    if (!coverage.results.includes("사망")) return false;
+    if (coverage.results.includes("후유장해")) return false;
+  }
+
+  if (accident.results.includes("후유장해")) {
+    if (!coverage.results.includes("후유장해")) return false;
+    if (coverage.results.includes("사망")) return false;
+  }
+
+  if (accident.results.includes("사망") || accident.results.includes("후유장해")) {
+    if (coverage.results.includes("진단") || coverage.results.includes("입원") || coverage.results.includes("의료비")) return false;
+  }
+
+  const causeMap = {
+    "화재": "화재폭발붕괴산사태",
+    "폭발": "화재폭발붕괴산사태",
+    "붕괴": "화재폭발붕괴산사태",
+    "산사태": "화재폭발붕괴산사태",
+    "대중교통": "대중교통",
+    "자전거": "자전거",
+    "PM": "PM",
+    "스쿨존": "스쿨존",
+    "실버존": "실버존",
+    "개물림": "개물림",
+    "농기계": "농기계",
+    "익사": "익사",
+    "감전": "감전",
+    "화상": "화상",
+    "자연재난": "자연재난",
+    "사회재난": "사회재난",
+    "범죄": "범죄"
+  };
+
+  for (const ac of accident.causes) {
+    if (causeMap[ac]) {
+      if (!coverage.causes.includes(causeMap[ac])) return false;
+      return resultMatches(accident, coverage);
+    }
+  }
+
+  if (accident.causes.includes("일반상해")) {
+    if (!(coverage.causes.includes("일반상해") || coverage.results.includes("의료비"))) return false;
+    return resultMatches(accident, coverage);
+  }
+
+  return resultMatches(accident, coverage);
+}
+
+function resultMatches(accident, coverage) {
+  if (accident.results.includes("사망")) return coverage.results.includes("사망");
+  if (accident.results.includes("후유장해")) return coverage.results.includes("후유장해");
+  if (accident.results.includes("진단")) return coverage.results.includes("진단");
+  if (accident.results.includes("입원")) return coverage.results.includes("입원");
+  if (accident.results.includes("의료비")) return coverage.results.includes("의료비");
+  if (accident.results.includes("재난비용")) return coverage.results.includes("재난비용");
+
+  return false;
+}
+
+function makeClaimNotes(item, accidentText) {
+  const notes = [];
+  const accident = analyzeAccident(accidentText);
+  const coverage = classifyCoverage(item);
+
+  notes.push("사고내용, 담보명, 보장내용 및 약관조건 기준으로 적용 가능성이 확인됩니다.");
+
+  if (coverage.results.includes("진단")) {
+    if (accident.hasDiagnosisWeeks) {
+      notes.push("※ 사고내용에 진단 주수가 확인됩니다.");
+    } else {
+      notes.push("※ 진단 주수 확인이 필요합니다.");
+    }
+  }
+
+  if (coverage.results.includes("의료비")) {
+    if (accident.noActualLoss) {
+      notes.push("※ 사고내용에 실손보험 미가입이 확인됩니다.");
+    } else if (accident.hasActualLoss) {
+      notes.push("※ 실손보험 가입이 확인됩니다. 중복보상 여부 확인이 필요합니다.");
+    } else {
+      notes.push("※ 실손보험 가입 여부 확인이 필요합니다.");
+    }
+  }
+
+  if (coverage.results.includes("입원")) {
+    notes.push("※ 입원 여부 확인이 필요합니다.");
+  }
+
+  if (coverage.results.includes("재난비용")) {
+    notes.push("※ 피해금액 및 증빙서류 확인이 필요합니다.");
+  }
+
+  if (item.detail) notes.push(escapeHtml(item.detail));
+  if (item.amount) notes.push("보장금액 : " + escapeHtml(item.amount));
+
+  return notes;
+}
+
+function getMatchedCoverages(items, accidentText) {
+  const accident = analyzeAccident(accidentText);
+  const matched = [];
+
+  (items || []).forEach(item => {
+    const coverage = classifyCoverage(item);
+    if (coverageMatches(accident, coverage)) {
+      matched.push({
+        item,
+        notes: makeClaimNotes(item, accidentText)
+      });
+    }
+  });
+
+  return matched;
+}
+
 function checkClaimPossible() {
   const result = document.getElementById("claimCheckResult");
   const goBtn = document.getElementById("goClaimBtn");
@@ -35614,35 +35842,11 @@ function checkClaimPossible() {
     return;
   }
 
-  const matched = [];
-
-  items.forEach(item => {
-    const coverageText = claimNorm(
-      (item.name || "") + " " +
-      (item.detail || "") + " " +
-      (item.amount || "") + " " +
-      (item.policyNo || "") + " " +
-      (item.policy_no || "")
-    );
-
-    if (!coverageText || coverageText === "0" || coverageText === "-") return;
-
-    const score = judgeClaimCoverage(accidentText, coverageText);
-
-    if (score < 30) return;
-
-    matched.push({
-      item,
-      score,
-      notes: makeClaimNotes(item, accidentText)
-    });
-  });
-
-  matched.sort((a, b) => b.score - a.score);
+  const matched = getMatchedCoverages(items, accidentText);
 
   if (!matched.length) {
     result.innerHTML =
-      '<div style="color:red;font-weight:700;">입력하신 사고는 현재 조회된 해당 지자체 담보 기준상 접수대상이 아닐 수 있습니다.<br>위 담보를 참고하시고 고객센터 확인 바랍니다.</div>';
+      '<div style="color:red;font-weight:700;">적용 가능한 담보가 확인되지 않습니다.<br>위 담보를 참고하시고 고객센터 확인 바랍니다.</div>';
     return;
   }
 
@@ -35658,215 +35862,6 @@ function checkClaimPossible() {
     }).join("");
 
   goBtn.style.display = "inline-block";
-}
-
-
-function claimNorm(v) {
-  return String(v || "")
-    .replace(/\s+/g, "")
-    .replace(/[()［］\[\]{}]/g, "")
-    .toLowerCase();
-}
-
-function analyzeAccident(accidentText) {
-  const a = {
-    death: /사망|숨짐|죽음|사망함/.test(accidentText),
-    disability: /후유장해|후유|장해|장애/.test(accidentText),
-
-    fire: /주택화재|화재|불|폭발|붕괴|산사태/.test(accidentText),
-    transport: /버스|지하철|전철|기차|열차|택시|대중교통|전세버스/.test(accidentText),
-    pm: /킥보드|전동킥보드|pm|피엠|개인형이동장치/.test(accidentText),
-    bicycle: /자전거|전기자전거|따릉이/.test(accidentText),
-    school: /스쿨존|어린이보호구역/.test(accidentText),
-    silver: /실버존|노인보호구역/.test(accidentText),
-    natural: /태풍|호우|폭우|폭설|홍수|지진|낙뢰|강풍|침수|해일|자연재해/.test(accidentText),
-    social: /사회재난|재난선포|특별재난/.test(accidentText),
-    crime: /강도|강력범죄|범죄|폭행|상해범죄|흉기|칼|살인/.test(accidentText),
-
-    burn: /화상|데임|뜨거운물|열상|수술/.test(accidentText),
-    dog: /개물림|개에게물림|개한테물림|개|물림/.test(accidentText),
-    electric: /감전|전기/.test(accidentText),
-    drowning: /익사|물에빠|하천|계곡|바다/.test(accidentText),
-    farm: /농기계|경운기|트랙터|콤바인|예초기/.test(accidentText),
-
-    diagnosis: /골절|진단|4주|5주|6주|7주|8주/.test(accidentText),
-diagnosisWeeks: /4주|5주|6주|7주|8주/.test(accidentText),
-hospital: /입원/.test(accidentText),
-medical: /치료|통원|병원|응급실|진료|수술/.test(accidentText),
-noActualLoss: /실손미가입|실손없음|실손안함|실비미가입|실비없음/.test(accidentText),
-hasActualLoss: /실손가입|실손있음|실비가입|실비있음/.test(accidentText),
-damageCost: /피해|파손|소실|전소|반소|수리|복구|도배|장판|인테리어|숙박|식대|재난비용/.test(accidentText),
-    generalInjury: /넘어짐|넘어져|넘어|낙상|미끄러짐|미끄러져|계단|길가다|보행중|부딪힘|부딪쳐|상해|다침/.test(accidentText)
-  };
-
-  return a;
-}
-
-function analyzeCoverage(coverageText) {
-  const noDeath = /사망미포함|사망제외|사망은제외|사망불포함/.test(coverageText);
-
-  return {
-    death: /사망/.test(coverageText) && !noDeath,
-    disability: /후유|장해|장애/.test(coverageText),
-
-    fire: /화재|폭발|붕괴|산사태/.test(coverageText),
-    transport: /대중교통|전세버스/.test(coverageText),
-    pm: /pm|피엠|킥보드|개인형이동장치/.test(coverageText),
-    bicycle: /자전거/.test(coverageText),
-    school: /스쿨존|어린이보호구역/.test(coverageText),
-    silver: /실버존|노인보호구역/.test(coverageText),
-    natural: /자연재해|태풍|호우|폭우|폭설|홍수|지진|낙뢰|강풍|침수|해일/.test(coverageText),
-    social: /사회재난|재난선포|특별재난/.test(coverageText),
-    crime: /강도|강력범죄|범죄피해|범죄|폭행|상해범죄/.test(coverageText),
-
-    burn: /화상|수술/.test(coverageText),
-    dog: /개물림|견물림|반려견|유기견|동물/.test(coverageText),
-    electric: /감전/.test(coverageText),
-    drowning: /익사/.test(coverageText),
-    farm: /농기계/.test(coverageText),
-
-    diagnosis: /진단|진단금|진단위로금/.test(coverageText),
-    hospital: /입원|입원위로금/.test(coverageText),
-    medical: /의료비|치료비|cgl|영문종합배상/.test(coverageText),
-    damageCost: /재난비용|비용지원|숙박|식대|도배|장판|인테리어|소방서추산/.test(coverageText),
-
-    general: /상해의료비|의료비|치료비|cgl|영문종합배상|상해사고진단|상해진단|상해입원|입원위로금/.test(coverageText),
-
-    excludeTraffic: /교통상해.*제외|교통상해보장제외|교통.*제외/.test(coverageText)
-  };
-}
-
-function judgeClaimCoverage(accidentText, coverageText) {
-  const a = analyzeAccident(accidentText);
-  const c = analyzeCoverage(coverageText);
-
-  // 원인 불일치 제거
-  if (c.school && !a.school) return 0;
-  if (c.silver && !a.silver) return 0;
-  if (c.transport && !a.transport) return 0;
-  if (c.pm && !a.pm) return 0;
-  if (c.bicycle && !a.bicycle) return 0;
-  if (c.fire && !a.fire) return 0;
-  if (c.natural && !a.natural) return 0;
-  if (c.social && !a.social) return 0;
-  if (c.crime && !a.crime) return 0;
-  if (c.farm && !a.farm) return 0;
-  if (c.drowning && !a.drowning) return 0;
-  if (c.electric && !a.electric) return 0;
-  if (c.dog && !a.dog) return 0;
-  if (c.burn && !a.burn) return 0;
-
-  // 결과 불일치 제거
-  if (a.death && !c.death) return 0;
-  if (a.disability && !c.disability) return 0;
-  if (a.death && c.disability) return 0;
-  if (a.disability && c.death) return 0;
-
-  // 일반상해 사고는 일반상해/의료비/진단/입원 담보가 있을 때만
-  if (a.generalInjury) {
-    if (!(c.general || c.medical || c.diagnosis || c.hospital)) return 0;
-  }
-
-  // 교통상해 제외
-  if (
-    c.excludeTraffic &&
-    (a.transport || a.pm || a.bicycle || /교통|자동차|차량|오토바이/.test(accidentText))
-  ) {
-    return 0;
-  }
-
-  let score = 0;
-
-  if (a.death && c.death) score += 300;
-  if (a.disability && c.disability) score += 300;
-
-  if (a.fire && c.fire) score += 250;
-  if (a.transport && c.transport) score += 250;
-  if (a.pm && c.pm) score += 250;
-  if (a.bicycle && c.bicycle) score += 250;
-  if (a.school && c.school) score += 250;
-  if (a.silver && c.silver) score += 250;
-  if (a.natural && c.natural) score += 250;
-  if (a.social && c.social) score += 250;
-  if (a.crime && c.crime) score += 250;
-
-  if (a.burn && c.burn) score += 180;
-  if (a.dog && c.dog) score += 180;
-  if (a.electric && c.electric) score += 180;
-  if (a.drowning && c.drowning) score += 180;
-  if (a.farm && c.farm) score += 180;
-
-  if (a.diagnosis && c.diagnosis) score += 120;
-  if (a.diagnosisWeeks && c.diagnosis) score += 150;
-
-  if (a.hospital && c.hospital) score += 120;
-
-  if (a.medical && c.medical) score += 120;
-  if (a.noActualLoss && c.medical) score += 150;
-
-  if (a.hasActualLoss && c.medical) score += 50;
-
-  if (a.damageCost && c.damageCost) score += 120;
-
-  if (a.generalInjury && (c.general || c.medical || c.diagnosis || c.hospital)) {
-    score += 120;
-  }
-
-  return score;
-}
-
-function makeClaimNotes(item, accidentText) {
-  const notes = [];
-
-  const txt = claimNorm(
-    (item.name || "") + " " +
-    (item.detail || "") + " " +
-    (item.amount || "")
-  );
-
-  const hasDiagnosisWeeks = /4주|5주|6주|7주|8주/.test(accidentText);
-  const noActualLoss = /실손미가입|실손없음|실손안함|실비미가입|실비없음/.test(accidentText);
-  const hasActualLoss = /실손가입|실손있음|실비가입|실비있음/.test(accidentText);
-
-  notes.push("사고내용과 해당 지자체 담보명·보장내용이 일치하는 담보가 확인됩니다.");
-
-  if (/진단|진단금|진단위로금/.test(txt)) {
-    if (hasDiagnosisWeeks) {
-      notes.push("※ 사고내용에 진단 주수가 확인됩니다.");
-    } else {
-      notes.push("※ 진단 주수(4주·6주·8주 등) 확인이 필요합니다.");
-    }
-  }
-
-  if (/의료비|치료비|cgl|영문종합배상/.test(txt)) {
-    if (noActualLoss) {
-      notes.push("※ 사고내용에 실손보험 미가입이 확인됩니다.");
-    } else if (hasActualLoss) {
-      notes.push("※ 사고내용에 실손보험 가입이 확인됩니다. 중복보상 여부 확인이 필요합니다.");
-    } else {
-      notes.push("※ 실손보험 가입 여부 확인이 필요합니다.");
-    }
-  }
-
-  if (/입원|입원위로금/.test(txt)) {
-    if (/입원/.test(accidentText)) {
-      notes.push("※ 사고내용에 입원 사실이 확인됩니다.");
-    } else {
-      notes.push("※ 입원 여부 확인이 필요합니다.");
-    }
-  }
-
-  if (/재난비용|비용지원|숙박|식대|도배|장판|인테리어|소방서추산/.test(txt)) {
-    notes.push("※ 피해금액 및 증빙서류 확인이 필요합니다.");
-  }
-
-  if (item.detail) notes.push(escapeHtml(item.detail));
-
-  if (item.amount) {
-    notes.push("보장금액 : " + escapeHtml(item.amount));
-  }
-
-  return notes;
 }
 function escapeHtml(v) {
   return String(v || "")
