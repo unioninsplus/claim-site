@@ -105,7 +105,7 @@ cursor:pointer;
       <a href="#lookup">가입현황 조회</a>
       <a href="#coverage">담보조건 확인</a>
       <a href="#claim">보험금 청구</a>
-      <a href="#docs">청구서류 안내</a>
+      <a href="#" onclick="showClaimDocsPopup(); return false;">청구서류 안내</a>
       <a href="#contact">문의하기</a>
     </nav>
   </div>
@@ -550,7 +550,43 @@ style="
     </div>
   </section>
 </main>
+<div id="claimDocsPopup" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.55);
+z-index:1000000;
+">
 
+<div style="
+background:#fff;
+width:92%;
+max-width:720px;
+margin:60px auto;
+border-radius:18px;
+padding:24px;
+">
+
+<h2>자전거보험 청구 구비서류</h2>
+
+<button type="button" onclick="closeClaimDocsPopup()">닫기</button>
+
+<hr>
+
+<a target="_blank" href="#">상해</a><br><br>
+
+<a target="_blank" href="#">후유장해</a><br><br>
+
+<a target="_blank" href="#">사망</a><br><br>
+
+<a target="_blank" href="#">교통사고처리지원금</a><br><br>
+
+<a target="_blank" href="#">벌금</a><br><br>
+
+<a target="_blank" href="#">변호사선임비용</a>
+
+</div>
+</div>
 <footer class="footer">
   <div class="wrap inner">
     <div>
@@ -566,6 +602,14 @@ style="
   </div>
 </footer>
 <script>
+function showClaimDocsPopup() {
+  document.getElementById("claimDocsPopup").style.display = "block";
+}
+
+function closeClaimDocsPopup() {
+  document.getElementById("claimDocsPopup").style.display = "none";
+}
+
 const DATASET = {
   "2020": {
     "경기도": {
