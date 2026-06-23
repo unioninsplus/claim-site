@@ -72,6 +72,82 @@ th { background:#f4f8ff; color:#12419e; }
   .hero .grid, .grid-2, .form-grid, .kv, .footer .inner { grid-template-columns:1fr; }
   .hero h1 { font-size:32px; }
 }
+/* 청구서류 안내 팝업 */
+.claim-docs-overlay {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(15,36,74,.58);
+  z-index:99998;
+  padding:22px;
+}
+
+.claim-docs-modal {
+  background:#fff;
+  width:min(760px, 96vw);
+  max-height:86vh;
+  overflow:auto;
+  margin:40px auto;
+  border-radius:22px;
+  border:1px solid #d8e2f0;
+  box-shadow:0 18px 50px rgba(0,0,0,.24);
+  padding:24px;
+}
+
+.claim-docs-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid #e6edf7;
+  padding-bottom:14px;
+  margin-bottom:16px;
+}
+
+.claim-docs-head h2 {
+  margin:0;
+  color:#0f2957;
+  font-size:24px;
+}
+
+.claim-docs-close {
+  background:#edf4ff;
+  color:#174799;
+  border:1px solid #d5e4ff;
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:900;
+}
+
+.claim-docs-list {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.claim-docs-list a {
+  display:block;
+  text-decoration:none;
+  background:#f7fbff;
+  border:1px solid #d9e8ff;
+  border-radius:16px;
+  padding:15px 16px;
+  color:#163b7a;
+  font-weight:900;
+}
+
+.claim-docs-list a span {
+  display:block;
+  margin-top:5px;
+  color:#667085;
+  font-size:12px;
+  font-weight:700;
+}
+
+@media (max-width:640px) {
+  .claim-docs-list { grid-template-columns:1fr; }
+  .claim-docs-modal { margin:18px auto; }
+}
 </style>
 </head>
 <body>
@@ -105,7 +181,7 @@ cursor:pointer;
       <a href="#lookup">가입현황 조회</a>
       <a href="#coverage">담보조건 확인</a>
       <a href="#claim">보험금 청구</a>
-      <a href="#" onclick="showClaimDocsPopup(); return false;">청구서류 안내</a>
+      <a href="#" onclick="showClaimDocs(); return false;">청구서류 안내</a>
       <a href="#contact">문의하기</a>
     </nav>
   </div>
@@ -550,41 +626,57 @@ style="
     </div>
   </section>
 </main>
-<div id="claimDocsPopup" style="
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.55);
-z-index:1000000;
-">
+<div id="claimDocsModal" class="claim-docs-overlay" onclick="if(event.target === this) closeClaimDocs();">
+  <div class="claim-docs-modal">
 
-<div style="
-background:#fff;
-width:92%;
-max-width:720px;
-margin:60px auto;
-border-radius:18px;
-padding:24px;
-">
+    <div class="claim-docs-head">
+      <h2>자전거보험 청구 구비서류</h2>
+      <button type="button" class="claim-docs-close" onclick="closeClaimDocs()">닫기</button>
+    </div>
 
-<h2>자전거보험 청구 구비서류</h2>
+    <p class="sub" style="margin-bottom:16px;">
+      사고유형에 맞는 필요서류 안내문을 열거나 다운로드하세요.
+    </p>
 
-<button type="button" onclick="closeClaimDocsPopup()">닫기</button>
+    <div class="claim-docs-list">
 
-<hr>
+      <a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(상해).pdf">
+        상해 청구 필요서류
+        <span>진단위로금 · 입원위로금</span>
+      </a>
 
-<a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(상해).pdf">상해</a><br><br>
+      <a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(후유장해).pdf">
+        후유장해 청구 필요서류
+        <span>후유장해진단서 등</span>
+      </a>
 
-<a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(후유장해).pdf">후유장해</a><br><br>
+      <a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(사망).pdf">
+        사망 청구 필요서류
+        <span>사망진단서 · 가족관계서류 등</span>
+      </a>
 
-<a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(사망).pdf">사망</a><br><br>
+      <a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(형사합의금).pdf">
+        교통사고처리지원금 필요서류
+        <span>형사합의금 관련</span>
+      </a>
 
-<a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(형사합의금).pdf">교통사고처리지원금</a><br><br>
+      <a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(벌금).pdf">
+        벌금 청구 필요서류
+        <span>벌금영수증 · 판결문 등</span>
+      </a>
 
-<a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(벌금).pdf">벌금</a><br><br>
+      <a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(변호사선임비용).pdf">
+        변호사선임비용 필요서류
+        <span>공소장 · 세금계산서 등</span>
+      </a>
 
-<a target="_blank" href="https://unioninsplus.github.io/claim-site/자전거청구서류/01.자전거보험금%20청구%20필요서류(변호사선임비용).pdf">변호사선임비용</a>
-</div>
+    </div>
+
+    <div class="note" style="margin-top:18px;">
+      보상접수 팩스 : 0505-181-5624 / 확인전화 : 02-475-8115
+    </div>
+
+  </div>
 </div>
 <footer class="footer">
   <div class="wrap inner">
@@ -601,14 +693,17 @@ padding:24px;
   </div>
 </footer>
 <script>
-function showClaimDocsPopup() {
-  document.getElementById("claimDocsPopup").style.display = "block";
+function showClaimDocs() {
+  document.getElementById("claimDocsModal").style.display = "block";
 }
 
-function closeClaimDocsPopup() {
-  document.getElementById("claimDocsPopup").style.display = "none";
+function closeClaimDocs() {
+  document.getElementById("claimDocsModal").style.display = "none";
 }
 
+document.addEventListener("keydown", function(e){
+  if (e.key === "Escape") closeClaimDocs();
+});
 const DATASET = {
   "2020": {
     "경기도": {
