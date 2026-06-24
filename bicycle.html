@@ -32,9 +32,17 @@ main section { padding:34px 0 8px; }
 .title { font-size:30px; color:#0f2957; margin:0 0 8px; }
 .sub { margin:0 0 18px; color:var(--muted); line-height:1.7; }
 .grid-2 { display:grid; grid-template-columns:1.08fr .92fr; gap:18px; }
+.claim-wide {
+  grid-template-columns: 1fr !important;
+  max-width: 1000px;
+  margin: 0 auto;
+}
 .card { background:#fff; border:1px solid var(--line); border-radius:22px; padding:22px; box-shadow:0 10px 24px rgba(21,42,84,.05); }
 .card h3 { margin:0 0 12px; color:var(--navy); font-size:22px; }
 .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:start; }
+.claim-form-grid {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
 label { display:block; font-size:14px; font-weight:800; margin-bottom:6px; }
 select, input, textarea { 
   width:100%; 
@@ -289,10 +297,10 @@ cursor:pointer;
   <section id="claim">
     <h2 class="title">보험금 청구화면</h2>
     <p class="sub">자전거보험 사고 접수를 위한 입력 화면입니다. 조회한 지자체의 사고유형만 자동으로 나옵니다.</p>
-    <div class="grid-2">
+    <div class="grid-2 claim-wide">
       <div class="card">
         <h3>청구 입력</h3>
-        <div class="form-grid">
+<div class="form-grid claim-form-grid">
           <div>
   <label>
     해당연도
@@ -510,15 +518,7 @@ style="
 </div>
 
       </div>
-      <div class="card">
-        <h3>청구 연동 요약</h3>
-        <div class="note">조회 섹션에서 선택한 지자체의 담보조건과 동일한 기준으로 사고유형이 청구화면에 내려옵니다.</div>
-        <div class="kv">
-                    <div class="mini"><b>선택지역</b><span id="claimInfoRegion">-</span></div>
-          <div class="mini"><b>사고유형수</b><span id="claimInfoCount">0</span></div>
-          <div class="mini"><b>보험사</b><span id="claimInfoInsurer">-</span></div>
-        </div>
-      </div>
+      
     </div>
   </section>
 
