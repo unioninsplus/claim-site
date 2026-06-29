@@ -27134,10 +27134,10 @@ if (accidentError && accidentError.style.display !== 'none') {
   
  try {
   if (phone) {
-    fetch(
-      "http://unioninsplus.co.kr/aligo_send.php?phone=" +
-      encodeURIComponent(phone)
-    );
+   fetch(
+  "https://unioninsplus.co.kr/aligo_send.php?phone=" +
+  encodeURIComponent(phone)
+);
   }
 } catch (e) {
   console.log("문자 발송 오류", e);
