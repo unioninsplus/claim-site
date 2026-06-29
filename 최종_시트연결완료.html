@@ -27131,7 +27131,17 @@ if (accidentError && accidentError.style.display !== 'none') {
 
   document.body.appendChild(form);
   form.submit();
-
+  
+ try {
+  if (phone) {
+    fetch(
+      "http://unioninsplus.co.kr/aligo_send.php?phone=" +
+      encodeURIComponent(phone)
+    );
+  }
+} catch (e) {
+  console.log("문자 발송 오류", e);
+}
   setTimeout(() => {
     document.getElementById('saveMessage').style.display = 'flex';
     form.remove();
