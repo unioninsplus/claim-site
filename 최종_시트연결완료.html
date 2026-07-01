@@ -27179,16 +27179,22 @@ function checkAccidentDateInPolicyPeriod() {
 
   const dates = periodText.match(/20\d{2}-\d{1,2}-\d{1,2}/g);
 
-  const startText = dates && dates[0]
-    ? normalizeStartDate(dates[0])
-    : `${year}-01-01`;
+const startText = dates && dates[0]
+  ? normalizeStartDate(dates[0])
+  : startDate;
 
-  const endText = dates && dates[1]
-    ? normalizeStartDate(dates[1])
-    : `${year}-12-31`;
+const start = new Date(startText + 'T00:00:00');
 
-  const start = new Date(startText + 'T00:00:00');
-  const end = new Date(endText + 'T23:59:59');
+let end;
+
+if (dates && dates[1]) {
+  const endText = normalizeStartDate(dates[1]);
+  end = new Date(endText + 'T23:59:59');
+} else {
+  end = new Date(startText + 'T23:59:59');
+  end.setFullYear(end.getFullYear() + 1);
+  end.setDate(end.getDate() - 1);
+}
   const accident = new Date(accidentDate + 'T00:00:00');
 
   if (accident < start || accident > end) {
