@@ -26706,9 +26706,16 @@ function clearLookup(resetTop=true) {
 
 function normalizeStartDate(startDate) {
   if (!startDate) return "";
+
   const value = String(startDate).trim();
-  const match = value.match(/(20\d{2})-(\d{2})-(\d{2})/);
-  return match ? `${match[1]}-${match[2]}-${match[3]}` : "";
+  const match = value.match(/(20\d{2})-(\d{1,2})-(\d{1,2})/);
+
+  if (!match) return "";
+
+  const month = String(match[2]).padStart(2, "0");
+  const day = String(match[3]).padStart(2, "0");
+
+  return `${match[1]}-${month}-${day}`;
 }
 
 function isLookupTargetForYear(year, block) {
@@ -27212,7 +27219,7 @@ if (!end || isNaN(end.getTime())) {
 
   const accident = new Date(accidentDate + 'T00:00:00');
 
-  if (accident < start || accident >= end) {
+  if (accident < start || accident > end) {
     if (errorBox) errorBox.style.display = 'block';
     return false;
   }
