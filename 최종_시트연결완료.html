@@ -27149,7 +27149,6 @@ function getTodayKST() {
   const day = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
-
 function checkAccidentDateInPolicyPeriod() {
   const errorBox = document.getElementById('accidentDateError');
   const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
@@ -27166,57 +27165,30 @@ function checkAccidentDateInPolicyPeriod() {
     return false;
   }
 
-  let startDate =
-    normalizeStartDate(document.getElementById('claimStartText')?.textContent?.trim() || '') ||
-    normalizeStartDate(document.getElementById('infoStart')?.textContent?.trim() || '');
-
   const year =
     document.getElementById('claimYearView')?.value?.trim() ||
     document.getElementById('yearSelect')?.value?.trim() ||
     '';
 
-  const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
-  const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
-
-  if (!startDate && year && sido && sigungu && DATASET?.[year]?.[sido]) {
-    if (sigungu === '전체') {
-      const startDates = Object.values(DATASET[year][sido])
-        .map(item => normalizeStartDate(item.start_date))
-        .filter(Boolean)
-        .sort();
-
-      startDate = startDates[0] || '';
-    } else {
-      startDate = normalizeStartDate(DATASET?.[year]?.[sido]?.[sigungu]?.start_date || '');
-    }
-  }
-
-  if (!startDate || startDate === '-') return true;
-
   const periodText =
-  document.getElementById('claimStartText')?.textContent?.trim() ||
-  document.getElementById('infoStart')?.textContent?.trim() ||
-  '';
+    document.getElementById('claimStartText')?.textContent?.trim() ||
+    document.getElementById('infoStart')?.textContent?.trim() ||
+    '';
 
-const start = new Date(startDate + 'T00:00:00');
+  if (!year || !periodText || periodText === '-') return true;
 
-let end;
+  const dates = periodText.match(/20\d{2}-\d{1,2}-\d{1,2}/g);
 
-if (periodText.includes('~')) {
+  const startText = dates && dates[0]
+    ? normalizeStartDate(dates[0])
+    : `${year}-01-01`;
 
-  const endText = normalizeStartDate(periodText.split('~')[1]);
+  const endText = dates && dates[1]
+    ? normalizeStartDate(dates[1])
+    : `${year}-12-31`;
 
-  if (endText) {
-    end = new Date(endText + 'T23:59:59');
-  }
-
-}
-
-if (!end || isNaN(end.getTime())) {
-  end = new Date(startDate + 'T00:00:00');
-  end.setFullYear(end.getFullYear() + 1);
-}
-
+  const start = new Date(startText + 'T00:00:00');
+  const end = new Date(endText + 'T23:59:59');
   const accident = new Date(accidentDate + 'T00:00:00');
 
   if (accident < start || accident > end) {
