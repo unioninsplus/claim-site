@@ -15539,17 +15539,21 @@ function checkAccidentDateInPolicyPeriod() {
 
   if (!startDate) return true;
 
-  const start = new Date(startDate + 'T00:00:00');
-  const end = new Date(startDate + 'T00:00:00');
-  end.setFullYear(end.getFullYear() + 1);
+ const start = new Date(startDate + 'T00:00:00');
 
-  const accident = new Date(accidentDate + 'T00:00:00');
+const end = new Date(startDate + 'T23:59:59');
+end.setFullYear(end.getFullYear() + 1);
+end.setDate(end.getDate() - 1);
 
-  if (accident < start || accident >= end) {
-    if (errorEl) errorEl.style.display = 'block';
-  }
+const accident = new Date(accidentDate + 'T00:00:00');
 
-  return true;
+if (accident < start || accident > end) {
+  if (errorEl) errorEl.style.display = 'block';
+  return false;
+}
+
+if (errorEl) errorEl.style.display = 'none';
+return true;
 }
 function formatPhoneNumber(el){
 
