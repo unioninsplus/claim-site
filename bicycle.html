@@ -376,7 +376,7 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
   <div style="grid-column:1/-1; display:flex; gap:10px; align-items:flex-start;">
     <div style="flex:1; margin-top:12px;">
     <label>사고유형</label>
-      <select id="accidentTypeSelect" onchange="openAmountPopup(this.value)"></select>
+      <select id="accidentTypeSelect" onchange="handleAccidentTypeSelect(this.value)"></select>
     </div>
 
     <div style="flex:1;">
@@ -457,8 +457,8 @@ document.addEventListener("DOMContentLoaded", function () {
   ">확인</button>
 </div>
 
-<!-- ⭐ 금액 입력 팝업 -->
-<div id="amountPopup" style="
+<!-- ⭐ 진단위로금 주수 선택 팝업 -->
+<div id="weekPopup" style="
   display:none;
   position:fixed;
   top:50%;
@@ -473,40 +473,24 @@ document.addEventListener("DOMContentLoaded", function () {
   min-width:320px;
   text-align:center;
 ">
-  <div style="font-weight:700; margin-bottom:12px;">지급금액 입력</div>
-  <div id="amountPopupType" style="margin-bottom:10px; color:#174799; font-weight:700;"></div>
-  <input id="popupAmountInput" type="text" placeholder="예: 1000000"
-onkeydown="if(event.key === 'Enter' && this.value.trim() !== ''){ event.preventDefault(); savePopupAmount(); }"
-style="
-  width:100%;
-  height:44px; 
-  padding:0 12px;
-  border:1px solid #ccd8eb;
-  border-radius:10px;
-  margin-bottom:12px;
-  box-sizing:border-box; 
-">
-  <div style="display:flex; gap:10px; justify-content:center;">
-    <button type="button" onclick="savePopupAmount()" style="
-      padding:10px 18px;
-      border:none;
-      border-radius:10px;
-      background:#2d6cdf;
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-    ">확인</button>
-
-    <button type="button" onclick="closeAmountPopup()" style="
-      padding:10px 18px;
-      border:none;
-      border-radius:10px;
-      background:#edf4ff;
-      color:#174799;
-      font-weight:700;
-      cursor:pointer;
-    ">닫기</button>
+  <div style="font-weight:700; margin-bottom:12px;">진단위로금 주수 선택</div>
+  <div id="weekPopupType" style="margin-bottom:12px; color:#174799; font-weight:700;"></div>
+  <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px;">
+    <button type="button" class="soft" onclick="saveDiagnosisWeek('4주')">4주</button>
+    <button type="button" class="soft" onclick="saveDiagnosisWeek('5주')">5주</button>
+    <button type="button" class="soft" onclick="saveDiagnosisWeek('6주')">6주</button>
+    <button type="button" class="soft" onclick="saveDiagnosisWeek('7주')">7주</button>
+    <button type="button" class="soft" onclick="saveDiagnosisWeek('8주')">8주</button>
   </div>
+  <button type="button" onclick="closeWeekPopup()" style="
+    padding:10px 18px;
+    border:none;
+    border-radius:10px;
+    background:#edf4ff;
+    color:#174799;
+    font-weight:700;
+    cursor:pointer;
+  ">닫기</button>
 </div>
 
       </div>
@@ -14993,8 +14977,9 @@ function initDropdowns() {
   document.getElementById("accidentTypeSelect").addEventListener("change", () => {
     const selected = document.getElementById("accidentTypeSelect").value;
     const items = window.currentItems || [];
-    const found = items.find(x => x.name === selected);
-    document.getElementById("accidentDetailView").value = found ? (found.detail || "") : "";
+    const found = findCoverageByType(selected, items);
+    const accidentDetailView = document.getElementById("accidentDetailView");
+    if (accidentDetailView) accidentDetailView.value = found ? (found.detail || "") : "";
   });
 
   const receiptView = document.getElementById("claimReceiptDateView");
@@ -15257,6 +15242,27 @@ function getTodayKST() {
 }
 
 
+
+function amountTextToWon(amountText) {
+  const text = String(amountText || '').trim();
+  if (!text || text === '-' || text === '0' || text === '0만원' || text === '0원') return '';
+
+  const manwonMatch = text.match(/([0-9,]+(?:\.[0-9]+)?)\s*만원/);
+  if (manwonMatch) {
+    const manwon = Number(String(manwonMatch[1]).replace(/,/g, '')) || 0;
+    if (!manwon) return '';
+    return String(Math.round(manwon * 10000));
+  }
+
+  const wonMatch = text.match(/([0-9,]+)\s*원/);
+  if (wonMatch) {
+    const won = Number(String(wonMatch[1]).replace(/,/g, '')) || 0;
+    return won ? String(won) : '';
+  }
+
+  return text;
+}
+
 function submitClaimToSheet() {
   const year = document.getElementById('claimYearView')?.value?.trim() || '';
   const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
@@ -15310,7 +15316,7 @@ if (accidentDate.length === 8) {
   formData.append("category", category);
 
   formData.append("accidentType", coverageItems.map(i => i.type).join('/'));
-  formData.append("paymentAmount", coverageItems.map(i => i.amount).join('/'));
+  formData.append("paymentAmount", coverageItems.map(i => amountTextToWon(i.amount)).filter(v => v !== '').join('/'));
   formData.append("accidentDetail", accidentDetail);
   formData.append("note", note);
   formData.append("paymentDate", "");
@@ -15408,38 +15414,174 @@ function closeWin() {
 function closeSaveMessage() {
   document.getElementById('saveMessage').style.display = 'none';
 }
-function openAmountPopup(typeName) {
-  currentAmountTarget = typeName || '';
-  document.getElementById('amountPopupType').textContent = currentAmountTarget;
-  document.getElementById('popupAmountInput').value = '';
-  document.getElementById('amountPopup').style.display = 'block';
-setTimeout(() => {
-  document.getElementById('popupAmountInput')?.focus();
-}, 50);
-}
-function closeAmountPopup() {
-  document.getElementById('amountPopup').style.display = 'none';
-}
-function savePopupAmount() {
-  let amount = document.getElementById('popupAmountInput').value.replace(/,/g, '').trim();
-
-if (!amount) {
-  return;
+function normalizeCoverageKey(text) {
+  return String(text || '')
+    .replace(/자전거사고/g, '')
+    .replace(/PM사고/g, '')
+    .replace(/상해/g, '')
+    .replace(/\(.*?\)/g, '')
+    .replace(/\s+/g, '')
+    .trim();
 }
 
-amount = Number(amount).toLocaleString();
+function findCoverageByType(typeName, items) {
+  const list = items || window.currentItems || [];
+  if (!typeName) return null;
 
+  const cleanType = normalizeCoverageKey(typeName).replace(/[0-9]+주/g, '');
+
+  return list.find(item => item.name === typeName)
+    || list.find(item => String(item.name || '').includes(typeName))
+    || list.find(item => typeName.includes(String(item.name || '')))
+    || list.find(item => normalizeCoverageKey(item.name).includes(cleanType))
+    || list.find(item => cleanType.includes(normalizeCoverageKey(item.name)));
+}
+
+function normalizeAmountText(amount) {
+  if (!amount || amount === '-') return '';
+  const text = String(amount).replace(/\s+/g, ' ').trim();
+  if (text === '0' || text === '0만원' || text === '0원') return '';
+  return text;
+}
+
+function sumManwonAmounts(text) {
+  const t = String(text || '');
+  const re = /([0-9,]+(?:\.[0-9]+)?)\s*만원/g;
+  let total = 0;
+  let matched = false;
+  let m;
+
+  while ((m = re.exec(t)) !== null) {
+    matched = true;
+    total += Number(String(m[1]).replace(/,/g, '')) || 0;
+  }
+
+  if (!matched) return '';
+  return (Number.isInteger(total) ? total.toLocaleString() : total.toLocaleString(undefined, { maximumFractionDigits: 1 })) + '만원';
+}
+
+function pickSummaryAmount(typeName, amountText) {
+  const t = String(amountText || '');
+  if (!t || t.trim() === '-') return '';
+
+  // 컨소시엄 합계금액 칸 우선 사용
+  // 예: "PM 사망후유장해 : 1,000만원", "PM 입원 : 20만원"
+  let m = null;
+
+  if (String(typeName || '').includes('입원')) {
+    m = /입원\s*[:：]?\s*([0-9,]+(?:\.[0-9]+)?)\s*만원/.exec(t);
+    if (m) return (Number(String(m[1]).replace(/,/g, '')) || 0).toLocaleString() + '만원';
+  }
+
+  if (String(typeName || '').includes('사망') || String(typeName || '').includes('후유장해')) {
+    m = /(사망후유장해|사망|후유장해)\s*[:：]?\s*([0-9,]+(?:\.[0-9]+)?)\s*만원/.exec(t);
+    if (m) return (Number(String(m[2]).replace(/,/g, '')) || 0).toLocaleString() + '만원';
+  }
+
+  return extractAmount(t);
+}
+
+function getAutoAmount(typeName) {
+  const type = String(typeName || '');
+
+  // 후유장해는 장해율 확정 전까지 지급금액을 자동 저장하지 않습니다.
+  // 선택담보에도 금액 없이 '후유장해'만 표시합니다.
+  if (type.includes('후유장해')) return '';
+
+  // 한도/실비 성격 담보는 접수 시 지급금액을 확정하지 않습니다.
+  if (type.includes('변호사') || type.includes('벌금') || type.includes('교통사고처리지원금')) return '';
+
+  const found = findCoverageByType(typeName);
+  if (!found) return '';
+
+  const amountText = normalizeAmountText(found.amount);
+  const summaryAmount = pickSummaryAmount(typeName, amountText);
+  if (summaryAmount && summaryAmount !== '-' && summaryAmount !== '0만원') return summaryAmount;
+
+  // 합계금액 칸이 없으면 보험사별 detail 금액을 합산합니다.
+  // 예: DB 100 + 한화 20 + 농협 90 + 삼성 460 + 메리츠 330 = 1,000만원
+  const summed = sumManwonAmounts(found.detail || '');
+  if (summed && summed !== '0만원') return summed;
+
+  const extracted = extractAmount(found.detail || '');
+  if (!extracted || extracted === '-' || extracted === '0만원') return '';
+  return extracted;
+}
+
+function getDiagnosisWeekAmount(typeName, week) {
+  const found = findCoverageByType(typeName);
+  if (!found) return '';
+
+  const amountText = String(found.amount || '');
+  const detail = String(found.detail || '');
+  const weekRe = new RegExp(week + '\\s*([0-9,]+(?:\\.[0-9]+)?)\\s*만원', 'g');
+
+  // 선택담보 화면에 표시될 주수별 금액을 먼저 확정합니다.
+  // 1순위: 보장금액/합계금액 칸의 주수별 합계
+  const amountMatch = new RegExp(week + '\\s*([0-9,]+(?:\\.[0-9]+)?)\\s*만원').exec(amountText);
+  if (amountMatch) {
+    const value = Number(String(amountMatch[1]).replace(/,/g, '')) || 0;
+    return value ? value.toLocaleString() + '만원' : '';
+  }
+
+  // 2순위: 보험사별 detail 금액을 해당 주수만 합산
+  let total = 0;
+  let matched = false;
+  let m;
+
+  while ((m = weekRe.exec(detail)) !== null) {
+    matched = true;
+    total += Number(String(m[1]).replace(/,/g, '')) || 0;
+  }
+
+  if (matched) {
+    if (!total) return '';
+    return (Number.isInteger(total) ? total.toLocaleString() : total.toLocaleString(undefined, { maximumFractionDigits: 1 })) + '만원';
+  }
+
+  return '';
+}
+
+function addCoverageAuto(typeName, amount) {
+  if (!typeName) return;
 
   coverageItems.push({
-    type: currentAmountTarget,
-    amount: amount
+    type: typeName,
+    amount: amount || ''
   });
 
   document.getElementById('claimPayoutAmount').value =
-  coverageItems.map(i => i.amount).join('/');
-    renderSelectedCoverageList();
-  document.getElementById('popupAmountInput').value = '';
-closeAmountPopup();
+    coverageItems.map(i => i.amount).join('/');
+
+  renderSelectedCoverageList();
+}
+
+function handleAccidentTypeSelect(typeName) {
+  currentAmountTarget = typeName || '';
+  if (!currentAmountTarget) return;
+
+  if (currentAmountTarget.includes('진단위로금')) {
+    openWeekPopup(currentAmountTarget);
+    return;
+  }
+
+  addCoverageAuto(currentAmountTarget, getAutoAmount(currentAmountTarget));
+}
+
+function openWeekPopup(typeName) {
+  currentAmountTarget = typeName || '';
+  document.getElementById('weekPopupType').textContent = currentAmountTarget;
+  document.getElementById('weekPopup').style.display = 'block';
+}
+
+function closeWeekPopup() {
+  document.getElementById('weekPopup').style.display = 'none';
+}
+
+function saveDiagnosisWeek(week) {
+  const amount = getDiagnosisWeekAmount(currentAmountTarget, week);
+  addCoverageAuto(currentAmountTarget + ' ' + week, amount);
+  closeWeekPopup();
 }
 
 function renderSelectedCoverageList() {
@@ -15458,7 +15600,7 @@ function renderSelectedCoverageList() {
     tag.style.fontWeight = '700';
 
     tag.innerHTML = `
-      ${item.type} ${item.amount}
+      ${item.type}${item.amount ? ' ' + item.amount : ''}
       <span onclick="removeCoverageItem(${index})" style="margin-left:6px;cursor:pointer;color:red;">×</span>
     `;
 
