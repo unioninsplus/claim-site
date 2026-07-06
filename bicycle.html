@@ -15497,7 +15497,12 @@ function getAutoAmount(typeName) {
   const type = String(typeName || '');
 
   // 한도/실비 성격 담보는 접수 시 지급금액을 확정하지 않습니다.
-  if (type.includes('변호사') || type.includes('벌금') || type.includes('교통사고처리지원금')) return '';
+ if (
+  type.includes('후유장해') ||
+  type.includes('변호사') ||
+  type.includes('벌금') ||
+  type.includes('교통사고처리지원금')
+) return '0';
 
   const found = findCoverageByType(typeName);
   if (!found) return '';
