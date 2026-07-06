@@ -15317,7 +15317,7 @@ if (accidentDate.length === 8) {
   formData.append("category", category);
 
   formData.append("accidentType", coverageItems.map(i => i.type).join('/'));
-  formData.append("paymentAmount", coverageItems.map(i => amountTextToWon(i.amount)).filter(v => v !== '').join('/'));
+  formData.append("paymentAmount", coverageItems.map(i => amountTextToWon(getAmountBySelectedCoverageType(i.type, i.amount))).join('/'));
   formData.append("accidentDetail", accidentDetail);
   formData.append("note", note);
   formData.append("paymentDate", "");
@@ -15496,10 +15496,6 @@ function pickSummaryAmount(typeName, amountText) {
 function getAutoAmount(typeName) {
   const type = String(typeName || '');
 
-  // 후유장해는 장해율 확정 전까지 지급금액을 자동 저장하지 않습니다.
-  // 선택담보에도 금액 없이 '후유장해'만 표시합니다.
-  if (type.includes('후유장해')) return '';
-
   // 한도/실비 성격 담보는 접수 시 지급금액을 확정하지 않습니다.
   if (type.includes('변호사') || type.includes('벌금') || type.includes('교통사고처리지원금')) return '';
 
@@ -15554,6 +15550,36 @@ function getDiagnosisWeekAmount(typeName, week) {
   return '';
 }
 
+
+function getAmountBySelectedCoverageType(typeName, currentAmount) {
+  const type = String(typeName || '').trim();
+  const current = normalizeAmountText(currentAmount);
+
+  if (!type) return '';
+
+  // 진단위로금은 선택한 주수(4주~8주)에 맞는 금액을 담보명 기준으로 다시 계산합니다.
+  const weekMatch = type.match(/(4주|5주|6주|7주|8주)/);
+  if (type.includes('진단위로금') && weekMatch) {
+    const baseType = type.replace(/\s*(4주|5주|6주|7주|8주)\s*$/, '').trim();
+    const weekAmount = getDiagnosisWeekAmount(baseType, weekMatch[1]);
+    return weekAmount || current;
+  }
+
+  // 사망/후유장해/입원은 선택담보명 자체로 금액을 다시 찾습니다.
+  if (
+    type.includes('사망') ||
+    type.includes('후유장해') ||
+    type.includes('입원위로금') ||
+    type.includes('상해입원') ||
+    type.includes('입원')
+  ) {
+    const autoAmount = getAutoAmount(type);
+    return autoAmount || current;
+  }
+
+  return current || getAutoAmount(type);
+}
+
 function addCoverageAuto(typeName, amount) {
   if (!typeName) return;
 
@@ -15563,7 +15589,7 @@ function addCoverageAuto(typeName, amount) {
   });
 
   document.getElementById('claimPayoutAmount').value =
-    coverageItems.map(i => i.amount).join('/');
+    coverageItems.map(i => getAmountBySelectedCoverageType(i.type, i.amount)).join('/');
 
   renderSelectedCoverageList();
 }
@@ -15625,14 +15651,14 @@ function removeCoverageItem(index) {
   renderSelectedCoverageList();
 
   document.getElementById('claimPayoutAmount').value =
-    coverageItems.map(i => i.amount).join('/');
+    coverageItems.map(i => getAmountBySelectedCoverageType(i.type, i.amount)).join('/');
 }
 function removeCoverageItem(index) {
   coverageItems.splice(index, 1);
   renderSelectedCoverageList();
 
   document.getElementById('claimPayoutAmount').value =
-    coverageItems.map(i => i.amount).join('/');
+    coverageItems.map(i => getAmountBySelectedCoverageType(i.type, i.amount)).join('/');
 }
 
 function formatRRN(el) {
