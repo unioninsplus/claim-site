@@ -28520,19 +28520,22 @@ const key = normalizedName;
     return;
   }
 
-  const oldScore =
-    String(old.name || "").length +
-    String(old.detail || "").length +
-    String(old.amount || "").length;
+  const merged = {
+  ...old,
+  name:
+    String(item.name || "").length > String(old.name || "").length
+      ? item.name
+      : old.name,
+  detail:
+    String(item.detail || "").length > String(old.detail || "").length
+      ? item.detail
+      : old.detail,
+  amount:
+    String(old.amount || "").trim() ||
+    String(item.amount || "").trim()
+};
 
-  const newScore =
-    String(item.name || "").length +
-    String(item.detail || "").length +
-    String(item.amount || "").length;
-
-  if (newScore > oldScore) {
-    uniqueMap.set(key, item);
-  }
+uniqueMap.set(key, merged);
 
 });
 
@@ -28665,7 +28668,9 @@ ${(displayDetail || "")
 .replace(/\*/g, '<br>*')
 .replace(/‣/g, '<br>‣')
 .replace(/- /g, '<br>- ')
+.replace(/\s*\/\s*(KB:|DB:|현대:|메리츠:|롯데:|농협:|삼성:|하나:|흥국:)/g, '<br><br>$1')
 }
+
 </td>
 <td>${displayAmount || ""}</td>
 `;
