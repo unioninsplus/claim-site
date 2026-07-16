@@ -27677,19 +27677,25 @@ Object.values(DATASET).forEach(yearData => {
             continue;
           }
 
-          // 개물림형 CGL의 마지막 인당(사고당) 1개
-          if (
-            !changedPerAccident &&
-            /^[\s※‧•＊*\-]*인당\s*\(\s*사고당\s*\)\s*[:：]/.test(line)
-          ) {
-            lines[i] = line.replace(
-              /^[\s※‧•＊*\-]*인당\s*\(\s*사고당\s*\)\s*[:：]/,
-              "▶ 인당(사고당):"
-            );
+        // 개물림형 CGL의 마지막 인당 지급한도 1개
+if (
+  !changedPerAccident &&
+  /^[\s※‧•＊*\-]*(?:인당\s*\(\s*사고당\s*\)|인당\s*보상\s*한도|인당\s*보상\s*한동)\s*[:：]/.test(line)
+) {
+  lines[i] = line.replace(
+    /^[\s※‧•＊*\-]*(?:인당\s*\(\s*사고당\s*\)|인당\s*보상\s*한도|인당\s*보상\s*한동)\s*[:：]/,
+    match => {
+      if (/인당\s*\(\s*사고당\s*\)/.test(match)) {
+        return "▶ 인당(사고당):";
+      }
 
-            changedPerAccident = true;
-            continue;
-          }
+      return "▶ 인당보상한도:";
+    }
+  );
+
+  changedPerAccident = true;
+  continue;
+}
 
           // 마지막 보상한도 또는 보장한도 1개
           if (
