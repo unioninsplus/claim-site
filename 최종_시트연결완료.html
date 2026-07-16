@@ -27400,7 +27400,7 @@ const DATASET = {
         "coverages": [
           {
             "name": "영문종합배상책임(CGL)\n상해의료비",
-            "detail": "현대:❍ 야생동물 피해 치료비\n   ‣ 보험기간 중에 경산시 관내에서 야생동물에 의해 입은 직접적인\n     신체상의 피해에 대한 치료비를 약정한 보험금액을 한도로 보상함\n    ※ ”야생동물“이라 함은“야생생물 보호 및 관리에 관한 법률”\n       제2조의 1호에 해당하는 동물 중 포유류, 벌, 뱀을 말함. \n     - 인당(사고당) : 100만원 한도 (공제금액 : 5만원)\n     - 총보상한도 : 2600만원\n    ※ 수렵 등 야생동물 포획허가를 받아 야생동물 포획활동 중 피해를  입은 경우 및 로드킬 사고 등 야생동물로 인한 직접적인 신체상의  피해가 아닌 경우는 보상하지 않음",
+            "detail": "현대:❍ 야생동물 피해 치료비\n‣ 보험기간 중에 경산시 관내에서 야생동물에 의해 입은 직접적인 신체상의 피해에 대한 치료비를 약정한 보험금액을 한도로 보상함\n※ ”야생동물“이라 함은“야생생물 보호 및 관리에 관한 법률”\n제2조의 1호에 해당하는 동물 중 포유류, 벌, 뱀을 말함. \n- 인당(사고당) : 100만원 한도 (공제금액 : 5만원)\n- 총보상한도 : 2600만원\n※ 수렵 등 야생동물 포획허가를 받아 야생동물 포획활동 중 피해를  입은 경우 및 로드킬 사고 등 야생동물로 인한 직접적인 신체상의  피해가 아닌 경우는 보상하지 않음",
             "amount": ""
           },
           {
@@ -27603,7 +27603,7 @@ const DATASET = {
   }
 };
 
-  // 영문종합배상책임(CGL)의 실제 지급기준만 강조
+ // 영문종합배상책임(CGL) 안의 실제 지급기준만 유형별로 강조
 Object.values(DATASET).forEach(yearData => {
   Object.values(yearData || {}).forEach(sidoData => {
     Object.values(sidoData || {}).forEach(regionData => {
@@ -27613,40 +27613,60 @@ Object.values(DATASET).forEach(yearData => {
 
       coverages.forEach(item => {
         const name = String(item.name || "");
+        const detail = String(item.detail || "");
 
         const isCGL =
           name.includes("영문종합배상책임") ||
           name.includes("영문영업배상책임") ||
           name.includes("CGL");
 
-        if (!isCGL || !item.detail) return;
+        if (!isCGL || !detail) return;
 
-        const lines = String(item.detail)
+        const lines = detail
           .replace(/\r\n/g, "\n")
           .split("\n");
 
-        // 보험금 지급 제한 문구 시작 위치
-        // 예:
-        // 보험금 지급 제한사항
-        // 보험금지급 제한사항
-        // 보험금 지급제한 등 자세한 사항
-        // 보험금지급제한 등
+        /*
+         * CGL 내부 내용 유형 확인
+         * 담보명은 모두 영문종합배상이지만
+         * detail 내용은 상해의료비·개물림·야생동물·화상수술비로 다를 수 있음
+         */
+        const isDogBiteType =
+          /개\s*물림|개물림|들개|유기견|반려견/.test(detail);
+
+        const isWildAnimalType =
+          /야생\s*동물|야생동물|야생생물/.test(detail);
+
+        const isBurnSurgeryType =
+          /화상\s*수술비|화상수술비|화상\s*수술/.test(detail);
+
+        /*
+         * 보험금 지급 제한 문구 위치
+         * 제한사항이 없는 야생동물·화상수술비형은
+         * 상세내용의 마지막 줄부터 검색
+         */
         const limitLineIndex = lines.findIndex(line =>
           /보험금\s*지급\s*제한|보험금지급\s*제한/i.test(line)
         );
 
-        if (limitLineIndex === -1) return;
+        const searchStartIndex =
+          limitLineIndex === -1
+            ? lines.length - 1
+            : limitLineIndex - 1;
 
         let changedCoverage = false;
         let changedDeductible = false;
         let changedTotal = false;
         let changedPerAccident = false;
+        let changedSurgery = false;
 
-        // 제한사항 바로 위부터 거꾸로 검색
-        for (let i = limitLineIndex - 1; i >= 0; i--) {
+        // 지급기준이 있는 마지막 부분부터 거꾸로 검색
+        for (let i = searchStartIndex; i >= 0; i--) {
           const line = lines[i];
 
-          // 마지막 총보상한도 1개
+          /*
+           * 공통: 마지막 총보상한도 1개
+           */
           if (
             !changedTotal &&
             /^[\s※‧•＊*\-]*(총\s*보상\s*한도)\s*[:：]/.test(line)
@@ -27660,8 +27680,66 @@ Object.values(DATASET).forEach(yearData => {
             continue;
           }
 
-          // 마지막 공제금액 1개
+          /*
+           * 개물림·야생동물형:
+           * 인당(사고당), 인당보상한도, 오타 인당보상한동
+           */
           if (
+            !changedPerAccident &&
+            (isDogBiteType || isWildAnimalType) &&
+            /^[\s※‧•＊*\-]*(?:인당\s*\(\s*사고당\s*\)|인당\s*보상\s*한도|인당\s*보상\s*한동)\s*[:：]/.test(line)
+          ) {
+            lines[i] = line.replace(
+              /^[\s※‧•＊*\-]*(?:인당\s*\(\s*사고당\s*\)|인당\s*보상\s*한도|인당\s*보상\s*한동)\s*[:：]/,
+              match => {
+                if (/인당\s*\(\s*사고당\s*\)/.test(match)) {
+                  return "▶ 인당(사고당):";
+                }
+
+                return "▶ 인당보상한도:";
+              }
+            );
+
+            changedPerAccident = true;
+            continue;
+          }
+
+          /*
+           * 화상수술비형:
+           * 화상수술비 또는 수술비 한도처럼 금액이 붙은 기준 줄만 강조
+           */
+          if (
+            !changedSurgery &&
+            isBurnSurgeryType &&
+            /^[\s※‧•＊*\-]*(화상\s*수술비|수술비\s*한도|수술비)\s*[:：]/.test(line)
+          ) {
+            lines[i] = line.replace(
+              /^[\s※‧•＊*\-]*(화상\s*수술비|수술비\s*한도|수술비)\s*[:：]/,
+              match => {
+                if (/화상\s*수술비/.test(match)) {
+                  return "▶ 화상수술비:";
+                }
+
+                if (/수술비\s*한도/.test(match)) {
+                  return "▶ 수술비 한도:";
+                }
+
+                return "▶ 수술비:";
+              }
+            );
+
+            changedSurgery = true;
+            continue;
+          }
+
+          /*
+           * 상해의료비형:
+           * 마지막 공제금액 1개
+           */
+          if (
+            !isDogBiteType &&
+            !isWildAnimalType &&
+            !isBurnSurgeryType &&
             !changedDeductible &&
             /^[\s※‧•＊*\-]*(공제\s*금액)\s*(?:[:：]|$)/.test(line)
           ) {
@@ -27677,28 +27755,14 @@ Object.values(DATASET).forEach(yearData => {
             continue;
           }
 
-        // 개물림형 CGL의 마지막 인당 지급한도 1개
-if (
-  !changedPerAccident &&
-  /^[\s※‧•＊*\-]*(?:인당\s*\(\s*사고당\s*\)|인당\s*보상\s*한도|인당\s*보상\s*한동)\s*[:：]/.test(line)
-) {
-  lines[i] = line.replace(
-    /^[\s※‧•＊*\-]*(?:인당\s*\(\s*사고당\s*\)|인당\s*보상\s*한도|인당\s*보상\s*한동)\s*[:：]/,
-    match => {
-      if (/인당\s*\(\s*사고당\s*\)/.test(match)) {
-        return "▶ 인당(사고당):";
-      }
-
-      return "▶ 인당보상한도:";
-    }
-  );
-
-  changedPerAccident = true;
-  continue;
-}
-
-          // 마지막 보상한도 또는 보장한도 1개
+          /*
+           * 상해의료비형:
+           * 마지막 보상한도 또는 보장한도 1개
+           */
           if (
+            !isDogBiteType &&
+            !isWildAnimalType &&
+            !isBurnSurgeryType &&
             !changedCoverage &&
             /^[\s※‧•＊*\-]*(보상\s*한도|보장\s*한도)\s*(?:[:：]|$)/.test(line)
           ) {
@@ -27707,7 +27771,9 @@ if (
             lines[i] = line.replace(
               /^[\s※‧•＊*\-]*(보상\s*한도|보장\s*한도)\s*(?:[:：]|$)/,
               match => {
-                const label = isGuarantee ? "보장한도" : "보상 한도";
+                const label = isGuarantee
+                  ? "보장한도"
+                  : "보상 한도";
 
                 return match.includes(":") || match.includes("：")
                   ? `▶ ${label}:`
@@ -27719,18 +27785,33 @@ if (
           }
 
           /*
-           * 일반 상해의료비형:
-           * 보상/보장한도 + 공제금액 + 총보상한도를 찾으면 종료
-           *
-           * 개물림형:
-           * 인당(사고당) + 총보상한도를 찾으면 종료
+           * 유형별 필요한 기준을 찾았으면 검색 종료
            */
-          if (
-            changedTotal &&
+          const completedMedical =
+            !isDogBiteType &&
+            !isWildAnimalType &&
+            !isBurnSurgeryType &&
+            changedCoverage &&
+            changedDeductible &&
+            changedTotal;
+
+          const completedDogOrWild =
+            (isDogBiteType || isWildAnimalType) &&
+            changedPerAccident &&
+            changedTotal;
+
+          const completedBurn =
+            isBurnSurgeryType &&
+            changedSurgery &&
             (
-              (changedCoverage && changedDeductible) ||
-              changedPerAccident
-            )
+              changedTotal ||
+              !lines.some(row => /총\s*보상\s*한도/.test(row))
+            );
+
+          if (
+            completedMedical ||
+            completedDogOrWild ||
+            completedBurn
           ) {
             break;
           }
