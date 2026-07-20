@@ -28534,9 +28534,10 @@ tr.innerHTML = `
 <td>${formatPolicyNoCell(item.policy_no || item.policyNo || getPolicyNoForCoverage(year, sido, sigungu, item) || "")}</td>
 <td style="white-space:pre-line; line-height:1.7; font-size:13px; text-align:left;">
 ${(displayDetail || "")
-.replace(/[\s※‧•＊*\-]*보상\s*한도\s*[:：]?/g, '▶ 보상 한도')
-.replace(/[\s※‧•＊*\-]*공제\s*금액\s*[:：]?/g, '▶ 공제 금액')
-.replace(/[\s※‧•＊*\-]*총\s*보상\s*한도\s*[:：]?/g, '▶ 총 보상 한도')
+.replace(/^[ \t※‧•＊*-]*총\s*보상\s*한도\s*[:：]?/gm, '§§TOTAL§§')
+.replace(/^[ \t※‧•＊*-]*보상\s*한도\s*[:：]?/gm, '▶ 보상 한도')
+.replace(/^[ \t※‧•＊*-]*공제\s*금액\s*[:：]?/gm, '▶ 공제 금액')
+.replace(/§§TOTAL§§/g, '▶ 총 보상 한도')
 .replace(/ 가\./g, '<br>가.')
 .replace(/ 나\./g, '<br>나.')
 .replace(/ 다\./g, '<br>다.')
