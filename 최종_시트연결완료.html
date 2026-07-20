@@ -27862,9 +27862,11 @@ function formatPolicyNoCell(value) {
       if (parts.length >= 2) {
         const company = parts.shift().trim();
         const no = parts.join(":").trim();
-        return `<div style="white-space:nowrap; line-height:1.6;"><b>${escapeHtmlForPolicy(company)}</b> : ${escapeHtmlForPolicy(no)}</div>`;
+
+        return `<div style="white-space:pre-line; line-height:1.6;"><b>${escapeHtmlForPolicy(company)}</b> : ${escapeHtmlForPolicy(no).replace(/\n/g, "<br>")}</div>`;
       }
-      return `<div style="white-space:nowrap; line-height:1.6;">${escapeHtmlForPolicy(x)}</div>`;
+
+      return `<div style="white-space:pre-line; line-height:1.6;">${escapeHtmlForPolicy(x).replace(/\n/g, "<br>")}</div>`;
     })
     .join("");
 }
