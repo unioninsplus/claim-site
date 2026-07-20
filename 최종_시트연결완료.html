@@ -28333,31 +28333,56 @@ function runLookup() {
     block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
     items = [];
   }
+   regionLabel = `${sido} 전체`;
 
-  regionLabel = `${sido} 전체`;
-}
-  else if (DATASET[year] && DATASET[year][sido] && DATASET[year][sido][sigungu]) {
-    const selectedBlock = DATASET[year][sido][sigungu];
-    if (isLookupTargetForYear(year, selectedBlock)) {
-      block = selectedBlock;
-      items = (block.coverages || [])
-  .map(fixWrongDisasterCostCoverage)
-  .map(x => ({...x, region:sigungu}));
-    } else {
-      block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
-      items = [];
-    }
+} else if (
+  DATASET[year] &&
+  DATASET[year][sido] &&
+  DATASET[year][sido][sigungu]
+) {
+  const selectedBlock = DATASET[year][sido][sigungu];
+
+  if (isLookupTargetForYear(year, selectedBlock)) {
+    block = selectedBlock;
+
+    items = (block.coverages || [])
+      .map(fixWrongDisasterCostCoverage)
+      .map(x => ({ ...x, region: sigungu }));
+
+    const displaySigungu = String(
+      block.display_name ||
+      block.region_name ||
+      sigungu
+    ).trim();
+
+    regionLabel = `${sido} ${displaySigungu}`;
+
   } else {
-    block = {insurer:"-", start_date:"-", population:"-", coverages:[]};
+    block = {
+      insurer: "-",
+      start_date: "-",
+      population: "-",
+      coverages: []
+    };
+
     items = [];
   }
 
-  const uniqueMap = new Map();
+} else {
+  block = {
+    insurer: "-",
+    start_date: "-",
+    population: "-",
+    coverages: []
+  };
+
+  items = [];
+}
+
+const uniqueMap = new Map();
 
 items.forEach(item => {
-
   const originalName = String(item.name || "").trim();
-
 const normalizedName =
   originalName.includes("강력범죄피해보상금")
     ? originalName.replace(/\s+/g, "")
