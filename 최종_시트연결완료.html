@@ -32706,39 +32706,15 @@ async function submitClaimToSheet(event) {
 
     setTimeout(() => form.remove(), 1500);
 
-    try {
-      if (phone) {
-        fetch(
-          'http://unioninsplus.co.kr/aligo_send.php?phone=' +
-          encodeURIComponent(phone)
-        ).catch(function (e) {
-          console.log('문자 발송 오류', e);
-        });
-      }
-    } catch (e) {
-      console.log('문자 발송 오류', e);
-    }
-
-    // 접수 전송 후 입력칸 초기화: 해당 요소가 없어도 저장 완료 처리는 유지
-    [
-      'claimName',
-      'claimDepositor',
-      'claimRRN',
-      'claimPhone',
-      'claimAccidentDate',
-      'claimAccidentDesc',
-      'claimMemo'
-    ].forEach(function (id) {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-
-    if (typeof citizenCoverageItems !== 'undefined') {
-      citizenCoverageItems = [];
-    }
-    if (typeof renderCitizenCoverageList === 'function') {
-      renderCitizenCoverageList();
-    }
+    document.getElementById('claimName').value = '';
+    document.getElementById('claimDepositor').value = '';
+    document.getElementById('claimRRN').value = '';
+    document.getElementById('claimPhone').value = '';
+    document.getElementById('claimAccidentDate').value = '';
+    document.getElementById('claimAccidentDesc').value = '';
+    document.getElementById('claimMemo').value = '';
+    citizenCoverageItems = [];
+    renderCitizenCoverageList();
   } catch (error) {
     console.error('접수 저장 오류:', error);
     alert('접수 저장 중 오류가 발생했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.');
