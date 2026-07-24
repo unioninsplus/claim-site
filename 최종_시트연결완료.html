@@ -32510,11 +32510,11 @@ alert("보험금 청구가 완료되었습니다.\n접수번호: "+claimNo+"\n�
   return true;
 }
 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzKBKFAcNLNmm2t0NJExtSlRjDEbMMiDCnvudu5RLJVydzV7ozMFnEuMq4DWK_63XfZA/exec";
+
 initDropdowns();
 clearLookup();
 loadUserEmail();
-
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzKBKFAcNLNmm2t0NJExtSlRjDEbMMiDCnvudu5RLJVydzV7ozMFnEuMq4DWK_63XfZA/exec";
 
 function renderAdminPreview() {
   const key = "unioninsplus_claims_v15";
@@ -32619,6 +32619,14 @@ async function submitClaimToSheet(event) {
   if (event) event.preventDefault();
 
   const submitBtn = document.getElementById('submitClaimBtn');
+  let submitted = false;
+
+  const resetSubmitButton = () => {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '접수 저장';
+    }
+  };
 
   try {
     if (submitBtn) {
@@ -32628,7 +32636,7 @@ async function submitClaimToSheet(event) {
 
     const year = document.getElementById('claimYearView')?.value?.trim() || '';
     const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
-    let sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
+    const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
     const name = document.getElementById('claimName')?.value?.trim() || '';
     const claimant = document.getElementById('claimDepositor')?.value?.trim() || '';
     const rrn = document.getElementById('claimRRN')?.value?.trim() || '';
@@ -32663,6 +32671,11 @@ async function submitClaimToSheet(event) {
       return;
     }
 
+    const iframe = document.querySelector('iframe[name="hidden_iframe"]');
+    if (!iframe) {
+      throw new Error('저장 응답용 iframe을 찾을 수 없습니다.');
+    }
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = GOOGLE_SCRIPT_URL;
@@ -32694,34 +32707,59 @@ async function submitClaimToSheet(event) {
       form.appendChild(input);
     });
 
+    let responseReceived = false;
+
+    iframe.onload = () => {
+      if (responseReceived) return;
+      responseReceived = true;
+
+      const saveMessage = document.getElementById('saveMessage');
+      if (saveMessage) {
+        saveMessage.style.display = 'flex';
+      } else {
+        alert('접수가 완료되었습니다.');
+      }
+
+      [
+        'claimName',
+        'claimDepositor',
+        'claimRRN',
+        'claimPhone',
+        'claimAccidentDate',
+        'claimAccidentDesc',
+        'claimMemo'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      citizenCoverageItems = [];
+      renderCitizenCoverageList();
+      resetSubmitButton();
+
+      setTimeout(() => {
+        if (form.isConnected) form.remove();
+      }, 500);
+    };
+
     document.body.appendChild(form);
+    submitted = true;
     form.submit();
 
-    const saveMessage = document.getElementById('saveMessage');
-    if (saveMessage) {
-      saveMessage.style.display = 'flex';
-    } else {
-      alert('접수가 완료되었습니다.');
-    }
+    setTimeout(() => {
+      if (!responseReceived) {
+        resetSubmitButton();
+        alert('접수 전송 응답이 지연되고 있습니다. 구글 시트 저장 여부를 확인해 주세요.');
+      }
+      if (form.isConnected) form.remove();
+    }, 15000);
 
-    setTimeout(() => form.remove(), 1500);
-
-    document.getElementById('claimName').value = '';
-    document.getElementById('claimDepositor').value = '';
-    document.getElementById('claimRRN').value = '';
-    document.getElementById('claimPhone').value = '';
-    document.getElementById('claimAccidentDate').value = '';
-    document.getElementById('claimAccidentDesc').value = '';
-    document.getElementById('claimMemo').value = '';
-    citizenCoverageItems = [];
-    renderCitizenCoverageList();
   } catch (error) {
     console.error('접수 저장 오류:', error);
     alert('접수 저장 중 오류가 발생했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.');
   } finally {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = '접수 저장';
+    if (!submitted) {
+      resetSubmitButton();
     }
   }
 }
