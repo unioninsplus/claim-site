@@ -32630,46 +32630,29 @@ async function submitClaimToSheet() {
   const note = document.getElementById('claimMemo')?.value?.trim() || '';
   const email = document.getElementById('claimEmail')?.value?.trim() || '';
 
-const userEmail =
-  email ||
-  document.getElementById('detectedEmail')?.value?.trim() ||
-  '';
+  const userEmail =
+    email ||
+    document.getElementById('detectedEmail')?.value?.trim() ||
+    '';
 
-if (!userEmail) {
-  alert('이메일 정보를 확인할 수 없습니다.');
-  return;
-}
-
-try {
-  const res = await fetch(
-    GOOGLE_SCRIPT_URL +
-    '?action=checkPermission&email=' +
-    encodeURIComponent(userEmail)
-  );
-
-  const result = await res.json();
-
-  if (!result.allowed) {
-    alert('접수 권한이 없습니다.');
+  if (!userEmail) {
+    alert('이메일 정보를 확인할 수 없습니다.');
     return;
   }
-} catch (err) {
-  alert('권한 확인 중 오류가 발생했습니다.');
-  return;
-}
 
   if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !accidentType) {
     alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
     return;
   }
-checkAccidentDateInPolicyPeriod();
 
-const accidentError = document.getElementById('accidentDateError');
+  checkAccidentDateInPolicyPeriod();
 
-if (accidentError && accidentError.style.display !== 'none') {
-  alert('해당 증권 기간 사고일이 아닙니다.');
-  return;
-}
+  const accidentError = document.getElementById('accidentDateError');
+
+  if (accidentError && accidentError.style.display !== 'none') {
+    alert('해당 증권 기간 사고일이 아닙니다.');
+    return;
+  }
 
   const form = document.createElement('form');
   form.method = 'POST';
@@ -32677,23 +32660,23 @@ if (accidentError && accidentError.style.display !== 'none') {
   form.target = 'hidden_iframe';
   form.style.display = 'none';
 
- const fields = {
-  formMode: "internal",
+  const fields = {
+    formMode: "internal",
 
-  year,
-  sido,
-  sigungu,
-  name,
-  claimant,
-  rrn,
-  phone,
-  receiptDate,
-  accidentDate,
-  accidentType,
-  accidentDetail,
-  note,
-  email: userEmail
-};
+    year,
+    sido,
+    sigungu,
+    name,
+    claimant,
+    rrn,
+    phone,
+    receiptDate,
+    accidentDate,
+    accidentType,
+    accidentDetail,
+    note,
+    email: userEmail
+  };
 
   Object.entries(fields).forEach(([key, value]) => {
     const input = document.createElement('input');
@@ -32705,17 +32688,18 @@ if (accidentError && accidentError.style.display !== 'none') {
 
   document.body.appendChild(form);
   form.submit();
-  
- try {
-  if (phone) {
-  fetch(
-  "http://unioninsplus.co.kr/aligo_send.php?phone=" +
-  encodeURIComponent(phone)
-);
+
+  try {
+    if (phone) {
+      fetch(
+        "http://unioninsplus.co.kr/aligo_send.php?phone=" +
+        encodeURIComponent(phone)
+      );
+    }
+  } catch (e) {
+    console.log("문자 발송 오류", e);
   }
-} catch (e) {
-  console.log("문자 발송 오류", e);
-}
+
   setTimeout(() => {
     document.getElementById('saveMessage').style.display = 'flex';
     form.remove();
@@ -32728,7 +32712,7 @@ if (accidentError && accidentError.style.display !== 'none') {
     document.getElementById('claimAccidentDesc').value = '';
     document.getElementById('claimMemo').value = '';
     citizenCoverageItems = [];
-renderCitizenCoverageList();
+    renderCitizenCoverageList();
   }, 1200);
 }
 function closeSaveMessage() {
