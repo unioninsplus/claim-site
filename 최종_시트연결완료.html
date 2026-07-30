@@ -25170,7 +25170,7 @@ const DATASET = {
         },
         {
           "name": "개물림사고(응급,비응급)치료비",
-          "detail": "메리츠:20한도 / 20한도",
+          "detail": "메리츠:20한도",
           "amount": "20한도"
         },
         {
@@ -32406,6 +32406,25 @@ const displayDetail = guideText
       : guideText)
   : formattedCleanDetail;
 let detailText = displayDetail || "";
+// 15세이상 / 15세미만 내용이 같으면 하나만 표시
+detailText = detailText.replace(
+  /15세이상\s*\n([\s\S]*?)\n\s*15세미만\s*\n([\s\S]*)/m,
+  function (_, over15, under15) {
+    const normalize = s => String(s)
+      .replace(/\s+/g, "")
+      .trim();
+
+    if (normalize(over15) === normalize(under15)) {
+      return over15.trim();
+    }
+
+    return `15세이상
+${over15.trim()}
+
+15세미만
+${under15.trim()}`;
+  }
+);
 
 if (item.amount) {
   const totalNumber = String(item.amount)
