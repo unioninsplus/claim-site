@@ -175,7 +175,13 @@ cursor:pointer;
   <span id="infoStart" style="font-weight:900; font-size:16px; color:#163b7a;">-</span>
 </div>
         <div class="mini"><b>인구수</b><span id="infoPop">-</span></div>
-        <div class="mini"><b>계약요약</b><span id="infoContractSummary">-</span></div>
+        <div class="mini">
+  <b style="display:block; margin-bottom:2px;">계약요약</b>
+<span id="infoContractSummary"
+      style="font-size:13px; font-weight:600; line-height:1.4; white-space:pre-line;">
+  -
+</span>
+</div>
       </div>
       <div class="kv" style="margin-top:12px;">
         <div class="mini"><b>보험명</b><span id="infoProduct">지자체 시민안전보험</span></div>
@@ -19407,6 +19413,7 @@ const DATASET = {
       ]
     },
     "파주시": {
+      "contract_summary": "22년도 공제회 1577-5939",
       "insurer": "DB, 현대, 메리츠, KB, 농협",
       "start_date": "2025-01-01",
       "population": "509337",
@@ -19661,6 +19668,7 @@ const DATASET = {
       ]
     },
     "양주시": {
+      "contract_summary": "자전거상해/위로금 4주이상10만원\n25년2월1일이후 사고적용",
       "insurer": "메리츠, 농협, 현대, 케이비",
       "start_date": "2025-01-01",
       "population": "288273",
@@ -20724,6 +20732,7 @@ const DATASET = {
       ]
     },
     "안양시": {
+      "contract_summary": "23년 하나손보 1566-3000\n (23.03.01-24.02.29)\n24년 공제회 1577-5939 (24.03-19~)",
       "insurer": "KB, 현대, 메리츠, 디비, 롯데",
       "start_date": "2025-03-19",
       "population": "557962",
@@ -20836,6 +20845,7 @@ const DATASET = {
       ]
     },
     "김포시": {
+      "contract_summary": "자전거사망/후유장해 1899-7751 안내",
       "insurer": "KB, DB, 캐롯, 메리츠, 롯데",
       "start_date": "2025-04-07~2026-03-02",
       "population": "486853",
@@ -21361,6 +21371,7 @@ const DATASET = {
   },
   "서울특별시": {
     "강남구": {
+      "contract_summary": "23년도 공제회 1577-5939",
       "insurer": "메리츠, 현대, KB, 롯데, 농협",
       "start_date": "2025-01-01",
       "population": "",
@@ -21448,6 +21459,7 @@ const DATASET = {
       ]
     },
     "종로구": {
+      "contract_summary": "22년도 공제회 1577-5939",
       "insurer": "KB, 메리츠, 현대, 디비, 롯데",
       "start_date": "2025-01-01",
       "population": "138760",
@@ -21670,9 +21682,10 @@ const DATASET = {
           "detail": "KB:<자동차상해 부상치료비_KB손해보험>\n1급~3급:100만원   4급~6급:50만원   7급~9급:30만원\n10급~11급:20만원   12급~13급:10만원\n(전세버스/택시제외)",
           "amount": ""
         }
-      ]
+      ]      
     },
     "서초구": {
+      "contract_summary": "2019년 이후 재시행 첫해",
       "insurer": "메리츠, 현대, KB, 디비",
       "start_date": "2025-02-01",
       "population": "408376",
@@ -21710,6 +21723,7 @@ const DATASET = {
       ]
     },
     "영등포구": {
+      "contract_summary": "24년 (TPA) 02-2135-9453",
       "insurer": "메리츠, 캐롯",
       "start_date": "2025-02-06",
       "population": "423207",
@@ -21789,6 +21803,7 @@ const DATASET = {
       ]
     },
     "은평구": {
+      "contract_summary": "19-22년도 농협 1644-9666\n23-24년도 공제회 1577-5939",
       "insurer": "KB, 메리츠, DB, 현대",
       "start_date": "2025-08-01",
       "population": "464466",
@@ -21970,6 +21985,7 @@ const DATASET = {
       ]
     },
     "양산시": {
+      "contract_summary": "25년4월1일부터 성폭력범죄위로금 추가",
       "insurer": "현대, 디비, KB, 롯데, 메리츠",
       "start_date": "2025-02-01",
       "population": "359531",
@@ -22069,6 +22085,7 @@ const DATASET = {
   },
   "전라남도": {
     "순천시": {
+      "contract_summary": "자전거/공공자전거 관련은 1899-7751로 문의\n25년7월10부터 자연재해사망/사회재난사망 추가",
       "insurer": "KB, DB, 메리츠, 롯데",
       "start_date": "2025-01-01",
       "population": "279729",
@@ -22614,6 +22631,7 @@ const DATASET = {
       ]
     },
     "서구": {
+      "contract_summary": "폭발화재붕괴산사태사망후유장해 담보\n25년3월1일부터 담보적용",
       "insurer": "KB, 현대, 메리츠, 롯데",
       "start_date": "2025-02-01",
       "population": "282039",
@@ -23282,6 +23300,7 @@ const DATASET = {
       ]
     },
     "남구": {
+      "contract_summary": "구민안전+군복무상해+어린이상해(최초가입)",
       "insurer": "현대, 롯데, 디비, 하나, 농협",
       "start_date": "2025-02-01",
       "population": "261981",
@@ -23414,6 +23433,7 @@ const DATASET = {
       ]
     },
     "사하구": {
+      "contract_summary": "22-24년도 공제회 1577-5939",
       "insurer": "메리츠, 케이비, 현대, 농협, 롯데",
       "start_date": "2025-02-01",
       "population": "292491",
@@ -23511,6 +23531,7 @@ const DATASET = {
       ]
     },
     "강서구": {
+      "contract_summary": "24년도 하나손보 1566-3000",
       "insurer": "메리츠, 캐롯",
       "start_date": "2025-02-01",
       "population": "142757",
@@ -23528,6 +23549,7 @@ const DATASET = {
       ]
     },
     "연제구": {
+      "contract_summary": "20-22년도 공제회 1577-5939",
       "insurer": "DB, 메리츠, 현대, 롯데, KB",
       "start_date": "2025-08-01",
       "population": "211373",
@@ -23590,6 +23612,7 @@ const DATASET = {
       ]
     },
     "동구": {
+      "contract_summary": "20-22년도 공제회 1577-5939",
       "insurer": "메리츠, 현대, DB, 롯데",
       "start_date": "2025-08-01",
       "population": "84897",
@@ -23639,6 +23662,7 @@ const DATASET = {
   },
   "강원특별자치도": {
     "양양군": {
+      "contract_summary": "PM자전거 가능 ",
       "insurer": "농협, 메리츠",
       "start_date": "2025-02-15",
       "population": "27710",
@@ -24889,6 +24913,7 @@ const DATASET = {
   },
   "경상북도": {
     "영주시": {
+      "contract_summary": "(~2024.04.17 까지) 공제회 1577-5939",
       "insurer": "현대, 삼성, 농협, 롯데",
       "start_date": "2025-04-18",
       "population": "98522",
@@ -25318,7 +25343,6 @@ const DATASET = {
   }
 },
 
-  
    
   "2026": {
     
