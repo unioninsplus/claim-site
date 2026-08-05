@@ -32584,11 +32584,13 @@ fillSelect(
   "accidentTypeSelect",
   items.map(x => ({
     value: x.name,
-    label: x.name
-      .split("\n")
-      .filter(line => !line.trim().startsWith("("))
-      .join(" ")
-      .trim()
+    label: x.name.trim().startsWith("급성감염병사망")
+      ? "급성감염병사망"
+      : x.name
+          .replace(/\n\([\s\S]*$/, "")   // 괄호 설명부터 끝까지 제거
+          .replace(/\n/g, " ")           // 나머지 줄바꿈은 공백으로
+          .replace(/\s+/g, " ")
+          .trim()
   })),
   "사고유형 선택"
 );
