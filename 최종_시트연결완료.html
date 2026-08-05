@@ -32030,17 +32030,27 @@ function getSubmitEmail() {
 function fillSelect(id, items, placeholder) {
   const el = document.getElementById(id);
   el.innerHTML = "";
+
   const first = document.createElement("option");
   first.value = "";
   first.textContent = placeholder;
   el.appendChild(first);
+
   items.forEach(item => {
     const opt = document.createElement("option");
-    opt.value = item;
-    opt.textContent = item;
+
+    if (typeof item === "object") {
+      opt.value = item.value;
+      opt.textContent = item.label;
+    } else {
+      opt.value = item;
+      opt.textContent = item;
+    }
+
     el.appendChild(opt);
   });
 }
+
 
 function syncSelectionView() {
   const year = document.getElementById("yearSelect").value || "";
@@ -32570,7 +32580,14 @@ ${detailText
     });
   }
 
-  fillSelect("accidentTypeSelect", items.map(x => x.name), "사고유형 선택");
+ fillSelect(
+  "accidentTypeSelect",
+  items.map(x => ({
+    value: x.name,
+    label: x.name.split("\n")[0].trim()
+  })),
+  "사고유형 선택"
+);
   const accidentDetailViewEl = document.getElementById("accidentDetailView"); if (accidentDetailViewEl) accidentDetailViewEl.value = "";
   document.getElementById("claimYearView").value = year;
   const claimYearMirrorEl2 = document.getElementById("claimYearMirror"); if (claimYearMirrorEl2) claimYearMirrorEl2.value = year;
