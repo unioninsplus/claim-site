@@ -32612,6 +32612,9 @@ fillSelect(
       cleanName === "상해사고진단금(교통상해보장제외)"
         ? "상해사고진단금"
 
+      : cleanName === "상해진단위로금(교통상해보장제외)"
+        ? "상해진단위로금"
+
       : cleanName === "강력범죄피해보상금(농협)"
         ? "강력범죄피해보상금"
 
@@ -32640,7 +32643,6 @@ fillSelect(
   }),
   "사고유형 선택"
 );
-
   const accidentDetailViewEl = document.getElementById("accidentDetailView"); if (accidentDetailViewEl) accidentDetailViewEl.value = "";
   document.getElementById("claimYearView").value = year;
   const claimYearMirrorEl2 = document.getElementById("claimYearMirror"); if (claimYearMirrorEl2) claimYearMirrorEl2.value = year;
