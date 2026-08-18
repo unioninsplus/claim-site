@@ -410,6 +410,28 @@ function openCitizenClaim() {
 </script>
 
 
+
+<script>
+async function downloadGuide(event) {
+  event.preventDefault();
+  try {
+    const response = await fetch("./docs/");
+    if (!response.ok) throw new Error("구비서류 안내문을 불러오지 못했습니다.");
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "구비서류_안내문.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) {
+    alert("구비서류 안내문 다운로드에 실패했습니다.\\n" + e.message);
+  }
+}
+</script>
+
 </head>
 <body>
 
@@ -449,23 +471,41 @@ function openCitizenClaim() {
       </p>
       <div class="hero-buttons">
 
+  <!-- 첫째 줄 -->
   <a class="btn btn-primary" href="#" onclick="openCitizenClaim(); return false;">
-  1. 시민안전보험 보험금청구 바로가기
-</a>
+    1. 시민안전보험 보험금청구 바로가기
+  </a>
 
-<a class="btn btn-primary"
-   style="display:none;"
-   href="#"
-   onclick="openCitizenClaim(); return false;">
-  2. 자전거보험 보험금청구 바로가기
-</a>
-<a class="btn btn-primary"
-   href="https://pf.kakao.com/_exaHyn/chat"
-   target="_blank"
-   style="background:#FEE500;color:#191919;">
-   💬 카카오 상담 문의
-</a>
-  
+  <a class="btn btn-primary"
+     style="display:none;"
+     href="#"
+     onclick="openCitizenClaim(); return false;">
+    2. 자전거보험 보험금청구 바로가기
+  </a>
+
+  <a class="btn btn-primary"
+     href="https://pf.kakao.com/_exaHyn/chat"
+     target="_blank"
+     rel="noopener noreferrer"
+     style="background:#FEE500;color:#191919;">
+    💬 카카오 상담 문의
+  </a>
+
+  <!-- 둘째 줄 -->
+  <div style="flex-basis:100%;height:0;"></div>
+
+  <a class="btn btn-secondary"
+     href="./보험금청구서 (표준)_2604.pdf"
+     download="보험금청구서_표준.pdf">
+    📄 보험금 청구서 다운로드
+  </a>
+
+  <a class="btn btn-secondary"
+     href="./docs/"
+     onclick="downloadGuide(event)">
+    📋 구비서류 안내문 다운로드
+  </a>
+
 </div>
     </div>
     <div class="hero-card">
