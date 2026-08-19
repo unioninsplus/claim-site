@@ -37783,6 +37783,34 @@ function closeWin(){
 }
 </script>
 <script>
+function moveLookupToClaimTop() {
+  const lookup = document.getElementById("lookup");
+  const claim = document.getElementById("claim");
+
+  if (!lookup || !claim || document.getElementById("directLookupBox")) return;
+
+  const grid = lookup.querySelector(".grid3");
+  const lookupButton = lookup.querySelector('button[onclick="runLookup()"]');
+  const buttonWrap = lookupButton ? lookupButton.parentElement : null;
+
+  if (!grid || !buttonWrap) return;
+
+  const box = document.createElement("div");
+  box.id = "directLookupBox";
+  box.className = "note";
+  box.style.marginBottom = "16px";
+
+  box.appendChild(grid);
+  box.appendChild(buttonWrap);
+
+  const title = claim.querySelector("h2");
+  if (title && title.nextSibling) {
+    claim.insertBefore(box, title.nextSibling);
+  } else {
+    claim.insertBefore(box, claim.firstChild);
+  }
+}
+
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   const email = params.get("email");
@@ -37794,6 +37822,7 @@ window.onload = function() {
 
   if (direct === "1") {
     openClaimForm();
+    moveLookupToClaimTop();
   }
 };
 function formatRRN(input) {
