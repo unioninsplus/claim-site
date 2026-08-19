@@ -346,11 +346,11 @@ cursor:pointer;
 </div>
           <div>
   <label>주민등록번호</label>
-  <input id="claimRRN" type="text" maxlength="14" autocomplete="off"
+  <input id="claimRRN" type="text" maxlength="14" autocomplete="off" inputmode="numeric"
   placeholder="예: 900101-1234567"
   oninput="formatRRN(this)">
 </div>
-          <div><label>전화번호</label><input id="claimPhone" autocomplete="off" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)"></div>
+          <div><label>전화번호</label><input id="claimPhone" type="text" maxlength="13" autocomplete="off" inputmode="numeric" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)"></div>
 
           <div><label>접수일</label><input id="claimReceiptDateView" type="date"></div>
           <div>
@@ -15341,17 +15341,67 @@ if (sido === "세종특별자치시" && sigungu === "전체") {
   const name = document.getElementById('claimName')?.value?.trim() || '';
   const claimant = document.getElementById('claimDepositor')?.value?.trim() || '';
   let rrn = document.getElementById('claimRRN')?.value?.trim() || '';
-rrn = rrn.replace(/[^0-9]/g, '');
-if (rrn.length === 13) {
-  rrn = rrn.replace(/(\d{6})(\d{7})/, '$1-$2');
-}
+  const rrnDigits = rrn.replace(/[^0-9]/g, '');
 
-let accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
-accidentDate = accidentDate.replace(/[^0-9]/g, '');
-if (accidentDate.length === 8) {
-  accidentDate = accidentDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
-}
-  const phone = document.getElementById('claimPhone')?.value?.trim() || '';
+  if (rrnDigits.length !== 13) {
+    alert('주민등록번호는 숫자 13자리를 정확히 입력하세요.');
+    document.getElementById('claimRRN')?.focus();
+    return;
+  }
+
+  rrn = rrnDigits.replace(/(\d{6})(\d{7})/, '$1-$2');
+
+  let accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
+  const accidentDateDigits = accidentDate.replace(/[^0-9]/g, '');
+
+  if (accidentDateDigits.length !== 8) {
+    alert('사고일자는 YYYYMMDD 숫자 8자리를 정확히 입력하세요.');
+    document.getElementById('claimAccidentDate')?.focus();
+    return;
+  }
+
+  const ay = Number(accidentDateDigits.slice(0, 4));
+  const am = Number(accidentDateDigits.slice(4, 6));
+  const ad = Number(accidentDateDigits.slice(6, 8));
+  const accidentDateObj = new Date(ay, am - 1, ad);
+
+  if (
+    accidentDateObj.getFullYear() !== ay ||
+    accidentDateObj.getMonth() !== am - 1 ||
+    accidentDateObj.getDate() !== ad
+  ) {
+    alert('사고일자가 올바른 날짜가 아닙니다.');
+    document.getElementById('claimAccidentDate')?.focus();
+    return;
+  }
+
+  accidentDate = accidentDateDigits.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+
+  let phone = document.getElementById('claimPhone')?.value?.trim() || '';
+  const phoneDigits = phone.replace(/[^0-9]/g, '');
+
+  // 휴대전화 010은 반드시 11자리.
+  // 일반전화는 02 포함 국내 전화번호 형식(9~11자리)만 허용.
+  const validPhone =
+    /^010\d{8}$/.test(phoneDigits) ||
+    /^02\d{7,8}$/.test(phoneDigits) ||
+    /^0(3[1-3]|4[1-4]|5[1-5]|6[1-4])\d{7,8}$/.test(phoneDigits);
+
+  if (!validPhone) {
+    alert('전화번호 자릿수를 정확히 입력하세요. 예: 010-1234-5678');
+    document.getElementById('claimPhone')?.focus();
+    return;
+  }
+
+  if (phoneDigits.startsWith('02')) {
+    phone = phoneDigits.length === 9
+      ? phoneDigits.replace(/(02)(\d{3})(\d{4})/, '$1-$2-$3')
+      : phoneDigits.replace(/(02)(\d{4})(\d{4})/, '$1-$2-$3');
+  } else if (phoneDigits.length === 10) {
+    phone = phoneDigits.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+  } else {
+    phone = phoneDigits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+  }
   const receiptDate = document.getElementById('claimReceiptDateView')?.value || getTodayKST();
   const accidentType = coverageItems.map(i => i.type).join('/');
   const paymentAmount = coverageItems.map(i => i.amount).join('/');
@@ -15363,8 +15413,8 @@ if (accidentDate.length === 8) {
   const note = document.getElementById('claimMemo')?.value?.trim() || '';
   const email = document.getElementById('claimEmail')?.value?.trim() || '';
 
-  if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !category || !accidentType1) {
-    alert('연도/지자체/이름/전화/사고일/구분/사고유형 입력하세요.');
+  if (!year || !sido || !sigungu || !name || !rrn || !phone || !accidentDate || !category || !accidentType1) {
+    alert('연도/지자체/이름/주민등록번호/전화/사고일/구분/사고유형 입력하세요.');
     return;
   }
 
