@@ -32809,10 +32809,67 @@ async function submitClaimToSheet(event) {
     const sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
     const name = document.getElementById('claimName')?.value?.trim() || '';
     const claimant = document.getElementById('claimDepositor')?.value?.trim() || '';
-    const rrn = document.getElementById('claimRRN')?.value?.trim() || '';
-    const phone = document.getElementById('claimPhone')?.value?.trim() || '';
+    let rrn = document.getElementById('claimRRN')?.value?.trim() || '';
+    const rrnDigits = rrn.replace(/[^0-9]/g, '');
+
+    if (rrnDigits.length !== 13) {
+      alert('주민등록번호는 숫자 13자리를 정확히 입력하세요.');
+      document.getElementById('claimRRN')?.focus();
+      return;
+    }
+    rrn = rrnDigits.replace(/(\d{6})(\d{7})/, '$1-$2');
+
+    let phone = document.getElementById('claimPhone')?.value?.trim() || '';
+    const phoneDigits = phone.replace(/[^0-9]/g, '');
+
+    const validPhone =
+      /^010\d{8}$/.test(phoneDigits) ||
+      /^02\d{7,8}$/.test(phoneDigits) ||
+      /^0(3[1-3]|4[1-4]|5[1-5]|6[1-4])\d{7,8}$/.test(phoneDigits);
+
+    if (!validPhone) {
+      alert('전화번호 자릿수를 정확히 입력하세요. 예: 010-1234-5678');
+      document.getElementById('claimPhone')?.focus();
+      return;
+    }
+
+    if (phoneDigits.startsWith('02')) {
+      phone = phoneDigits.length === 9
+        ? phoneDigits.replace(/(02)(\d{3})(\d{4})/, '$1-$2-$3')
+        : phoneDigits.replace(/(02)(\d{4})(\d{4})/, '$1-$2-$3');
+    } else if (phoneDigits.length === 10) {
+      phone = phoneDigits.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+    } else {
+      phone = phoneDigits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+    }
+
     const receiptDate = document.getElementById('claimReceiptDateView')?.value || getTodayKST();
-    const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
+
+    let accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
+    const accidentDateDigits = accidentDate.replace(/[^0-9]/g, '');
+
+    if (accidentDateDigits.length !== 8) {
+      alert('사고일자는 YYYYMMDD 숫자 8자리를 정확히 입력하세요.');
+      document.getElementById('claimAccidentDate')?.focus();
+      return;
+    }
+
+    const ay = Number(accidentDateDigits.slice(0, 4));
+    const am = Number(accidentDateDigits.slice(4, 6));
+    const ad = Number(accidentDateDigits.slice(6, 8));
+    const accidentDateObj = new Date(ay, am - 1, ad);
+
+    if (
+      accidentDateObj.getFullYear() !== ay ||
+      accidentDateObj.getMonth() !== am - 1 ||
+      accidentDateObj.getDate() !== ad
+    ) {
+      alert('사고일자가 올바른 날짜가 아닙니다.');
+      document.getElementById('claimAccidentDate')?.focus();
+      return;
+    }
+
+    accidentDate = accidentDateDigits.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
     const accidentType = citizenCoverageItems.join('/');
     const accidentDetail = document.getElementById('claimAccidentDesc')?.value?.trim() || '';
     const note = document.getElementById('claimMemo')?.value?.trim() || '';
@@ -32828,8 +32885,8 @@ async function submitClaimToSheet(event) {
       return;
     }
 
-    if (!year || !sido || !sigungu || !name || !phone || !accidentDate || !accidentType) {
-      alert('먼저 조회 후 연도/지자체를 채우고, 이름·전화번호·사고일·사고유형을 입력해 주세요.');
+    if (!year || !sido || !sigungu || !name || !rrn || !phone || !accidentDate || !accidentType) {
+      alert('먼저 조회 후 연도/지자체를 채우고, 이름·주민등록번호·전화번호·사고일·사고유형을 입력해 주세요.');
       return;
     }
 
