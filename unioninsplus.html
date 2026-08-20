@@ -592,6 +592,9 @@ function openClaimGuide(){
 function closeClaimGuide(){
   document.getElementById("cgOverlay").classList.remove("on");
   document.body.style.overflow = "";
+  cgInit();
+  const list = document.getElementById("cgList");
+  if(list) list.innerHTML = "";
 }
 
 function cgFill(id, arr, placeholder){
