@@ -38048,5 +38048,38 @@ function clearSignature() {
 document.addEventListener('DOMContentLoaded', initSignaturePad);
 </script>
 
+
+<script>
+(function () {
+  function sendLookupDataToParent() {
+    try {
+      if (window.parent && window.parent !== window &&
+          typeof DATASET !== "undefined" &&
+          typeof FULL_SIGUNGU !== "undefined") {
+        window.parent.postMessage({
+          type: "UNION_CITIZEN_LOOKUP_DATA",
+          dataset: DATASET,
+          fullSigungu: FULL_SIGUNGU
+        }, "*");
+      }
+    } catch (e) {
+      console.error("조회 데이터 전달 오류:", e);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", sendLookupDataToParent, { once: true });
+  } else {
+    sendLookupDataToParent();
+  }
+
+  window.addEventListener("message", function (event) {
+    if (event.data && event.data.type === "UNION_CITIZEN_LOOKUP_REQUEST") {
+      sendLookupDataToParent();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
