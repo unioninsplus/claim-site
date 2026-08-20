@@ -720,8 +720,8 @@ document.addEventListener("keydown", e => {
       <a href="#business">사업영역</a>
       <a href="#" onclick="openClaimGuide(); return false;">보험금청구</a>
       <a href="시민보험 전국가입현황.html"
-   target="_blank"
-   rel="noopener noreferrer">
+   target="citizenStatusWindow"
+   onclick="window.open(this.href,'citizenStatusWindow','width=1200,height=900,resizable=yes,scrollbars=yes'); return false;">
    시민안전보험 가입현황
 </a>
 </nav>
