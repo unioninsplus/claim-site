@@ -618,7 +618,7 @@ function cgInit(){
   cgFill("cgSido", Object.keys(GUIDE_FULL_SIGUNGU || {}).sort((a,b)=>a.localeCompare(b,"ko")), "시도 선택");
   cgFill("cgSigungu", [], "시군구 선택");
   const sum = document.getElementById("cgSummary");
-  if(sum) sum.textContent = "연도와 지역을 선택하고 조회해 주세요.";
+  if(sum) sum.textContent = "사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.";
 }
 
 function cgYearChanged(){
@@ -873,7 +873,7 @@ document.addEventListener("keydown", e => {
         <select id="cgSigungu"></select>
         <button type="button" onclick="cgSearch()">조회</button>
       </div>
-      <div id="cgSummary" class="cg-summary">연도와 지역을 선택하고 조회해 주세요.</div>
+      <div id="cgSummary" class="cg-summary">사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.</div>
 <div style="display:flex; justify-content:flex-end; margin-top:10px;">
   <div style="
     font-size:14px;
