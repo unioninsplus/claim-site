@@ -32384,31 +32384,82 @@ const cleanDetail = [
     .trim()
 ].filter(Boolean).join("\n\n");
 
-const displayDetail = guideText
-  ? (cleanDetail ? guideText + "\n\n" + cleanDetail : guideText)
-  : cleanDetail;
+const formattedCleanDetail = (cleanDetail || "")
+  // 보험사 사이의 빈 줄은 한 줄로 정리
+  .replace(/\n{2,}(?=(KB:|DB:|현대:|메리츠:|롯데:|농협:|삼성:|하나:|흥국:|MG:|카카오:|디비:))/g, '\n')
 
+  // "/ 보험사:"는 줄바꿈으로 변경
+  .replace(/[ \t]*\/[ \t]*(?=(KB:|DB:|현대:|메리츠:|롯데:|농협:|삼성:|하나:|흥국:|MG:|카카오:|디비:))/g, '\n')
+ 
+ // 스쿨존·실버존·대중교통 등급형 보험사 설명은 한 줄 띄움
+  .replace(/\n(?=(KB:|DB:|현대:|메리츠:|롯데:|농협:|삼성:|하나:|흥국:|MG:|카카오:|디비:)<)/g, '\n\n');
+
+const displayDetail = guideText
+  ? (formattedCleanDetail
+      ? guideText + "\n\n" + formattedCleanDetail
+      : guideText)
+  : formattedCleanDetail;
+let detailText = displayDetail || "";
+// 15세이상 / 15세미만 내용이 같으면 하나만 표시
+detailText = detailText.replace(
+  /15세이상\s*\n([\s\S]*?)\n\s*15세미만\s*\n([\s\S]*)/m,
+  function (_, over15, under15) {
+    const normalize = s => String(s)
+      .replace(/\s+/g, "")
+      .trim();
+
+    if (normalize(over15) === normalize(under15)) {
+      return over15.trim();
+    }
+
+    return `15세이상
+${over15.trim()}
+
+15세미만
+${under15.trim()}`;
+  }
+);
+
+if (item.amount) {
+  const totalNumber = String(item.amount)
+    .replace(/,/g, "")
+    .match(/\d+(?:\.\d+)?/)?.[0];
+
+  if (totalNumber) {
+  detailText = detailText.replace(
+    new RegExp(`\\s*\\/\\s*${totalNumber}(?:만원|천만원|억원|원)?\\s*$`),
+    ""
+  );
+
+  detailText = detailText.replace(
+    new RegExp(`\\s*\\/\\s*${totalNumber}(?:만원|천만원|억원|원)?(?=\\r?$)`, "gm"),
+    ""
+  );
+}
+}
 tr.innerHTML = `
 <td>${idx+1}</td>
 <td>${item.name || ""}</td>
 <td>${formatPolicyNoCell(item.policy_no || item.policyNo || getPolicyNoForCoverage(year, sido, sigungu, item) || "")}</td>
 <td style="white-space:pre-line; line-height:1.7; font-size:13px; text-align:left;">
-${(displayDetail || "")
+${detailText
+.replace(/^[ \t※‧•＊*▶-]*(?:1\s*)?인당\s*\((?:1\s*)?사고당\)\s*[:：]?\s*(.*?)\s+총\s*보상\s*한도\s*[:：]?/gm, '▶ 1인당(1사고당): $1\n▶ 총보상한도:')
+.replace(/^[ \t※‧•＊*▶-]*총\s*보상\s*한도\s*[:：]?/gm, '▶ 총보상한도:')
+.replace(/^[ \t※‧•＊*▶-]*보상\s*한도\s*[:：]?/gm, '▶ 보상 한도')
+.replace(/^[ \t※‧•＊*▶-]*공제\s*금액\s*[:：]?/gm, '▶ 공제 금액')
+.replace(/^[ \t※‧•＊*▶-]*(?:1\s*)?인당\s*\((?:1\s*)?사고당\)\s*보상한도\s*[:：]?/gm, '▶ 1인당(1사고당)보상한도:')
+.replace(/((?:15세이상|15세미만|12세이하|65세이상|전체인구)\s*\n\s*(?:메리츠|현대|삼성|농협|롯데|KB|케이비|DB|디비|하나|한화|카카오)\s*:\s*)([\d,]+)\s*\/\s*\2(?=\s*(?:\n\s*\n|\n(?:15세이상|15세미만|12세이하|65세이상|전체인구)|$))/gm, '$1$2')
 .replace(/ 가\./g, '<br>가.')
 .replace(/ 나\./g, '<br>나.')
 .replace(/ 다\./g, '<br>다.')
+.replace(/(^|\n)(가\.|나\.|다\.|라\.|마\.|바\.|사\.|아\.|자\.|차\.|카\.|타\.|파\.|하\.)/gm, '$1<strong>$2</strong>')
 .replace(/\*/g, '<br>*')
-.replace(/‣/g, '<br>‣')
-.replace(/- /g, '<br>- ')
-.replace(/※\s*인당\s*\(사고당\)\s*보상한도\s*:/g, '▶ 인당(사고당) 보상한도:')
-.replace(/※\s*인당\s*\(사고당\)\s*:/g, '▶ 인당(사고당):')
-.replace(/※\s*인당\s*보상한(?:도|동)\s*:/g, '▶ 인당 보상한도:')
-.replace(/※\s*총\s*보상\s*한도\s*:/g, '▶ 총보상한도:')
-.replace(/(^|<br>|\n)[ \t]*[‧•-]?[ \t]*보장한도\s*:/g, '$1▶ 보장한도:')
-.replace(/(^|<br>|\n)[ \t]*[‧•-]?[ \t]*보상한도\s*:/g, '$1▶ 보상한도:')
-.replace(/(^|<br>|\n)[ \t]*[‧•-]?[ \t]*공제금액\s*:/g, '$1▶ 공제금액:')
-.replace(/(^|<br>|\n)[ \t]*[‧•-]?[ \t]*총\s*보상한도\s*:/g, '$1▶ 총보상한도:')
+.replace(/(^|[^\n])‣/g, '$1<br>‣')
+.replace(/(^|[^\n])- /g, '$1<br>- ')
+.replace(/(^|<br>)-\s*1인당\s*:/gm, '$1▶ 1인당 :')
+.replace(/\n+(15세이상|15세미만|12세이하|65세이상|전체인구)\n/g, '\n\n$1\n')
 }
+
 </td>
 <td>${displayAmount || ""}</td>
 `;
