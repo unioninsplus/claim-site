@@ -418,6 +418,7 @@ footer {
   .ai-body{padding:24px 26px}
   .ai-sample-badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff3cd;color:#7a5200;font-size:12px;font-weight:800;margin-bottom:14px}
   .ai-label{display:block;font-weight:800;color:#0d2f6f;margin:0 0 7px}
+  .ai-date{width:180px;max-width:180px;display:block;height:46px;border:1px solid #cbd5e1;border-radius:12px;padding:0 13px;font:inherit;outline:none;margin-bottom:12px}
   .ai-input{width:100%;min-height:125px;border:1px solid #cbd5e1;border-radius:12px;padding:13px 14px;font:inherit;resize:vertical;outline:none}
   .ai-input:focus{border-color:#1c64d1;box-shadow:0 0 0 3px rgba(28,100,209,.10)}
   .ai-actions{display:flex;justify-content:flex-end;margin-top:12px}
@@ -703,6 +704,7 @@ function cgSearch(){
   sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>보험사: ${block.insurer || "-"} · 보험개시일: ${block.start_date || "-"} · 담보수: <strong>${items.length}개</strong>`;
   window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
   document.getElementById("aiQuestionWrap")?.classList.add("on");
+  setAiAccidentDateRange();
   document.getElementById("aiResult")?.classList.remove("on");
   const aiNote = document.getElementById("aiIntegratedNote");
   if(aiNote) aiNote.style.display = "block";
@@ -831,11 +833,57 @@ function aiLookup(){
   qw.classList.add("on");
 }
 
+
+function setAiAccidentDateRange(){}
+
+
+function formatAiAccidentDate(el){
+  let v = String(el.value || "").replace(/\D/g,"").slice(0,8);
+  if(v.length === 8){
+    el.value = v.slice(0,4) + "-" + v.slice(4,6) + "-" + v.slice(6,8);
+  }else{
+    el.value = v;
+  }
+}
+document.addEventListener("DOMContentLoaded", function(){
+  const el = document.getElementById("aiAccidentDate");
+  if(!el) return;
+  el.addEventListener("input", function(){ formatAiAccidentDate(this); });
+  el.addEventListener("blur", function(){ formatAiAccidentDate(this); });
+});
+
 function runAiSample(){
   const q = String(document.getElementById("aiQuestion").value || "").trim();
+  const accidentDate = String(document.getElementById("aiAccidentDate")?.value || "").trim();
   if(!window.AI_SAMPLE_BLOCK){ alert("먼저 연도와 지역을 조회해 주세요."); return; }
+  if(!accidentDate){ alert("사고일자를 입력해 주세요."); return; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(accidentDate)){
+    alert("사고일자는 2026-05-01 형식으로 입력해 주세요.");
+    return;
+  }
+  {
+    const [yy,mm,dd] = accidentDate.split("-").map(Number);
+    const dt = new Date(yy, mm-1, dd);
+    if(dt.getFullYear()!==yy || dt.getMonth()!==mm-1 || dt.getDate()!==dd){
+      alert("올바른 사고일자를 입력해 주세요.");
+      return;
+    }
+  }
   if(!q){ alert("사고내용을 입력해 주세요."); return; }
-  const {y,sido,g,items} = window.AI_SAMPLE_BLOCK;
+  const {y,sido,g,block,items} = window.AI_SAMPLE_BLOCK;
+  const raw = String(block?.start_date || "");
+  const ds = raw.match(/\d{4}[.\/-]\d{1,2}[.\/-]\d{1,2}/g) || [];
+  const norm = v => v.replace(/[.\/]/g,"-").split("-").map((x,i)=>i?String(Number(x)).padStart(2,"0"):x).join("-");
+  if(ds.length){
+    const periodStart = norm(ds[0]); let periodEnd;
+    if(ds.length > 1) periodEnd = norm(ds[1]);
+    else { const d=new Date(periodStart+"T00:00:00"); d.setFullYear(d.getFullYear()+1); d.setDate(d.getDate()-1); periodEnd=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+    if(accidentDate < periodStart || accidentDate > periodEnd){
+      const result=document.getElementById("aiResult");
+      result.innerHTML=`<strong>보험기간 확인</strong><br>입력하신 사고일자 <strong>${accidentDate}</strong>는 현재 조회한 보험기간(${periodStart} ~ ${periodEnd})에 해당하지 않습니다.<br><br><strong>사고일자 기준으로 해당되는 연도를 다시 선택하여 조회해 주세요.</strong>`;
+      result.classList.add("on"); return;
+    }
+  }
   const text = q.replace(/\s+/g, "");
   const keys = ["화재","폭발","붕괴","산사태","버스","지하철","대중교통","자전거","PM","킥보드","스쿨존","실버존","익사","감전","농기계","개물림","화상","범죄","강도","성폭력","사망","후유장해","진단","입원","의료비","치료","수술","상해"];
   const foundKeys = keys.filter(k => text.includes(k));
@@ -1020,7 +1068,13 @@ function runAiSample(){
       <div id="cgList"></div>
       <div id="aiQuestionWrap" class="ai-question-wrap">
         <label class="ai-label" for="aiQuestion">2. AI 적용여부 확인</label>
-        <textarea id="aiQuestion" class="ai-input" placeholder="예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다."></textarea>
+        <label class="ai-label" for="aiAccidentDate" style="font-size:14px;margin-top:8px;">사고일자</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+<input id="aiAccidentDate" class="ai-date" type="text" inputmode="numeric" maxlength="10" autocomplete="off" style="margin-bottom:0;">
+<span style="font-size:13px;color:#475569;font-weight:800;">사고일자 예: 년월일 8자리 입력 (20260501)</span>
+</div>
+        <label class="ai-label" for="aiQuestion" style="font-size:14px;margin-top:12px;margin-bottom:7px;font-weight:800;">사고내용</label>
+<textarea id="aiQuestion" class="ai-input" placeholder="예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다."></textarea>
         <div class="ai-actions"><button class="ai-ask" type="button" onclick="runAiSample()">AI 적용여부 확인</button></div>
       </div>
       <div id="aiResult" class="ai-result"></div>
