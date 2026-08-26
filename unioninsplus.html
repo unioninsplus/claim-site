@@ -649,6 +649,13 @@ function cgInit(){
   cgFill("cgSigungu", [], "시군구 선택");
   const sum = document.getElementById("cgSummary");
   if(sum) sum.textContent = "사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.";
+  document.getElementById("aiQuestionWrap")?.classList.remove("on");
+  document.getElementById("aiResult")?.classList.remove("on");
+  const aiNote = document.getElementById("aiIntegratedNote");
+  if(aiNote) aiNote.style.display = "none";
+  const aiQ = document.getElementById("aiQuestion");
+  if(aiQ) aiQ.value = "";
+  window.AI_SAMPLE_BLOCK = null;
 }
 
 function cgYearChanged(){
@@ -694,6 +701,11 @@ function cgSearch(){
   });
 
   sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>보험사: ${block.insurer || "-"} · 보험개시일: ${block.start_date || "-"} · 담보수: <strong>${items.length}개</strong>`;
+  window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
+  document.getElementById("aiQuestionWrap")?.classList.add("on");
+  document.getElementById("aiResult")?.classList.remove("on");
+  const aiNote = document.getElementById("aiIntegratedNote");
+  if(aiNote) aiNote.style.display = "block";
 
   items.forEach(item => {
     const box = document.createElement("div");
@@ -881,7 +893,7 @@ function runAiSample(){
       </p>
       <div class="hero-buttons">
 
-  <a class="btn btn-primary" href="#" onclick="openClaimGuide(); return false;" style="min-width:310px;padding:18px 28px;font-size:17px;">
+  <a class="btn btn-primary" href="#" onclick="openClaimGuide(); return false;" style="min-width:350px;padding:20px 32px;font-size:18px;">
   👉 시민안전보험 청구 절차 방법
 </a>
 
@@ -892,9 +904,7 @@ function runAiSample(){
   2. 자전거보험 보험금청구 바로가기
 </a>
 
-<a class="btn btn-secondary" href="#" onclick="openAiSample(); return false;" style="min-width:310px;padding:18px 28px;font-size:17px;border-color:#1c64d1;color:#0d2f6f;background:#eef4ff;">
-   🤖 AI 시민안전보험 상담 (샘플)
-</a>
+
   
 </div>
     </div>
@@ -1008,11 +1018,18 @@ function runAiSample(){
   </div>
 </div>
       <div id="cgList"></div>
+      <div id="aiQuestionWrap" class="ai-question-wrap">
+        <label class="ai-label" for="aiQuestion">2. AI 적용여부 확인</label>
+        <textarea id="aiQuestion" class="ai-input" placeholder="예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다."></textarea>
+        <div class="ai-actions"><button class="ai-ask" type="button" onclick="runAiSample()">AI 적용여부 확인</button></div>
+      </div>
+      <div id="aiResult" class="ai-result"></div>
+      <div id="aiIntegratedNote" class="ai-note" style="display:none;">※ 현재는 AI API가 연결되지 않은 화면 샘플입니다. 실제 AI 연결 시 시민안전보험과 관련된 질의만 처리하고, 선택한 지자체의 가입 담보 및 보장내용 범위 안에서만 안내하도록 제한할 수 있습니다. 최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.</div>
       <div class="cg-note">해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.</div>
 <div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;">
   <div style="flex:1; min-width:300px;">
 <div style="margin-top:18px; padding:18px; border:1px solid #dbe4f0; border-radius:14px; background:#fff;">
-  <div style="font-size:18px; font-weight:900; color:#0d2f6f; margin-bottom:8px;">2. 보험금청구서 작성</div>
+  <div style="font-size:18px; font-weight:900; color:#0d2f6f; margin-bottom:8px;">3. 보험금청구서 작성</div>
   <div style="font-size:14px; color:#64748b; line-height:1.7; margin-bottom:14px;">
     보험금청구서를 다운로드하여 작성해 주세요.
   </div>
@@ -1024,7 +1041,7 @@ function runAiSample(){
   </a>
 </div>
 <div style="margin-top:14px; padding:18px; border:1px solid #dbe4f0; border-radius:14px; background:#fff;">
-  <div style="font-size:18px; font-weight:900; color:#0d2f6f; margin-bottom:8px;">3. 구비서류 준비</div>
+  <div style="font-size:18px; font-weight:900; color:#0d2f6f; margin-bottom:8px;">4. 구비서류 준비</div>
   <div style="font-size:14px; color:#64748b; line-height:1.7; margin-bottom:14px;">
     보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.
   </div>
@@ -1063,39 +1080,9 @@ function runAiSample(){
 
 
 
-<div id="aiOverlay" class="ai-overlay">
-  <div class="ai-modal">
-    <div class="ai-head">
-      <div><h2>AI 시민안전보험 상담</h2><p>지자체를 조회한 뒤 사고내용을 입력하여 관련 담보 적용 가능성을 확인하는 샘플 화면입니다.</p></div>
-      <button class="ai-close" type="button" onclick="closeAiSample()">×</button>
-    </div>
-    <div class="ai-body">
-      <div class="ai-sample-badge">현재는 AI API가 연결되지 않은 화면 샘플입니다.</div>
-      <label class="ai-label">1. 가입 지자체 및 보상내역 조회</label>
-      <div class="ai-search">
-        <select id="aiYear"></select>
-        <select id="aiSido" onchange="aiSidoChanged()"></select>
-        <select id="aiSigungu"></select>
-        <button type="button" onclick="aiLookup()">조회</button>
-      </div>
-      <div id="aiSummary" class="ai-summary">조회 데이터를 불러오는 중입니다.</div>
-      <div id="aiCoverages" class="ai-coverages"></div>
-      <div id="aiQuestionWrap" class="ai-question-wrap">
-        <label class="ai-label" for="aiQuestion">2. 사고내용</label>
-        <textarea id="aiQuestion" class="ai-input" placeholder="예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다."></textarea>
-        <div class="ai-actions"><button class="ai-ask" type="button" onclick="runAiSample()">AI 적용여부 확인</button></div>
-      </div>
-      <div id="aiResult" class="ai-result"></div>
-      <div class="ai-note">※ 실제 AI 연결 시 시민안전보험과 관련된 질의만 처리하고, 선택한 지자체의 가입 담보 및 보장내용 범위 안에서만 안내하도록 제한할 수 있습니다. 최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.</div>
-    </div>
-  </div>
-</div>
 
-<iframe id="citizenGuideDataFrame"
-  src="./시민안전보험 청구.html"
-  title="시민안전보험 조회 데이터 연동"
-  style="display:none"
-  aria-hidden="true"></iframe>
+
+<iframe id="citizenGuideDataFrame" src="./시민안전보험 청구.html" style="display:none;" aria-hidden="true"></iframe>
 
 <footer>
   <div class="container footer-wrap">
