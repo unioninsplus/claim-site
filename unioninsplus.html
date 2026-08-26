@@ -407,6 +407,33 @@ footer {
   .cg-note{margin-top:20px;padding:15px;border-radius:13px;background:#eef4ff;color:#1e3a8a;font-size:14px}
   @media(max-width:760px){.cg-overlay{padding:8px}.cg-search{grid-template-columns:1fr}.cg-body{padding:18px}.cg-head{padding:20px 18px}.cg-head h2{font-size:22px}}
 
+
+  /* AI 시민안전보험 상담 샘플 */
+  .ai-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:10050;padding:24px;overflow:auto}
+  .ai-overlay.on{display:block}
+  .ai-modal{width:min(760px,100%);margin:40px auto;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+  .ai-head{background:linear-gradient(135deg,#0d2f6f,#1c64d1);color:#fff;padding:22px 26px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+  .ai-head h2{margin:0 0 5px;font-size:25px}.ai-head p{margin:0;opacity:.9;font-size:14px}
+  .ai-close{width:42px;height:42px;border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;font-size:25px;cursor:pointer}
+  .ai-body{padding:24px 26px}
+  .ai-sample-badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff3cd;color:#7a5200;font-size:12px;font-weight:800;margin-bottom:14px}
+  .ai-label{display:block;font-weight:800;color:#0d2f6f;margin:0 0 7px}
+  .ai-input{width:100%;min-height:125px;border:1px solid #cbd5e1;border-radius:12px;padding:13px 14px;font:inherit;resize:vertical;outline:none}
+  .ai-input:focus{border-color:#1c64d1;box-shadow:0 0 0 3px rgba(28,100,209,.10)}
+  .ai-actions{display:flex;justify-content:flex-end;margin-top:12px}
+  .ai-ask{border:0;border-radius:11px;background:#0d2f6f;color:#fff;font-weight:900;padding:12px 18px;cursor:pointer}
+  .ai-result{display:none;margin-top:18px;padding:17px;border:1px solid #dbe4f0;border-radius:14px;background:#f8fafc;line-height:1.75;color:#334155}
+  .ai-result.on{display:block}
+  .ai-result strong{color:#0d2f6f}
+  .ai-note{margin-top:14px;font-size:13px;color:#64748b;line-height:1.65}
+  .ai-search{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:2px 0 12px}
+  .ai-search select,.ai-search button{height:46px;border-radius:11px;font-size:14px;padding:0 10px}
+  .ai-search select{border:1px solid #cbd5e1;background:#fff}.ai-search button{border:0;background:#0d2f6f;color:#fff;font-weight:900;cursor:pointer}
+  .ai-summary{padding:13px 14px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;line-height:1.65;margin-bottom:12px}
+  .ai-coverages{display:none;margin-bottom:16px;padding:12px 14px;border:1px solid #dbe4f0;border-radius:12px;background:#fbfdff;max-height:190px;overflow:auto}
+  .ai-coverages.on{display:block}.ai-coverages div{padding:7px 0;border-bottom:1px solid #edf2f7;font-size:14px}.ai-coverages div:last-child{border-bottom:0}
+  .ai-question-wrap{display:none}.ai-question-wrap.on{display:block}
+  @media(max-width:760px){.ai-search{grid-template-columns:1fr}}
 </style>
 
 
@@ -572,6 +599,9 @@ window.addEventListener("message", function(event){
   if(document.getElementById("cgOverlay")?.classList.contains("on")){
     cgInit();
   }
+  if(document.getElementById("aiOverlay")?.classList.contains("on")){
+    aiInit();
+  }
 });
 
 function openClaimGuide(){
@@ -653,7 +683,11 @@ function cgSearch(){
 
   const seen = new Set();
   const items = (block.coverages || []).filter(item => {
-    const key = String(item.name || "").trim();
+    const originalName = String(item.name || "").trim();
+    const key = originalName
+      .replace(/\s+/g, "")
+      .replace(/\(.*?\)/g, "")
+      .replace(/대중교통상해부상치료비/g, "대중교통부상치료비");
     if(!key || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -703,6 +737,108 @@ document.addEventListener("keydown", e => {
   if(e.key === "Escape") closeClaimGuide();
 });
 
+
+
+function aiFill(id, arr, placeholder){
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+  const first = document.createElement("option");
+  first.value = "";
+  first.textContent = placeholder;
+  el.appendChild(first);
+  (arr || []).forEach(v => {
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = v;
+    el.appendChild(o);
+  });
+}
+
+function aiInit(){
+  const years = Object.keys(GUIDE_DATASET || {}).sort((a,b)=>Number(b)-Number(a));
+  aiFill("aiYear", years, "연도 선택");
+  aiFill("aiSido", Object.keys(GUIDE_FULL_SIGUNGU || {}).sort((a,b)=>a.localeCompare(b,"ko")), "시도 선택");
+  aiFill("aiSigungu", [], "시군구 선택");
+  const sum = document.getElementById("aiSummary");
+  if(sum) sum.textContent = GUIDE_DATA_READY ? "사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요." : "조회 데이터를 불러오는 중입니다.";
+  document.getElementById("aiCoverages")?.classList.remove("on");
+  document.getElementById("aiQuestionWrap")?.classList.remove("on");
+  document.getElementById("aiResult")?.classList.remove("on");
+}
+
+function aiSidoChanged(){
+  const sido = document.getElementById("aiSido").value;
+  aiFill("aiSigungu", (GUIDE_FULL_SIGUNGU?.[sido] || []), "시군구 선택");
+}
+
+function openAiSample(){
+  document.getElementById("aiOverlay").classList.add("on");
+  document.body.style.overflow = "hidden";
+  if(GUIDE_DATA_READY){
+    aiInit();
+  }else{
+    aiInit();
+    requestGuideData();
+    setTimeout(requestGuideData, 200);
+    setTimeout(requestGuideData, 600);
+  }
+}
+function closeAiSample(){
+  document.getElementById("aiOverlay").classList.remove("on");
+  document.body.style.overflow = "";
+}
+
+function aiLookup(){
+  const y = document.getElementById("aiYear").value;
+  const sido = document.getElementById("aiSido").value;
+  const g = document.getElementById("aiSigungu").value;
+  if(!(y && sido && g)){ alert("연도, 시도, 시군구를 선택해 주세요."); return; }
+  const block = GUIDE_DATASET?.[y]?.[sido]?.[g];
+  const sum = document.getElementById("aiSummary");
+  const cv = document.getElementById("aiCoverages");
+  const qw = document.getElementById("aiQuestionWrap");
+  document.getElementById("aiResult").classList.remove("on");
+  if(!block){
+    sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>선택한 조건의 가입 데이터가 없습니다.`;
+    cv.classList.remove("on"); qw.classList.remove("on"); return;
+  }
+  const seen = new Set();
+  const items = (block.coverages || []).filter(item => {
+    const originalName = String(item.name || "").trim();
+    const key = originalName
+      .replace(/\s+/g, "")
+      .replace(/\(.*?\)/g, "")
+      .replace(/대중교통상해부상치료비/g, "대중교통부상치료비");
+    if(!key || seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+  window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
+  sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>보험사: ${block.insurer || "-"} · 보험개시일: ${block.start_date || "-"} · 담보수: <strong>${items.length}개</strong>`;
+  cv.innerHTML = `<div style="font-weight:900;color:#0d2f6f;">조회된 가입 담보</div>` + items.map(it => `<div>${String(it.name || "").trim()}</div>`).join("");
+  cv.classList.add("on");
+  qw.classList.add("on");
+}
+
+function runAiSample(){
+  const q = String(document.getElementById("aiQuestion").value || "").trim();
+  if(!window.AI_SAMPLE_BLOCK){ alert("먼저 연도와 지역을 조회해 주세요."); return; }
+  if(!q){ alert("사고내용을 입력해 주세요."); return; }
+  const {y,sido,g,items} = window.AI_SAMPLE_BLOCK;
+  const text = q.replace(/\s+/g, "");
+  const keys = ["화재","폭발","붕괴","산사태","버스","지하철","대중교통","자전거","PM","킥보드","스쿨존","실버존","익사","감전","농기계","개물림","화상","범죄","강도","성폭력","사망","후유장해","진단","입원","의료비","치료","수술","상해"];
+  const foundKeys = keys.filter(k => text.includes(k));
+  const related = items.filter(it => {
+    const n = String(it.name || "").replace(/\s+/g, "");
+    if(foundKeys.some(k => n.includes(k))) return true;
+    if(text.includes("버스") || text.includes("지하철")) return n.includes("대중교통");
+    if(text.includes("넘어") || text.includes("다침") || text.includes("골절")) return n.includes("상해") || n.includes("진단") || n.includes("의료비");
+    return false;
+  }).slice(0,5);
+  const result = document.getElementById("aiResult");
+  const names = related.length ? related.map(x=>`• ${String(x.name||"").trim()}`).join("<br>") : "현재 샘플 규칙으로는 관련 담보를 특정하지 못했습니다.";
+  result.innerHTML = `<strong>AI 상담 샘플 결과</strong><br><strong>${y} / ${sido} ${g}</strong>의 조회된 가입 담보만 기준으로 확인했습니다.<br><br><strong>관련 가능 담보</strong><br>${names}<br><br><span style="color:#64748b;">현재는 실제 AI API가 아닌 화면·연동 확인용 샘플 판정입니다. 실제 연결 시 담보명과 보장내용 전체를 AI가 함께 읽고 사고내용을 분석하도록 구성할 수 있습니다.</span>`;
+  result.classList.add("on");
+}
 </script>
 
 
@@ -745,7 +881,7 @@ document.addEventListener("keydown", e => {
       </p>
       <div class="hero-buttons">
 
-  <a class="btn btn-primary" href="#" onclick="openClaimGuide(); return false;">
+  <a class="btn btn-primary" href="#" onclick="openClaimGuide(); return false;" style="min-width:310px;padding:18px 28px;font-size:17px;">
   👉 시민안전보험 청구 절차 방법
 </a>
 
@@ -755,27 +891,9 @@ document.addEventListener("keydown", e => {
    onclick="openCitizenClaim(); return false;">
   2. 자전거보험 보험금청구 바로가기
 </a>
-<a class="btn btn-primary"
-   href="https://pf.kakao.com/_exaHyn/chat"
-   target="_blank"
-   style="background:#FEE500;color:#191919;">
-   💬 카카오 상담 문의
-</a>
 
-<div style="flex-basis:100%; height:0;"></div>
-
-<a class="btn btn-secondary"
-   href="./보험금청구서 (표준)_2604.pdf"
-   target="_blank"
-   rel="noopener noreferrer">
-   보험금청구서
-</a>
-
-<a class="btn btn-secondary"
-   href="./docs/"
-   target="_blank"
-   rel="noopener noreferrer">
-   구비서류안내문
+<a class="btn btn-secondary" href="#" onclick="openAiSample(); return false;" style="min-width:310px;padding:18px 28px;font-size:17px;border-color:#1c64d1;color:#0d2f6f;background:#eef4ff;">
+   🤖 AI 시민안전보험 상담 (샘플)
 </a>
   
 </div>
@@ -939,6 +1057,36 @@ document.addEventListener("keydown", e => {
   </div>
 </div>
 </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="aiOverlay" class="ai-overlay">
+  <div class="ai-modal">
+    <div class="ai-head">
+      <div><h2>AI 시민안전보험 상담</h2><p>지자체를 조회한 뒤 사고내용을 입력하여 관련 담보 적용 가능성을 확인하는 샘플 화면입니다.</p></div>
+      <button class="ai-close" type="button" onclick="closeAiSample()">×</button>
+    </div>
+    <div class="ai-body">
+      <div class="ai-sample-badge">현재는 AI API가 연결되지 않은 화면 샘플입니다.</div>
+      <label class="ai-label">1. 가입 지자체 및 보상내역 조회</label>
+      <div class="ai-search">
+        <select id="aiYear"></select>
+        <select id="aiSido" onchange="aiSidoChanged()"></select>
+        <select id="aiSigungu"></select>
+        <button type="button" onclick="aiLookup()">조회</button>
+      </div>
+      <div id="aiSummary" class="ai-summary">조회 데이터를 불러오는 중입니다.</div>
+      <div id="aiCoverages" class="ai-coverages"></div>
+      <div id="aiQuestionWrap" class="ai-question-wrap">
+        <label class="ai-label" for="aiQuestion">2. 사고내용</label>
+        <textarea id="aiQuestion" class="ai-input" placeholder="예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다."></textarea>
+        <div class="ai-actions"><button class="ai-ask" type="button" onclick="runAiSample()">AI 적용여부 확인</button></div>
+      </div>
+      <div id="aiResult" class="ai-result"></div>
+      <div class="ai-note">※ 실제 AI 연결 시 시민안전보험과 관련된 질의만 처리하고, 선택한 지자체의 가입 담보 및 보장내용 범위 안에서만 안내하도록 제한할 수 있습니다. 최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.</div>
     </div>
   </div>
 </div>
