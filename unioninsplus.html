@@ -701,7 +701,8 @@ function cgSearch(){
     return true;
   });
 
-  sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>보험사: ${block.insurer || "-"} · 보험개시일: ${block.start_date || "-"} · 담보수: <strong>${items.length}개</strong>`;
+  const period = block.end_date ? `${block.start_date || "-"} ~ ${block.end_date}` : (block.start_date || "-");
+  sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
   window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
   document.getElementById("aiQuestionWrap")?.classList.add("on");
   setAiAccidentDateRange();
@@ -839,7 +840,8 @@ function aiLookup(){
     seen.add(key); return true;
   });
   window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
-  sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>보험사: ${block.insurer || "-"} · 보험개시일: ${block.start_date || "-"} · 담보수: <strong>${items.length}개</strong>`;
+  const period = block.end_date ? `${block.start_date || "-"} ~ ${block.end_date}` : (block.start_date || "-");
+  sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
   cv.innerHTML = `<div style="font-weight:900;color:#0d2f6f;">조회된 가입 담보</div>` + items.map(it => `<div>${String(it.name || "").trim()}</div>`).join("");
   cv.classList.add("on");
   qw.classList.add("on");
