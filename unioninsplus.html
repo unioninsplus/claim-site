@@ -741,6 +741,12 @@ function cgSearch(){
       detailText = detailText.replace(/\s*\/\s*[\d,]+(?:만원)?\s*$/, "").trim();
     }
 
+    detailText = detailText
+      .replace(/[‧•*※\-]?\s*(보장\s*한도|보장한도|보상\s*한도)\s*:/g, "\n▶ 보장한도: ")
+      .replace(/[‧•*※\-]?\s*(공제\s*금액|공제금액)\s*:/g, "\n▶ 공제 금액: ")
+      .replace(/[‧•*※\-]?\s*(총\s*보상\s*한도|총보상한도)\s*:/g, "\n▶ 총보상한도: ")
+      .trim();
+
     desc.textContent = [
       guide,
       detailText,
