@@ -30879,9 +30879,9 @@ const DATASET = {
             "amount": "30만원"
           },
           {
-            "name": "온열질환진단비(연간1회한)",
-            "detail": "롯데:5 / 디비:5 / 10",
-            "amount": "10만원(15세이상만)"
+            "name": "온열질환진단비",
+            "detail": "롯데:5 / 디비:5 \n(연간1회한)",
+            "amount": "10만원"
           },
           {
             "name": "개물림.부딪힘 사고 진단비(연간1회한)",
@@ -36878,18 +36878,18 @@ for (const item of subjectMap) {
   }
 
   if (subject && action) {
-    return subject + "로 " + action + extra;
-  }
+  return String(name || "") + " : " + subject + "로 " + action + extra;
+}
 
-  if (action) {
-    return action + extra;
-  }
+if (action) {
+  return String(name || "") + " : " + action + extra;
+}
 
-  if (subject) {
-    return subject + "로 인한 사고가 발생한 경우 약관 및 증권 기준에 따라 지급될 수 있습니다." + extra;
-  }
+if (subject) {
+  return String(name || "") + " : " + subject + "로 인한 사고가 발생한 경우 약관 및 증권 기준에 따라 지급될 수 있습니다." + extra;
+}
 
-  return "";
+return String(name || "") + " : 해당 담보명 기준으로 약관 및 증권에서 정한 지급사유에 해당하는 경우 지급될 수 있습니다.";
 }
 
 function normalizeInsurerNameForPolicy(v) {
