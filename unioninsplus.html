@@ -1043,7 +1043,13 @@ function applyHistoricalTypeSignals(accident, accidentText) {
   if (/자전거/.test(n)) addCause("자전거");
   if (/스쿨존/.test(n)) addCause("스쿨존");
   if (/개물림/.test(n)) addCause("개물림");
-  if (/농기계/.test(n)) addCause("농기계");
+  if (/농기계|경운기|트랙터|예초기/.test(n)) addCause("농기계");
+  if (/익사/.test(n)) addCause("익사");
+  if (/감전/.test(n)) addCause("감전");
+  if (/가스/.test(n)) addCause("가스");
+  if (/유독성물질|독성물질/.test(n)) addCause("유독성물질");
+  if (/온열질환|열사병|일사병/.test(n)) addCause("온열질환");
+  if (/야생동물|뱀물림/.test(n)) addCause("야생동물");
   if (/화상/.test(n)) addCause("화상");
   if (/일반상해|상해진단|상해의료비|상해수술/.test(n) && !accident.causes.length) addCause("일반상해");
 
@@ -1261,9 +1267,13 @@ function analyzeAccident(accidentText) {
     "개에부딪혀", "개와부딪혀"
   ])) addCause("개물림");
 
-  if (hasAny(t, ["농기계", "경운기", "트랙터", "콤바인", "관리기"])) addCause("농기계");
+  if (hasAny(t, ["농기계", "경운기", "트랙터", "콤바인", "관리기", "예초기", "승용예초기", "로타리"])) addCause("농기계");
   if (hasAny(t, ["익사", "물에빠져사망", "물에빠짐", "익수", "수로에빠짐"])) addCause("익사");
-  if (hasAny(t, ["감전", "감전사고"])) addCause("감전");
+  if (hasAny(t, ["감전", "감전사고", "전기감전"])) addCause("감전");
+  if (hasAny(t, ["가스사고", "가스누출", "가스폭발", "가스중독", "도시가스사고", "엘피가스사고", "lpg가스사고"])) addCause("가스");
+  if (hasAny(t, ["유독성물질", "독성물질", "유해화학물질", "화학물질중독", "유독가스중독"])) addCause("유독성물질");
+  if (hasAny(t, ["온열질환", "열사병", "일사병", "열탈진", "폭염질환"])) addCause("온열질환");
+  if (hasAny(t, ["야생동물", "뱀에물림", "뱀에게물림", "멧돼지", "야생동물피해"])) addCause("야생동물");
   if (hasAny(t, [
     "화상", "데임", "데여", "뜨거운물", "끓는물", "열탕",
     "핫팩", "전기장판", "온열찜질", "찜질기", "가습기", "기름에수상",
@@ -1371,9 +1381,13 @@ function classifyCoverage(item) {
   if (hasAny(nameT, ["스쿨존", "어린이보호구역"])) addCause("스쿨존");
   if (hasAny(nameT, ["실버존", "노인보호구역"])) addCause("실버존");
   if (hasAny(nameT, ["개물림", "견물림", "반려견", "유기견", "개부딪힘"])) addCause("개물림");
-  if (hasAny(nameT, ["농기계"])) addCause("농기계");
+  if (hasAny(nameT, ["농기계", "경운기", "트랙터", "예초기"])) addCause("농기계");
   if (hasAny(nameT, ["익사"])) addCause("익사");
   if (hasAny(nameT, ["감전"])) addCause("감전");
+  if (hasAny(nameT, ["가스사고", "가스상해", "가스"])) addCause("가스");
+  if (hasAny(nameT, ["유독성물질", "독성물질", "유해화학물질"])) addCause("유독성물질");
+  if (hasAny(nameT, ["온열질환", "열사병", "일사병"])) addCause("온열질환");
+  if (hasAny(nameT, ["야생동물", "뱀물림", "야생동물피해"])) addCause("야생동물");
   if (hasAny(nameT, ["화상"])) addCause("화상");
   if (hasAny(nameT, ["자연재해", "자연재난", "태풍", "호우", "지진", "폭우", "폭설"])) addCause("자연재난");
   if (hasAny(nameT, ["사회재난", "재난선포", "특별재난"])) addCause("사회재난");
@@ -1437,6 +1451,10 @@ function isSpecialCoverageCause(cause) {
     "농기계",
     "익사",
     "감전",
+    "가스",
+    "유독성물질",
+    "온열질환",
+    "야생동물",
     "화상",
     "자연재난",
     "사회재난",
@@ -1511,7 +1529,14 @@ function coverageMatches(accident, coverage, accidentText) {
     return resultMatches(accident, coverage);
   }
 
-  // 원인표시가 없는 담보는 결과가 정확히 맞는 경우만 후보
+  // 담보명 자체가 특정 사고원인을 전제로 하는데 원인분류에 잡히지 않은 경우에는
+  // 결과(사망/후유/진단 등)만 같다는 이유로 적용시키지 않는다.
+  // 실제 지급사례·담보명·약관/설명에서 원인이 확인되는 담보의 교차 오탐 방지용 안전장치.
+  if (/사고|피해|재난|범죄|감염|온열|익사|감전|가스|농기계|교통|자전거|화재|폭발|붕괴|산사태|지반침하|화상|개물림|야생동물|유독/.test(coverage.nameRaw)) {
+    return false;
+  }
+
+  // 정말로 원인 제한이 없는 담보만 결과가 정확히 맞는 경우 후보
   return resultMatches(accident, coverage);
 }
 
@@ -1622,6 +1647,11 @@ function getMatchPriority(accident, coverage) {
   return 3;
 }
 
+function coverageDedupeKey(item) {
+  return claimNorm(item && item.name)
+    .replace(/후유장해/g, "후유");
+}
+
 function getMatchedCoverages(items, accidentText) {
   const accident = analyzeAccident(accidentText);
   const matched = [];
@@ -1690,7 +1720,78 @@ function getMatchedCoverages(items, accidentText) {
     a.index - b.index
   );
 
-  return matched;
+  // 같은 의미의 담보명은 한 번만 표시
+  // 예: 대중교통이용중후유 / 대중교통이용중후유장해
+  const seenCoverageKeys = new Set();
+  return matched.filter(m => {
+    const key = coverageDedupeKey(m.item);
+    if (seenCoverageKeys.has(key)) return false;
+    seenCoverageKeys.add(key);
+    return true;
+  });
+}
+
+
+function getFutureConditionalCoverages(items, accidentText) {
+  const accident = analyzeAccident(accidentText);
+  const accidentSpecial = getAccidentSpecialCauses(accident);
+
+  // 이미 사망/후유장해가 확정된 입력이면 기존 확정판정 사용
+  if (accident.results.includes("사망") || accident.results.includes("후유장해")) return [];
+
+  const candidates = [];
+
+  (items || []).forEach((item, index) => {
+    const coverage = classifyCoverage(item);
+    if (!coverage.raw || coverage.raw === "0" || coverage.raw === "-") return;
+    if (coverage.excludeTraffic && accident.isTraffic) return;
+
+    const futureResults = (coverage.results || []).filter(r => r === "사망" || r === "후유장해");
+    if (!futureResults.length) return;
+
+    const coverageSpecial = (coverage.causes || []).filter(isSpecialCoverageCause);
+    let causeRelevant = false;
+
+    if (coverageSpecial.length) {
+      causeRelevant = coverageSpecial.some(c => accidentSpecial.has(c));
+    } else if ((coverage.causes || []).includes("일반상해")) {
+      causeRelevant = accident.causes.length > 0;
+    }
+
+    if (!causeRelevant) return;
+
+    const cc = evaluateCoverageConditions(accident, coverage.conditions, accidentText);
+    if (!cc.pass && cc.failed.length) return;
+
+    const labels = [];
+    if (futureResults.includes("후유장해")) labels.push("후유장해");
+    if (futureResults.includes("사망")) labels.push("사망");
+
+    let message = "";
+    if (futureResults.includes("후유장해")) {
+      message = "현재 치료 중이거나 후유장해가 아직 확정되지 않은 경우에는 즉시 지급 여부를 판단하기 어렵습니다. 치료 후 영구적인 장해가 남고 약관의 장해분류표상 지급률에 해당하는 장해로 판정되는 경우 후유장해 보험금 청구가 가능할 수 있습니다. 장해진단 시점과 인정 여부는 해당 약관 및 보험사 심사기준에 따라 확인이 필요합니다.";
+    } else {
+      message = "현재 사고결과만으로 사망담보 지급대상은 아니지만, 동일 사고원인에 대한 사망담보가 가입되어 있습니다. 보험기간 중 해당 사고의 직접결과로 사망한 경우 약관상 사망보험금 청구대상이 될 수 있습니다.";
+    }
+
+    candidates.push({
+      item,
+      index,
+      priority: getMatchPriority(accident, coverage),
+      labels,
+      message
+    });
+  });
+
+  candidates.sort((a,b) => a.priority - b.priority || a.index - b.index);
+
+  const seen = new Set();
+  return candidates.filter(x => {
+    const key = coverageDedupeKey(x.item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 
@@ -1784,7 +1885,34 @@ function runAiSample(){
     const accident = analyzeAccident(q);
     const matched = getMatchedCoverages(items || [], q);
     const conditionExcluded = getConditionExcludedCoverages(items || [], q);
+    const futureConditional = getFutureConditionalCoverages(items || [], q);
     const questions = buildClaimQuestions(matched, accident);
+
+    if(!matched.length && futureConditional.length){
+      const causeText = accident.causes.length ? accident.causes.join(", ") : "원인 미분류";
+      const resultText = accident.results.length ? accident.results.join(", ") : "현재 결과 미확정";
+
+      result.innerHTML =
+        `<strong>담보별 자동 확인 결과</strong><br>` +
+        `<div style="font-size:13px;margin:8px 0 12px;color:#475569;">자동분석: 원인 [${escapeHtml(causeText)}] / 결과 [${escapeHtml(resultText)}]</div>` +
+        `<div style="margin-bottom:12px;padding:10px;border:1px solid #ffe1a6;border-radius:10px;background:#fffaf0;">` +
+          `<b style="color:#c46a00;">현재 지급조건은 미확정이지만 관련 가입담보가 확인됩니다.</b><br>` +
+          `현재 상태만으로 '해당 없음'으로 판단하지 않고, 향후 사고결과가 확정되면 아래 담보를 다시 확인할 수 있습니다.` +
+        `</div>` +
+        futureConditional.map(m => `
+          <div style="margin-bottom:12px;padding:10px;border:1px solid #d9e8ff;border-radius:10px;background:#f8fbff;">
+            <b style="color:#0d2f6f;">${escapeHtml(m.item?.name || "-")}</b><br>
+            <span style="color:#c46a00;font-weight:800;">조건 확인 필요 · 향후 청구 가능성 있음</span><br>
+            ${escapeHtml(m.message)}
+            ${m.item?.detail ? `<br>${escapeHtml(m.item.detail)}` : ""}
+            ${m.item?.amount ? `<br>보장금액 : ${escapeHtml(m.item.amount)}` : ""}
+          </div>
+        `).join("") +
+        `<div style="margin-top:12px;font-size:12px;color:#64748b;">※ 최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.</div>`;
+
+      result.classList.add("on");
+      return;
+    }
 
     if(!matched.length){
       let guide = "사고내용을 조금 더 구체적으로 입력해 주세요.";
