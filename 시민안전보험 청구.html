@@ -32671,7 +32671,7 @@ const DATASET = {
           },
           {
             "name": "영문종합배상책임(CGL)\n상해의료비",
-            "detail": "메리츠:※ CGL:메리츠화재해상보험_참여사:카카오페이/롯데손보\n<영문영업배상책임 (총 보상한도: 400,000,000)>\n가. 대인/대물 배상책임\n- 김포시민의 제3자에 대한 법률상 신체적, 재물적 배상책임이 발생한 경우\n‧ 보장한도 : 대인/대물 1,000,000원‧ 공제금액 : 청구액의 20%, 최소 대인/대물 400,000,00원  ‧ 총보상한도 : 400,000,000원\n\n나. 의료비담보특약\n- 김포시민이 국내에서 발생한 상해사고로 치료를 받은 경우 의료비의 급여항목 중 본인부담금을 지급\n ‧ 피해자의 과실 유무를 불문하고 상해의 직접결과로 응급비용, 치료비, 수술비, X-ray검사비, 치과치료비, 입원비 담보 \n ‧ 보장한도 : 인당 500,000원\n ‧ 공제금액 : 매 청구 당 30,000원\n ‧ 총보상한도 : 400,000,000원 \n-교통사고(단, 자전거(공유형제외)/개인용이동수단(PM)(공유형제외) / 스쿨존/실버존 사고는 보상함) \n\n다. 영문영업배상책임 보험금지급 제한사항(차 vs 자전거사고는 면책)\n-산업재해법 등 법령에 의해 정부가 보상하는 사고 - 실손의료비 보험 가입자 (개인, 단체, 실버 등 실손의료비 보험 포함) - 국민건강보험공단 부담의료비 - 비급여 항목 - 기타 배상책임보험 및 국가지원금을 통한 보상처리 가능 사고 - 영조물배상공제에서 지급되는 상해사고 - 의무보험으로 보상되는 상해사고 - 기타 자세한 사항은 보험증권 및 보험약관에 따름\n자전거 사망 /후유장해/자전거사고진단금은 \n1899-7751 안내",
+            "detail": "가. 의료비담보특약\n- 김포시민이 국내에서 발생한 상해사고로 치료를 받은 경우 의료비의 급여항목 중 본인부담금을 지급\n ‧ 피해자의 과실 유무를 불문하고 상해의 직접결과로 응급비용, 치료비, 수술비, X-ray검사비, 치과치료비, 입원비 담보 \n ‧ 보장한도 : 인당 500,000원\n ‧ 공제금액 : 매 청구 당 30,000원\n ‧ 총보상한도 : 400,000,000원 \n-교통사고(단, 자전거(공유형제외)/개인용이동수단(PM)(공유형제외) / 스쿨존/실버존 사고는 보상함) \n\n나. 영문영업배상책임 보험금지급 제한사항(차 vs 자전거사고는 면책)\n-산업재해법 등 법령에 의해 정부가 보상하는 사고 - 실손의료비 보험 가입자 (개인, 단체, 실버 등 실손의료비 보험 포함) - 국민건강보험공단 부담의료비 - 비급여 항목 - 기타 배상책임보험 및 국가지원금을 통한 보상처리 가능 사고 - 영조물배상공제에서 지급되는 상해사고 - 의무보험으로 보상되는 상해사고 - 기타 자세한 사항은 보험증권 및 보험약관에 따름\n자전거 사망 /후유장해/자전거사고진단금은 \n1899-7751 안내",
             "amount": "자전거 사망\n후유장해\n자전거사고진단금 \n1899-7751 안내"
           },
           {
@@ -37741,14 +37741,23 @@ function hasAny(text, arr) {
 }
 
 function analyzeAccident(accidentText) {
+  const rawText = String(accidentText || "").replace(/\s+/g, "");
   const t = claimNorm(accidentText);
+
+  // claimNorm은 '-'와 괄호를 제거하므로 진단기간 표기는 원문 기준으로 별도 확인
+  const diagnosisDuration =
+    /(?:4|5|6|7|8|9|10|11|12|16)주/.test(rawText) ||
+    /-(?:4|5|6|7|8|9|10|11|12|16)(?!급)/.test(rawText) ||
+    /\((?:4|5|6|7|8|9|10|11|12|16)\)/.test(rawText) ||
+    /(?:1|2|3)개월/.test(rawText) ||
+    /(?:넘어짐|다침|수상|접지름|접질림|골절)(?:4|5|6|7|8|9|10|11|12|16)$/.test(t);
 
   const a = {
     raw: t,
     causes: [],
     results: [],
     isTraffic: false,
-    hasDiagnosisWeeks: /(?:[1-9]|1[0-9])주/.test(t),
+    hasDiagnosisWeeks: diagnosisDuration,
     noActualLoss: /실손미가입|실손없음|실손안함|실비미가입|실비없음/.test(t),
     hasActualLoss: /실손가입|실손있음|실비가입|실비있음/.test(t)
   };
@@ -37756,47 +37765,79 @@ function analyzeAccident(accidentText) {
   const addCause = v => { if (v && !a.causes.includes(v)) a.causes.push(v); };
   const addResult = v => { if (v && !a.results.includes(v)) a.results.push(v); };
 
-  // 1) 사고 원인
-  if (hasAny(t, ["화재", "불", "불이남", "불남", "주택화재", "화재사고"])) addCause("화재");
+  // 1) 사고 원인 - 실제 지급사례 표현을 보강하되 서로 다른 원인은 분리 판정
+  if (hasAny(t, ["화재", "불이남", "불남", "주택화재", "자택화재", "주거지화재", "여관화재", "화재사고", "화재발생"])) addCause("화재");
   if (hasAny(t, ["폭발", "폭발사고"])) addCause("폭발");
-  if (hasAny(t, ["붕괴", "무너짐", "건물붕괴"])) addCause("붕괴");
+  if (hasAny(t, ["붕괴", "건물붕괴", "옹벽붕괴", "무너져", "무너짐"])) addCause("붕괴");
   if (hasAny(t, ["산사태", "토사붕괴"])) addCause("산사태");
+  if (hasAny(t, ["지반침하", "땅꺼짐", "싱크홀"])) addCause("지반침하");
 
-  if (hasAny(t, ["버스", "지하철", "전철", "기차", "열차", "택시", "대중교통", "전세버스"])) addCause("대중교통");
+  // 대중교통은 단순히 역/정류장 주변에 있었다는 이유만으로 잡지 않는다.
+  const transitVehicle = hasAny(t, ["버스", "마을버스", "시내버스", "전세버스", "지하철", "전철", "기차", "열차", "택시", "대중교통"]);
+  const transitUseContext = hasAny(t, [
+    "탑승", "승차", "하차", "차내", "버스안", "버스내", "지하철안", "열차안",
+    "이동중", "운행중", "급정거", "급출발", "급제동", "추돌", "충돌", "교통사고",
+    "버스사고", "마을버스사고", "시내버스사고", "지하철사고", "열차사고", "택시사고",
+    "승강장과열차사이", "문에끼임"
+  ]);
+  const transitWaitingOnly = hasAny(t, ["버스기다리다", "정류장에서기다리", "지하철입구앞", "역입구앞"]);
+  if (transitVehicle && transitUseContext && !transitWaitingOnly) addCause("대중교통");
+
   if (hasAny(t, ["자전거", "전기자전거", "따릉이"])) addCause("자전거");
   if (hasAny(t, ["킥보드", "전동킥보드", "pm", "피엠", "개인형이동장치"])) addCause("PM");
   if (hasAny(t, ["스쿨존", "어린이보호구역"])) addCause("스쿨존");
   if (hasAny(t, ["실버존", "노인보호구역"])) addCause("실버존");
 
-  if (hasAny(t, ["개물림", "개에게물림", "개한테물림", "견물림"])) addCause("개물림");
-  if (hasAny(t, ["농기계", "경운기", "트랙터", "콤바인", "예초기"])) addCause("농기계");
-  if (hasAny(t, ["익사", "물에빠져사망", "물에빠짐", "익수"])) addCause("익사");
+  if (hasAny(t, [
+    "개물림", "개에게물림", "개한테물림", "개에물림", "견물림",
+    "강아지에게물림", "강아지한테물림", "반려견에게물림", "들개에물림",
+    "개에부딪혀", "개와부딪혀"
+  ])) addCause("개물림");
+
+  if (hasAny(t, ["농기계", "경운기", "트랙터", "콤바인", "관리기"])) addCause("농기계");
+  if (hasAny(t, ["익사", "물에빠져사망", "물에빠짐", "익수", "수로에빠짐"])) addCause("익사");
   if (hasAny(t, ["감전", "감전사고"])) addCause("감전");
-  if (hasAny(t, ["화상", "데임", "뜨거운물"])) addCause("화상");
+  if (hasAny(t, [
+    "화상", "데임", "데여", "뜨거운물", "끓는물", "열탕",
+    "핫팩", "전기장판", "온열찜질", "찜질기", "가습기", "기름에수상",
+    "냄비에수상", "국물에수상", "용접중화상"
+  ])) addCause("화상");
 
   if (hasAny(t, ["태풍", "호우", "폭우", "폭설", "홍수", "지진", "낙뢰", "강풍", "침수", "해일", "자연재해", "자연재난"])) addCause("자연재난");
   if (hasAny(t, ["사회재난", "재난선포", "특별재난"])) addCause("사회재난");
-  if (hasAny(t, ["강도", "강력범죄", "범죄", "폭행", "상해범죄", "흉기", "살인"])) addCause("범죄");
+  if (hasAny(t, ["강도", "강력범죄", "범죄", "폭행", "상해범죄", "흉기", "살인", "칼에찔"])) addCause("범죄");
 
-  // 2) 결과 - 사망/후유장해를 최우선으로 확정
-  if (hasAny(t, ["사망", "숨짐", "죽음", "죽었다", "사망함", "질식사", "사망사고"])) addResult("사망");
-  if (hasAny(t, ["후유장해", "후유", "장해", "장애"])) addResult("후유장해");
+  // 2) 결과 - 사망/후유장해를 최우선
+  if (hasAny(t, ["사망", "숨짐", "죽음", "죽었다", "사망함", "질식사", "사망사고", "추락사"])) addResult("사망");
+  if (hasAny(t, ["후유장해", "후유", "장해", "장애", "인공관절치환"])) addResult("후유장해");
 
-  // 사망·후유장해가 명확하면 진단/입원/의료비 질문으로 빠지지 않게 한다.
   if (!a.results.includes("사망") && !a.results.includes("후유장해")) {
-    if (hasAny(t, ["진단", "진단서", "진단금", "4주", "5주", "6주", "7주", "8주", "골절"])) addResult("진단");
-    if (hasAny(t, ["입원", "입원함"])) addResult("입원");
-    if (hasAny(t, ["치료", "통원", "병원", "응급실", "진료", "수술", "의료비"])) addResult("의료비");
+    if (
+      diagnosisDuration ||
+      hasAny(t, [
+        "진단", "진단서", "진단금", "골절", "골절상해", "뼈가부러", "뼈부러",
+        "접지름", "접질림", "삐끗", "삐긋", "발목꺾", "발목이꺽", "발목이꺾"
+      ])
+    ) addResult("진단");
+
+    if (hasAny(t, ["입원", "입원함", "입원후"])) addResult("입원");
+
+    if (hasAny(t, [
+      "치료", "치료받", "통원", "병원", "병원치료", "응급실", "진료",
+      "수술", "봉합", "꿰맴", "의료비", "치료비", "진료비"
+    ])) addResult("의료비");
+
     if (hasAny(t, ["피해", "파손", "소실", "전소", "반소", "수리", "복구", "도배", "장판", "인테리어", "숙박", "식대", "재난비용"])) addResult("재난비용");
   }
 
-  // 3) 교통사고 여부
-  a.isTraffic = hasAny(t, [
-    "교통사고", "자동차사고", "차량사고",
-    "자동차", "차량", "차에치", "차와충돌", "차량충돌",
-    "오토바이", "버스", "택시", "지하철", "전철", "기차", "열차",
-    "자전거", "킥보드", "전동킥보드", "pm", "피엠"
-  ]);
+  // 3) 교통사고 여부 - 실제 차량/대중교통 이용·충돌 상황만
+  a.isTraffic =
+    hasAny(t, [
+      "교통사고", "자동차사고", "차량사고", "차에치", "차에치임", "차에치여",
+      "차와충돌", "차량충돌", "오토바이사고", "자전거사고", "전동킥보드사고",
+      "차를피하다", "차량을피하다"
+    ]) ||
+    (transitVehicle && transitUseContext && !transitWaitingOnly);
 
   const hasPedestrianContext = hasAny(t, [
     "보행중", "보행자", "걷다가", "걸어가다", "길을걷다",
@@ -37805,10 +37846,13 @@ function analyzeAccident(accidentText) {
 
   if (a.isTraffic && hasPedestrianContext) addCause("보행중교통사고");
 
-  // 4) 별도 특수원인이 없지만 다친 사고면 일반상해
+  // 4) 특수원인이 없지만 실제 지급자료에서 반복되는 일반상해 표현
   if (!a.causes.length && hasAny(t, [
-    "넘어짐", "넘어져", "낙상", "미끄러짐", "미끄러져",
-    "계단", "부딪힘", "상해", "다침", "골절", "찢어짐"
+    "넘어짐", "넘어져", "넘어지", "낙상", "추락", "떨어짐", "굴러떨어",
+    "미끄러짐", "미끄러져", "헛디뎌", "헛디딤", "접지름", "접질림",
+    "삐끗", "삐긋", "꺾임", "부딪힘", "부딪혀", "충돌", "끼임", "눌림",
+    "찔림", "베임", "절단", "파열", "상해", "다침", "다쳐", "수상",
+    "골절", "찢어짐", "타박", "주저앉"
   ])) {
     addCause("일반상해");
   }
@@ -37840,16 +37884,23 @@ function classifyCoverage(item) {
   const addCause = v => { if (v && !c.causes.includes(v)) c.causes.push(v); };
   const addResult = v => { if (v && !c.results.includes(v)) c.results.push(v); };
 
-  // 원인 판정은 담보명을 최우선으로 사용한다.
-  // detail에 다른 특수담보 설명이 섞여 현재 담보 원인이 오염되는 것을 방지한다.
-  if (hasAny(nameT, ["화재", "폭발", "붕괴", "산사태"])) addCause("화재폭발붕괴산사태");
+  // 원인 판정은 담보명 기준.
+  // 화재·폭발·붕괴·산사태를 하나로 뭉치지 않고 담보명에 실제 들어있는 원인만 각각 등록한다.
+  // 예: "폭발화재붕괴산사태 상해사망" => 네 원인 모두,
+  //     "지반침하,산사태상해사망" => 지반침하/산사태만.
+  if (hasAny(nameT, ["화재"])) addCause("화재");
+  if (hasAny(nameT, ["폭발"])) addCause("폭발");
+  if (hasAny(nameT, ["붕괴"])) addCause("붕괴");
+  if (hasAny(nameT, ["산사태"])) addCause("산사태");
+  if (hasAny(nameT, ["지반침하", "싱크홀", "땅꺼짐"])) addCause("지반침하");
+
   if (hasAny(nameT, ["대중교통", "전세버스"])) addCause("대중교통");
   if (hasAny(nameT, ["어린이보행중교통사고", "보행중교통사고", "도로보행중"])) addCause("보행중교통사고");
   if (hasAny(nameT, ["자전거"])) addCause("자전거");
   if (hasAny(nameT, ["pm", "피엠", "킥보드", "개인형이동장치"])) addCause("PM");
   if (hasAny(nameT, ["스쿨존", "어린이보호구역"])) addCause("스쿨존");
   if (hasAny(nameT, ["실버존", "노인보호구역"])) addCause("실버존");
-  if (hasAny(nameT, ["개물림", "견물림", "반려견", "유기견"])) addCause("개물림");
+  if (hasAny(nameT, ["개물림", "견물림", "반려견", "유기견", "개부딪힘"])) addCause("개물림");
   if (hasAny(nameT, ["농기계"])) addCause("농기계");
   if (hasAny(nameT, ["익사"])) addCause("익사");
   if (hasAny(nameT, ["감전"])) addCause("감전");
@@ -37858,14 +37909,16 @@ function classifyCoverage(item) {
   if (hasAny(nameT, ["사회재난", "재난선포", "특별재난"])) addCause("사회재난");
   if (hasAny(nameT, ["강도", "강력범죄", "범죄피해", "범죄"])) addCause("범죄");
 
-  // 담보명이 포괄적(CGL 등)일 때만 상세설명을 보조 사용
-  if (!c.causes.length && hasAny(nameT, ["영문종합배상책임", "cgl", "상해의료비", "의료비"])) {
+  // 포괄 상해/CGL 계열은 일반상해
+  if (!c.causes.length && hasAny(nameT, [
+    "영문종합배상책임", "cgl", "상해의료비", "의료비",
+    "일반상해", "상해진단", "상해사고진단"
+  ])) {
     addCause("일반상해");
   }
 
   const noDeath = /사망미포함|사망제외|사망은제외|사망불포함/.test(nameT);
 
-  // 결과도 담보명을 최우선으로 판정
   if (/사망/.test(nameT) && !noDeath) addResult("사망");
   if (/후유|장해|장애/.test(nameT)) addResult("후유장해");
   if (/진단|진단금|진단위로금|상해사고진단|상해진단/.test(nameT)) addResult("진단");
@@ -37873,7 +37926,6 @@ function classifyCoverage(item) {
   if (/의료비|치료비|cgl|영문종합배상|배상책임/.test(nameT)) addResult("의료비");
   if (/재난비용|비용지원/.test(nameT)) addResult("재난비용");
 
-  // 이름만으로 결과가 불명확한 담보는 상세설명을 보조적으로 본다.
   if (!c.results.length) {
     if (/사망/.test(detailT) && !/사망미포함|사망제외/.test(detailT)) addResult("사망");
     if (/후유|장해|장애/.test(detailT)) addResult("후유장해");
@@ -37883,7 +37935,6 @@ function classifyCoverage(item) {
     if (/재난비용|비용지원/.test(detailT)) addResult("재난비용");
   }
 
-  // 특수원인이 없는 상해 담보는 일반상해로 분류
   if (!c.causes.length && /상해/.test(nameT)) addCause("일반상해");
 
   return c;
@@ -37893,11 +37944,7 @@ function getAccidentSpecialCauses(accident) {
   const set = new Set();
 
   (accident.causes || []).forEach(c => {
-    if (["화재", "폭발", "붕괴", "산사태"].includes(c)) {
-      set.add("화재폭발붕괴산사태");
-    } else if (c !== "일반상해") {
-      set.add(c);
-    }
+    if (c !== "일반상해") set.add(c);
   });
 
   return set;
@@ -37905,7 +37952,11 @@ function getAccidentSpecialCauses(accident) {
 
 function isSpecialCoverageCause(cause) {
   return [
-    "화재폭발붕괴산사태",
+    "화재",
+    "폭발",
+    "붕괴",
+    "산사태",
+    "지반침하",
     "대중교통",
     "보행중교통사고",
     "자전거",
@@ -38013,7 +38064,15 @@ function makeClaimNotes(item, accidentText) {
     }
   }
 
-  if (item.detail) notes.push(escapeHtml(item.detail));
+  if (item.detail) {
+    const detailHtml = escapeHtml(item.detail)
+      // 적용여부 설명의 긴 약관문구만 보기 좋게 줄바꿈한다.
+      .replace(/\s+([가-하]\.)\s*/g, "<br>$1 ")
+      .replace(/‧\s*/g, "<br>‧ ")
+      .replace(/\s*-\s*(?=(?:교통사고|산업재해법|실손의료비|국민건강보험공단|비급여|기타|영조물배상공제|의무보험))/g, "<br>- ")
+      .replace(/\s*(자전거\s*사망\s*\/후유장해\/자전거사고진단금은)/g, "<br>$1");
+    notes.push(detailHtml.replace(/^<br>/, ""));
+  }
   if (item.amount) notes.push("보장금액 : " + escapeHtml(item.amount));
 
   return notes;
