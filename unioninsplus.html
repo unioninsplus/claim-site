@@ -2642,5 +2642,110 @@ function runAiSample(){
   };
 })();
 </script>
-</body>
+\n<script>
+/* 2026-09-03 추가만: 온열·한랭질환 / 자연재난·사회재난 확인 보강
+   기존 적용여부 판정/데이터/매칭은 수정하지 않고 마지막에 확인 규칙만 추가 */
+(function(){
+  const _prevAnalyze_disasterDisease = analyzeAccident;
+  const _prevClassify_disasterDisease = classifyCoverage;
+  const _prevGetMatched_disasterDisease = getMatchedCoverages;
+  const _prevBuildQuestions_disasterDisease = (typeof buildClaimQuestions === "function") ? buildClaimQuestions : null;
+  const _prevMakeNotes_disasterDisease = makeClaimNotes;
+
+  const hasText = (t, arr) => arr.some(v => t.includes(claimNorm(v)));
+
+  analyzeAccident = function(accidentText){
+    const a = _prevAnalyze_disasterDisease(accidentText);
+    const t = claimNorm(accidentText);
+
+    const heatDirect = hasText(t, ["온열질환","열사병","일사병","열탈진","열경련","폭염질환"]);
+    const heatSuspect = hasText(t, ["폭염","무더위","더위","고온","더운날","더운곳"]);
+    const coldDirect = hasText(t, ["한랭질환","저체온증","동상","동창","침수병","침족병"]);
+    const coldSuspect = hasText(t, ["한파","혹한","추위","추운날","저온노출"]);
+    const diagnosisConfirmed = hasText(t, ["진단받","진단됨","진단확정","진단서","진단"]);
+
+    a.heatIllnessNeedsDiagnosis = heatSuspect && !heatDirect && !diagnosisConfirmed;
+    a.coldIllnessNeedsDiagnosis = coldSuspect && !coldDirect && !diagnosisConfirmed;
+
+    if (heatDirect || (heatSuspect && diagnosisConfirmed)) {
+      if (!(a.causes || []).includes("온열질환")) a.causes.push("온열질환");
+      if (!(a.results || []).includes("진단")) a.results.push("진단");
+    }
+    if (coldDirect || (coldSuspect && diagnosisConfirmed)) {
+      if (!(a.causes || []).includes("한랭질환")) a.causes.push("한랭질환");
+      if (!(a.results || []).includes("진단")) a.results.push("진단");
+    }
+
+    const naturalWords = hasText(t, ["태풍","호우","폭우","폭설","홍수","지진","낙뢰","강풍","침수","해일","자연재해","자연재난"]);
+    const naturalConfirmed = hasText(t, ["자연재해로인정","자연재난으로인정","자연재해선포","자연재난선포","재난지역선포","특별재난지역"]);
+    if (naturalWords) a.naturalDisasterNeedsRecognition = !naturalConfirmed;
+
+    const socialDirect = hasText(t, ["사회재난","사회재난선포","사회재난으로인정","특별재난지역"]);
+    const massCasualty = hasText(t, ["다수사망","다수의사망","다수인명피해","다수의인명피해","대형참사","대형사고","집단사망","여러명사망","여러명이사망"]);
+    if (massCasualty && !(a.causes || []).includes("사회재난")) a.causes.push("사회재난");
+    if (socialDirect || massCasualty) a.socialDisasterNeedsRecognition = !hasText(t, ["사회재난선포","사회재난으로인정","사회재난인정","특별재난지역"]);
+
+    return a;
+  };
+
+  classifyCoverage = function(item){
+    const c = _prevClassify_disasterDisease(item);
+    const n = claimNorm((item && item.name) || "");
+    if (hasText(n, ["한랭질환","저체온증","동상"]) && !(c.causes || []).includes("한랭질환")) c.causes.push("한랭질환");
+    return c;
+  };
+
+  /* 더위/추위 표현만 있고 병원 진단명이 아직 확인되지 않은 경우에도
+     해당 지자체에 실제 온열·한랭질환 담보가 있으면 확인 대상으로만 표시 */
+  getMatchedCoverages = function(items, accidentText){
+    const matched = _prevGetMatched_disasterDisease(items, accidentText) || [];
+    const a = analyzeAccident(accidentText);
+
+    if (a.heatIllnessNeedsDiagnosis || a.coldIllnessNeedsDiagnosis) {
+      const wanted = a.heatIllnessNeedsDiagnosis ? "온열질환" : "한랭질환";
+      (items || []).forEach((item, index) => {
+        const c = classifyCoverage(item);
+        if (!(c.causes || []).includes(wanted)) return;
+        if (!matched.some(m => m.index === index)) {
+          matched.push({item, index, priority:1, notes:makeClaimNotes(item, accidentText)});
+        }
+      });
+      matched.sort((x,y) => x.priority-y.priority || x.index-y.index);
+    }
+    return matched;
+  };
+
+  makeClaimNotes = function(item, accidentText){
+    const notes = _prevMakeNotes_disasterDisease(item, accidentText) || [];
+    const a = analyzeAccident(accidentText);
+    const c = classifyCoverage(item);
+    const prepend = [];
+
+    if ((c.causes || []).includes("온열질환")) {
+      prepend.push('<span style="color:#c46a00;font-weight:800;">※ 병원에서 온열질환(열사병·일사병·열탈진 등)으로 진단받았는지 확인이 필요합니다.</span>');
+    }
+    if ((c.causes || []).includes("한랭질환")) {
+      prepend.push('<span style="color:#c46a00;font-weight:800;">※ 병원에서 한랭질환(저체온증·동상 등)으로 진단받았는지 확인이 필요합니다.</span>');
+    }
+    if ((c.causes || []).includes("자연재난") && a.naturalDisasterNeedsRecognition) {
+      prepend.push('<span style="color:#c46a00;font-weight:800;">※ 해당 사고가 지자체·관계기관 기준상 자연재해(자연재난)로 인정되는지 확인이 필요합니다.</span>');
+    }
+    if ((c.causes || []).includes("사회재난") && a.socialDisasterNeedsRecognition) {
+      prepend.push('<span style="color:#c46a00;font-weight:800;">※ 해당 사고가 지자체·관계기관에서 사회재난으로 선포·인정되었는지 확인이 필요합니다.</span>');
+    }
+    return prepend.concat(notes);
+  };
+
+  if (_prevBuildQuestions_disasterDisease) {
+    buildClaimQuestions = function(matched, accident){
+      const qs = _prevBuildQuestions_disasterDisease(matched, accident) || [];
+      if (accident && accident.heatIllnessNeedsDiagnosis) qs.unshift("병원에서 온열질환으로 진단받으셨나요?");
+      if (accident && accident.coldIllnessNeedsDiagnosis) qs.unshift("병원에서 한랭질환으로 진단받으셨나요?");
+      if (accident && accident.naturalDisasterNeedsRecognition) qs.push("해당 사고가 지자체·관계기관에서 자연재해(자연재난)로 인정되었나요?");
+      if (accident && accident.socialDisasterNeedsRecognition) qs.push("해당 사고가 지자체·관계기관에서 사회재난으로 선포·인정되었나요?");
+      return [...new Set(qs)];
+    };
+  }
+})();
+</script>\n</body>
 </html>
