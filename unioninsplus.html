@@ -2747,5 +2747,74 @@ function runAiSample(){
     };
   }
 })();
-</script>\n</body>
+</script>\n
+<script>
+/* 2026-09-03 추가만: 스쿨존·실버존 교통사고 관계 확인 보강
+   기존 적용여부/데이터/연령조건/매칭은 수정하지 않고 마지막 판정에만 추가 */
+(function(){
+  const _prevAnalyze_schoolSilver = analyzeAccident;
+  const _prevMakeNotes_schoolSilver = makeClaimNotes;
+  const _prevBuildQuestions_schoolSilver = (typeof buildClaimQuestions === "function") ? buildClaimQuestions : null;
+
+  const hasZoneText = (t, arr) => arr.some(v => t.includes(claimNorm(v)));
+
+  analyzeAccident = function(accidentText){
+    const a = _prevAnalyze_schoolSilver(accidentText);
+    const t = claimNorm(accidentText);
+
+    const schoolZone = hasZoneText(t, ["스쿨존","어린이보호구역"]);
+    const silverZone = hasZoneText(t, ["실버존","노인보호구역"]);
+    const accidentInjury = hasZoneText(t, [
+      "넘어짐","넘어져","넘어지","낙상","미끄러","다침","다쳐","수상",
+      "부딪힘","부딪혀","골절","접질","헛디뎌","헛디딤"
+    ]);
+
+    /* 보호구역이라는 장소만으로 스쿨존/실버존 교통사고로 보지 않는다.
+       기존 교통사고 판정(a.isTraffic)이 함께 확인되어야 전용 담보 원인으로 유지한다. */
+    if (schoolZone && !a.isTraffic) {
+      a.causes = (a.causes || []).filter(c => c !== "스쿨존");
+      a.schoolZoneTrafficNeedsCheck = true;
+    }
+    if (silverZone && !a.isTraffic) {
+      a.causes = (a.causes || []).filter(c => c !== "실버존");
+      a.silverZoneTrafficNeedsCheck = true;
+    }
+
+    /* 보호구역 내 단순 넘어짐·낙상 등은 기존 일반상해 판정으로 돌린다. */
+    if ((schoolZone || silverZone) && !a.isTraffic && accidentInjury) {
+      const special = (a.causes || []).some(c =>
+        ["화재","폭발","붕괴","산사태","지반침하","대중교통","교통승용구","자전거","PM","개물림","농기계","익사","감전","가스","유독성물질","온열질환","한랭질환","야생동물","화상","자연재난","사회재난","범죄"].includes(c)
+      );
+      if (!special && !(a.causes || []).includes("일반상해")) a.causes.push("일반상해");
+    }
+
+    return a;
+  };
+
+  makeClaimNotes = function(item, accidentText){
+    const notes = _prevMakeNotes_schoolSilver(item, accidentText) || [];
+    const a = analyzeAccident(accidentText);
+    const c = classifyCoverage(item);
+    const prepend = [];
+
+    if ((c.causes || []).includes("스쿨존")) {
+      prepend.push('<span style="color:#c46a00;font-weight:800;">※ 어린이보호구역에서 발생한 교통사고인지 확인이 필요합니다.</span>');
+    }
+    if ((c.causes || []).includes("실버존")) {
+      prepend.push('<span style="color:#c46a00;font-weight:800;">※ 노인보호구역에서 발생한 교통사고인지 확인이 필요합니다.</span>');
+    }
+    return prepend.concat(notes);
+  };
+
+  if (_prevBuildQuestions_schoolSilver) {
+    buildClaimQuestions = function(matched, accident){
+      const qs = _prevBuildQuestions_schoolSilver(matched, accident) || [];
+      if (accident && accident.schoolZoneTrafficNeedsCheck) qs.push("어린이보호구역에서 차량과 관련된 교통사고였나요?");
+      if (accident && accident.silverZoneTrafficNeedsCheck) qs.push("노인보호구역에서 차량과 관련된 교통사고였나요?");
+      return [...new Set(qs)];
+    };
+  }
+})();
+</script>
+</body>
 </html>
