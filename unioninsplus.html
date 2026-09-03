@@ -2816,5 +2816,74 @@ function runAiSample(){
   }
 })();
 </script>
+
+<script>
+/* 2026-09-03 추가만: 교통승용구(엘리베이터·승강기·에스컬레이터) 최종 적용여부 보강
+   기존 판정은 수정하지 않음.
+   - 이용 중 사고: 교통상해
+   - 대중교통 아님
+   - 일반상해/상해진단위로금/상해의료비(CGL) 기본 제외
+   - 단, 해당 지자체 담보 detail에 해당 교통승용구 사고를 보상한다는 명시적 예외가 있으면 그 설명을 우선 */
+(function(){
+  const _prevAnalyze_conveyanceFinal = analyzeAccident;
+  const _prevGetMatched_conveyanceFinal = getMatchedCoverages;
+
+  function conveyanceInfo(text){
+    const t = claimNorm(text);
+    const words = ["엘리베이터","승강기","에스컬레이터"];
+    const word = words.find(v => t.includes(claimNorm(v))) || "";
+    return { t, word, isConveyance: !!word };
+  }
+
+  function hasExplicitConveyanceException(item, word){
+    if (!word) return false;
+    const raw = String((item && item.detail) || "");
+    const d = claimNorm(raw);
+    const w = claimNorm(word);
+    if (!d.includes(w)) return false;
+
+    /* 해당 교통승용구를 직접 언급하면서 '단/예외/보상함/보상가능/보상대상/포함'처럼
+       보상 예외를 명시한 경우에만 기존 담보 설명 판단을 살린다. */
+    const positive = ["단","예외","보상함","보상가능","보상대상","보상한다","보상됨","포함"];
+    return positive.some(v => d.includes(claimNorm(v)));
+  }
+
+  analyzeAccident = function(accidentText){
+    const a = _prevAnalyze_conveyanceFinal(accidentText);
+    const info = conveyanceInfo(accidentText);
+    if (!info.isConveyance) return a;
+
+    a.causes = (a.causes || []).filter(c => c !== "대중교통" && c !== "일반상해");
+    if (!a.causes.includes("교통승용구")) a.causes.push("교통승용구");
+    a.isTraffic = true;
+    a.isPublicTransport = false;
+    a.transportRelationNeedsCheck = false;
+    a.conveyanceTrafficInjury = true;
+    a.conveyanceWord = info.word;
+    return a;
+  };
+
+  getMatchedCoverages = function(items, accidentText){
+    const matched = _prevGetMatched_conveyanceFinal(items, accidentText) || [];
+    const accident = analyzeAccident(accidentText);
+    if (!accident.conveyanceTrafficInjury) return matched;
+
+    return matched.filter(m => {
+      const c = classifyCoverage(m.item);
+
+      /* 교통승용구는 대중교통이 아니므로 대중교통 담보 제외 */
+      if ((c.causes || []).includes("대중교통")) return false;
+
+      /* 일반상해 계열은 기본 제외. 실제 담보 detail에 해당 교통승용구를
+         보상하는 명시적 예외가 있는 경우에만 기존 판정 결과를 유지 */
+      if ((c.causes || []).includes("일반상해")) {
+        return hasExplicitConveyanceException(m.item, accident.conveyanceWord);
+      }
+
+      return true;
+    });
+  };
+})();
+</script>
 </body>
 </html>
