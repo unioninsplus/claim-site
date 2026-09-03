@@ -2252,5 +2252,395 @@ function runAiSample(){
     <div>서울특별시 강동구 천호대로 176길 8 형도빌딩 2·3층 | 우편번호 05373</div>
   </div>
 </footer>
+
+<script>
+/* =========================================================
+   2026-09-03 오늘 아침 추가 업그레이드
+   원칙: 기존 함수/데이터/판정코드는 수정하지 않고,
+         아래 보조 검증만 마지막에 추가한다.
+   ========================================================= */
+(function(){
+
+  const _baseAnalyzeAccident = analyzeAccident;
+  const _baseGetMatchedCoverages = getMatchedCoverages;
+  const _baseGetFutureConditionalCoverages = getFutureConditionalCoverages;
+  const _baseBuildClaimQuestions = typeof buildClaimQuestions === "function" ? buildClaimQuestions : null;
+
+  function _n(v){ return claimNorm(v); }
+  function _has(t, arr){ return arr.some(x => t.includes(_n(x))); }
+
+  /* 1) 기존 사고분석 결과를 건드리지 않고, 잘못 확대될 수 있는 부분만 사후 검증 */
+  analyzeAccident = function(accidentText){
+    const a = _baseAnalyzeAccident(accidentText);
+    const t = _n(accidentText);
+
+    /* 지급사례 보조신호가 현재 입력에 없는 사망/후유장해까지 끌어올리지 않도록 제한 */
+    const explicitDeath = _has(t, ["사망","숨짐","죽음","죽었다","사망함","질식사","사망사고","추락사"]);
+    const explicitDisability = _has(t, [
+      "후유장해","영구장해","장해진단","장해율","장해지급률",
+      "영구적인장해","영구장애","후유장애","인공관절치환"
+    ]);
+
+    if (!explicitDeath) {
+      a.results = (a.results || []).filter(x => x !== "사망");
+    }
+    if (!explicitDisability) {
+      a.results = (a.results || []).filter(x => x !== "후유장해");
+    }
+
+    /* 상해의 큰 개념은 메타정보로만 추가.
+       기존 causes 배열에는 절대 일반상해를 억지로 추가하지 않는다. */
+    const diseaseWords = [
+      "질병","암","당뇨","고혈압","심근경색","뇌경색","뇌출혈","폐렴",
+      "감염병","독감","코로나","질환"
+    ];
+    const injuryWords = [
+      "넘어","미끄러","낙상","추락","떨어","부딪","충돌","골절","접질","다침","수상",
+      "화재","폭발","붕괴","산사태","화상","익사","물림","개물림","감전","농기계",
+      "자전거","킥보드","버스","지하철","전철","열차","택시","자동차","차량","오토바이"
+    ];
+    a.isInjuryConcept = _has(t, injuryWords) && !_has(t, diseaseWords);
+
+    /* 2) 교통/대중교통 이용관계 사후 검증
+          '버스/지하철' 단어 또는 장소만으로 대중교통 확정 금지 */
+    const transitWord = _has(t, ["버스","마을버스","시내버스","전세버스","지하철","전철","기차","열차","택시","대중교통"]);
+
+    const directTransitUse = _has(t, [
+      "탑승중","승차중","하차중","승하차","타고가다","타고있다","타고있던",
+      "버스타고","지하철타고","전철타고","열차타고","택시타고",
+      "급정거","급출발","급제동","운행중",
+      "승차하다","하차하다","타다가","내리다가","오르다가",
+      "문에끼임","문에끼여","승강장과열차사이"
+    ]);
+
+    const placeOnly = _has(t, [
+      "지하철안","지하철역안","역안","역내","지하철역내","지하철역",
+      "역계단","지하철계단","역통로","지하철통로","승강장",
+      "버스정류장","정류장","버스기다리다","정류장에서기다리"
+    ]) && !directTransitUse;
+
+    const hitByVehicle = _has(t, [
+      "차에치","차량에치","자동차에치","승용차에치","택시에치","버스에치",
+      "오토바이에치","자전거에치","차와충돌","차량과충돌","자동차와충돌",
+      "버스와충돌","오토바이와충돌","자전거와충돌"
+    ]);
+
+    const elevatorEscalator = _has(t, ["엘리베이터","승강기","에스컬레이터"]);
+
+    if (hitByVehicle) {
+      a.causes = (a.causes || []).filter(x =>
+        !["대중교통","자전거","PM","일반상해"].includes(x)
+      );
+      if (!a.causes.includes("교통사고")) a.causes.push("교통사고");
+      a.isTraffic = true;
+      a.transportRelationNeedsCheck = false;
+    } else if (elevatorEscalator) {
+      a.causes = (a.causes || []).filter(x => !["대중교통","일반상해"].includes(x));
+      if (!a.causes.includes("교통승용구")) a.causes.push("교통승용구");
+      a.isTraffic = true;
+      a.transportRelationNeedsCheck = false;
+    } else if (transitWord && placeOnly) {
+      /* 지하철 역사 안/계단/통로/승강장 등 단순 장소 사고는 일반상해 */
+      a.causes = (a.causes || []).filter(x => x !== "대중교통");
+      a.isTraffic = false;
+      if (!a.causes.length && _has(t, [
+        "넘어","미끄러","낙상","추락","떨어","부딪","골절","접질","다침","수상"
+      ])) {
+        a.causes.push("일반상해");
+      }
+      a.transportRelationNeedsCheck = false;
+    } else if (transitWord && directTransitUse) {
+      if (!a.causes.includes("대중교통")) a.causes.push("대중교통");
+      a.causes = a.causes.filter(x => x !== "일반상해");
+      a.isTraffic = true;
+      a.transportRelationNeedsCheck = false;
+    } else if (transitWord) {
+      /* 버스/지하철 단어만 있고 이용관계가 불명확하면 확정하지 않음 */
+      a.causes = (a.causes || []).filter(x => x !== "대중교통");
+      if (!a.causes.length && _has(t, [
+        "넘어","미끄러","낙상","추락","떨어","부딪","골절","접질","다침","수상"
+      ])) {
+        a.causes.push("일반상해");
+      }
+      a.transportRelationNeedsCheck = true;
+    }
+
+    /* 일반상해는 교통사고 제외 */
+    if (a.isTraffic) {
+      a.causes = (a.causes || []).filter(x => x !== "일반상해");
+    }
+
+    return a;
+  };
+
+  /* 3) 기존 매칭 결과 유지 + 1~3주 진단이라도 CGL은 독립 판정
+        단, 사고내용에 실손 미가입이 명확한 경우만 추가 */
+  getMatchedCoverages = function(items, accidentText){
+    const matched = _baseGetMatchedCoverages(items, accidentText);
+    const accident = analyzeAccident(accidentText);
+
+    if (
+      accident.causes.includes("일반상해") &&
+      accident.results.includes("진단") &&
+      accident.diagnosisUnder4Weeks &&
+      accident.noActualLoss &&
+      !accident.results.includes("사망") &&
+      !accident.results.includes("후유장해")
+    ) {
+      (items || []).forEach((item, index) => {
+        const coverage = classifyCoverage(item);
+        const isGeneralInjuryMedical =
+          coverage.causes.includes("일반상해") &&
+          coverage.results.includes("의료비");
+
+        if (!isGeneralInjuryMedical) return;
+        if (coverage.excludeTraffic && accident.isTraffic) return;
+
+        const cc = evaluateCoverageConditions(accident, coverage.conditions, accidentText);
+        if (!cc.pass) return;
+
+        if (!matched.some(m => m.index === index)) {
+          matched.push({
+            item,
+            index,
+            priority: getMatchPriority(accident, coverage),
+            notes: makeClaimNotes(item, accidentText)
+          });
+        }
+      });
+
+      matched.sort((a,b) => a.priority - b.priority || a.index - b.index);
+    }
+
+    /* 현재 진단/부상 입력에서 미래 사망·후유장해를 현재 후보처럼 끌어오지 않음 */
+    return matched;
+  };
+
+  /* 4) 미래조건 후보는 사용자가 실제로 후유장해를 입력한 경우에만 후유장해,
+        사망은 현재 사망 입력이 아니면 미래후보로 표시하지 않는다. */
+  getFutureConditionalCoverages = function(items, accidentText){
+    const t = _n(accidentText);
+    const explicitDisability = _has(t, [
+      "후유장해","영구장해","장해진단","장해율","장해지급률",
+      "영구적인장해","영구장애","후유장애"
+    ]);
+
+    if (!explicitDisability) return [];
+
+    return _baseGetFutureConditionalCoverages(items, accidentText)
+      .filter(x => {
+        const c = classifyCoverage(x.item || {});
+        return c.results.includes("후유장해") && !c.results.includes("사망");
+      });
+  };
+
+  /* 5) 기존 추가질문에 대중교통 이용관계가 애매할 때 질문만 추가 */
+  if (_baseBuildClaimQuestions) {
+    buildClaimQuestions = function(matched, accident){
+      const qs = _baseBuildClaimQuestions(matched, accident) || [];
+      if (accident && accident.transportRelationNeedsCheck) {
+        const q = "대중교통 이용관계 확인 필요: 버스·지하철의 승차·하차 또는 운행 중 직접 발생한 사고인지 확인해 주세요.";
+        if (!qs.includes(q)) qs.unshift(q);
+      }
+      return qs;
+    };
+  }
+
+})();
+</script>
+
+
+<script>
+/* =========================================================
+   추가 업그레이드: 실손보험 미가입 표현 인식 보강
+   기존 판정/함수/데이터는 수정하지 않고 마지막에 추가만 한다.
+   ========================================================= */
+(function(){
+  const _beforeActualLossPhraseAnalyze = analyzeAccident;
+
+  analyzeAccident = function(accidentText){
+    const a = _beforeActualLossPhraseAnalyze(accidentText);
+    const t = claimNorm(accidentText);
+
+    /* 기존 '실손미가입/실비미가입' 인식에
+       '실손보험 미가입', '실손의료비 미가입' 표현만 추가 */
+    if (/실손보험미가입|실손의료비미가입|실손보험없음|실손의료비없음/.test(t)) {
+      a.noActualLoss = true;
+      a.hasActualLoss = false;
+    }
+
+    return a;
+  };
+})();
+</script>
+
+
+<script>
+/* 2026-09-03 추가만: 지하철 역사 보행사고 / 교통승용구 구분 보강
+   기존 판정은 수정하지 않고 analyzeAccident 결과에 사후 검증만 추가 */
+(function(){
+  const _prevAnalyzeAccident_stationRule = analyzeAccident;
+  analyzeAccident = function(accidentText){
+    const a = _prevAnalyzeAccident_stationRule(accidentText);
+    const t = claimNorm(accidentText);
+    const has = arr => arr.some(v => t.includes(claimNorm(v)));
+
+    /* 엘리베이터·승강기·에스컬레이터 이용 중 사고는 교통상해(교통승용구) 우선 */
+    const conveyance = has(["엘리베이터","승강기","에스컬레이터"]);
+    if (conveyance) {
+      a.causes = (a.causes || []).filter(x => !["대중교통","일반상해"].includes(x));
+      if (!a.causes.includes("교통승용구")) a.causes.push("교통승용구");
+      a.isTraffic = true;
+      a.transportRelationNeedsCheck = false;
+      return a;
+    }
+
+    /* 지하철 '차량 탑승/승하차/운행'이 아니라 역사 안에서 보행·이동·계단 사고면 일반상해 */
+    const subwayPlace = has([
+      "지하철내","지하철안","지하철역","역사내","역사안","역내",
+      "지하철계단","역계단","지하철통로","역통로","승강장"
+    ]);
+    const walkingOrFacilityAccident = has([
+      "이동중","이동하다","이동하던","걸어가","걷다가","보행중","달려가","달리다가",
+      "계단","통로","개찰구","입구","출구","넘어","미끄러","낙상","헛디"
+    ]);
+    const directVehicleUse = has([
+      "탑승중","승차중","하차중","승하차","열차안","전동차안","객차안",
+      "지하철타고","전철타고","열차타고","운행중","급정거","급출발","급제동",
+      "문에끼임","문에끼여","승강장과열차사이","승차도중","하차도중"
+    ]);
+
+    if (subwayPlace && walkingOrFacilityAccident && !directVehicleUse) {
+      a.causes = (a.causes || []).filter(x => !["대중교통","교통사고","교통승용구"].includes(x));
+      if (!a.causes.includes("일반상해")) a.causes.push("일반상해");
+      a.isTraffic = false;
+      a.transportRelationNeedsCheck = false;
+    }
+
+    return a;
+  };
+})();
+</script>
+
+<script>
+/* 2026-09-03 추가만: 일반상해 사고에서 지자체 상해진단 담보 확인대상 보강
+   기존 판정/데이터/매칭은 수정하지 않고 최종 매칭결과에 조건확인 대상만 추가 */
+(function(){
+  const _prevGetMatchedCoverages_diagnosisCandidate = getMatchedCoverages;
+
+  getMatchedCoverages = function(items, accidentText){
+    const matched = _prevGetMatchedCoverages_diagnosisCandidate(items, accidentText) || [];
+    const accident = analyzeAccident(accidentText);
+
+    /* 일반상해이고 사망·후유장해·교통사고가 아니며
+       진단주수가 아직 입력되지 않은 경우,
+       해당 지자체에 실제 가입된 상해진단 담보도 '조건 확인 대상'으로 표시 */
+    if (
+      (accident.causes || []).includes("일반상해") &&
+      !accident.isTraffic &&
+      !(accident.results || []).includes("사망") &&
+      !(accident.results || []).includes("후유장해") &&
+      accident.diagnosisWeeks == null
+    ) {
+      (items || []).forEach((item, index) => {
+        const coverage = classifyCoverage(item);
+        const isGeneralInjuryDiagnosis =
+          (coverage.causes || []).includes("일반상해") &&
+          (coverage.results || []).includes("진단");
+
+        if (!isGeneralInjuryDiagnosis) return;
+        if (coverage.excludeTraffic && accident.isTraffic) return;
+
+        const cc = evaluateCoverageConditions(accident, coverage.conditions, accidentText);
+        if (!cc.pass) return;
+
+        if (!matched.some(m => m.index === index)) {
+          matched.push({
+            item,
+            index,
+            priority: getMatchPriority(accident, coverage),
+            notes: makeClaimNotes(item, accidentText)
+          });
+        }
+      });
+
+      matched.sort((a,b) => a.priority - b.priority || a.index - b.index);
+    }
+
+    return matched;
+  };
+})();
+</script>
+
+<script>
+/* 2026-09-03 추가만: 사고성 일반상해 + 지자체 상해진단 담보 질문 보강
+   기존 판정/데이터/매칭은 일절 수정하지 않고 마지막 결과에만 추가 */
+(function(){
+  const _prevGetMatchedCoverages_injuryDiagnosis = getMatchedCoverages;
+
+  getMatchedCoverages = function(items, accidentText){
+    const matched = _prevGetMatchedCoverages_injuryDiagnosis(items, accidentText) || [];
+    const accident = analyzeAccident(accidentText);
+    const t = claimNorm(accidentText);
+    const has = arr => arr.some(v => t.includes(claimNorm(v)));
+
+    /* 넘어짐/다침/일하다 다침/부딪혀 다침 등 명백한 사고성 상해 표현 */
+    const accidentalInjury = has([
+      "넘어짐","넘어져","넘어지","다침","다쳐","부딪혀","부딪힘","부딪쳐",
+      "미끄러","낙상","추락","떨어짐","떨어져","접질","골절","수상","상해"
+    ]);
+    const disease = has([
+      "질병","질환","감기","암","뇌졸중","뇌경색","심근경색","고혈압","당뇨",
+      "폐렴","감염병","독감","코로나"
+    ]);
+
+    /* 교통사고/교통승용구/대중교통 등 기존 특수원인 판정은 그대로 우선 */
+    const specialOrTraffic = !!accident.isTraffic || (accident.causes || []).some(c =>
+      ["교통사고","교통승용구","대중교통","자전거","PM"].includes(c)
+    );
+
+    if (
+      accidentalInjury &&
+      !disease &&
+      !specialOrTraffic &&
+      !(accident.results || []).includes("사망") &&
+      !(accident.results || []).includes("후유장해") &&
+      accident.diagnosisWeeks == null
+    ) {
+      (items || []).forEach((item, index) => {
+        const coverage = classifyCoverage(item);
+        const isGeneralInjuryDiagnosis =
+          (coverage.causes || []).includes("일반상해") &&
+          (coverage.results || []).includes("진단");
+
+        if (!isGeneralInjuryDiagnosis) return;
+        if (coverage.excludeTraffic && accident.isTraffic) return;
+
+        /* 주수 미입력 때문에만 탈락시키지 않고 실제 지자체 가입 상해진단 담보를 확인대상에 표시.
+           연령 등 기존 조건은 기존 함수 결과를 그대로 존중한다. */
+        const cc = evaluateCoverageConditions(accident, coverage.conditions, accidentText);
+        const reasons = (cc && cc.reasons) || [];
+        const onlyMissingDiagnosisWeeks = !cc.pass && reasons.length > 0 && reasons.every(r =>
+          /진단|주|주수|기간/.test(String(r || ""))
+        );
+        if (!cc.pass && !onlyMissingDiagnosisWeeks) return;
+
+        if (!matched.some(m => m.index === index)) {
+          matched.push({
+            item,
+            index,
+            priority: getMatchPriority(accident, coverage),
+            notes: makeClaimNotes(item, accidentText)
+          });
+        }
+      });
+
+      matched.sort((a,b) => a.priority - b.priority || a.index - b.index);
+    }
+
+    return matched;
+  };
+})();
+</script>
 </body>
 </html>
