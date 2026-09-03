@@ -2887,5 +2887,16 @@ function runAiSample(){
   };
 })();
 </script>
+
+<script>
+/* 2026-09-03 추가만: 기존 한랭질환 분류값을 기존 특수원인 매칭함수에 연결
+   기존 판정/데이터/조건/매칭 함수 내용은 변경하지 않음 */
+(function(){
+  const _prevIsSpecialCoverageCause_linkCold = isSpecialCoverageCause;
+  isSpecialCoverageCause = function(cause){
+    return _prevIsSpecialCoverageCause_linkCold(cause) || cause === "한랭질환";
+  };
+})();
+</script>
 </body>
 </html>
