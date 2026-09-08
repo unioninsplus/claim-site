@@ -38603,6 +38603,9 @@ function checkClaimPossible(){
   const result = document.getElementById("claimCheckResult");
   const goBtn = document.getElementById("goClaimBtn");
   const q = String(document.getElementById("claimCheckText")?.value || "").trim();
+  const y = String(document.getElementById("yearSelect")?.value || "").trim();
+  const sido = String(document.getElementById("sidoSelect")?.value || "").trim();
+  const g = String(document.getElementById("sigunguSelect")?.value || "").trim();
 
   if(!result || !goBtn) return;
   goBtn.style.display = "none";
