@@ -174,19 +174,6 @@ th{background:#f4f8ff;color:#12419e;}
     접수 가능 여부 확인
   </button>
 
-<button
-  id="goClaimBtn"
-  onclick="openClaimForm()"
-  style="
-    display:none;
-    margin-top:12px;
-    margin-left:10px;
-    background:#0a7a32;
-    color:#fff;
-  "
->
-  접수하러 가기
-</button>
 
   <div
     id="claimCheckResult"
@@ -37725,16 +37712,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function resetClaimCheckResult() {
   const result = document.getElementById("claimCheckResult");
-  const goBtn = document.getElementById("goClaimBtn");
 
-  if (!goBtn || goBtn.style.display === "none") return;
-
-  if (result) {
+  if (result && result.innerHTML.trim()) {
     result.innerHTML =
       '<span style="color:#c46a00;font-weight:700;">사고내용이 변경되었습니다. 접수 가능 여부를 다시 확인해 주세요.</span>';
   }
-
-  goBtn.style.display = "none";
 }
 
 /* 시민안전보험 청구 파일과 동일한 적용여부 판정엔진 */
@@ -38601,14 +38583,12 @@ function getConditionExcludedCoverages(items, accidentText) {
 
 function checkClaimPossible(){
   const result = document.getElementById("claimCheckResult");
-  const goBtn = document.getElementById("goClaimBtn");
   const q = String(document.getElementById("claimCheckText")?.value || "").trim();
   const y = String(document.getElementById("yearSelect")?.value || "").trim();
   const sido = String(document.getElementById("sidoSelect")?.value || "").trim();
   const g = String(document.getElementById("sigunguSelect")?.value || "").trim();
 
-  if(!result || !goBtn) return;
-  goBtn.style.display = "none";
+  if(!result) return;
   if(!q){
     result.innerHTML = '<div style="color:red;font-weight:700;">사고내용을 입력해 주세요.</div>';
     return;
@@ -38736,7 +38716,6 @@ function checkClaimPossible(){
            </div>`
         : "");
 
-    goBtn.style.display = "inline-block";
   }catch(e){
     result.innerHTML =
       `<strong>적용여부 확인 오류</strong><br>` +
