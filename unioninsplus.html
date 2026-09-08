@@ -737,9 +737,7 @@ function cgSearch(){
 
     // 보험사별 금액 뒤에 붙은 합산값(/ 1000 등)은 설명에서 제거하고
     // 합산 보장금액은 별도 "보장금액"으로 표시
-    if(amountText){
-      detailText = detailText.replace(/\s*\/\s*[\d,]+(?:만원)?\s*$/, "").trim();
-    }
+    detailText = detailText.replace(/\s*\/\s*[\d,]+(?:만원)?\s*$/, "").trim();
 
     detailText = detailText
       .replace(/[‧•*※\-]?\s*(보장\s*한도|보장한도|보상\s*한도)\s*:/g, "\n▶ 보장한도: ")
