@@ -37276,18 +37276,28 @@ const key = normalizedName;
     return;
   }
 
-  const oldScore =
-    String(old.name || "").length +
-    String(old.detail || "").length +
-    String(old.amount || "").length;
+  // 같은 의미의 담보가 중복되면 더 정확한(원문이 더 구체적인) 담보명을 우선
+  const oldNameScore = String(old.name || "").replace(/\s+/g, "").length;
+  const newNameScore = String(item.name || "").replace(/\s+/g, "").length;
 
-  const newScore =
-    String(item.name || "").length +
-    String(item.detail || "").length +
-    String(item.amount || "").length;
-
-  if (newScore > oldScore) {
+  if (newNameScore > oldNameScore) {
     uniqueMap.set(key, item);
+    return;
+  }
+
+  // 담보명 구체성이 같을 때만 기존처럼 보장내용이 더 충실한 항목을 우선
+  if (newNameScore === oldNameScore) {
+    const oldScore =
+      String(old.detail || "").length +
+      String(old.amount || "").length;
+
+    const newScore =
+      String(item.detail || "").length +
+      String(item.amount || "").length;
+
+    if (newScore > oldScore) {
+      uniqueMap.set(key, item);
+    }
   }
 
 });
@@ -38485,6 +38495,7 @@ function getMatchedCoverages(items, accidentText) {
 
   matched.sort((a, b) =>
     a.priority - b.priority ||
+    String(b.item?.name || "").replace(/\s+/g, "").length - String(a.item?.name || "").replace(/\s+/g, "").length ||
     a.index - b.index
   );
 
@@ -38551,7 +38562,11 @@ function getFutureConditionalCoverages(items, accidentText) {
     });
   });
 
-  candidates.sort((a,b) => a.priority - b.priority || a.index - b.index);
+  candidates.sort((a,b) =>
+    a.priority - b.priority ||
+    String(b.item?.name || "").replace(/\s+/g, "").length - String(a.item?.name || "").replace(/\s+/g, "").length ||
+    a.index - b.index
+  );
 
   const seen = new Set();
   return candidates.filter(x => {
