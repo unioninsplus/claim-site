@@ -39854,5 +39854,229 @@ window.addEventListener("message", function(event){
 })();
 </script>
 
+
+<script>
+/* =========================================================
+   2026-09-08 최종 종합판정 업그레이드
+   범위: 적용여부 판단만
+   - 조회된 지자체 담보를 처음부터 끝까지 전부 검사
+   - 각 담보의 name + detail + amount를 같은 item 단위로 고정해 판정
+   - 기존 사고분석/조건판정 로직 유지 후 용어 계층(상해/교통/세부원인/결과)을 보강
+   - 지급완료 사례는 현재 사고와 현재 담보의 의미가 맞을 때 최종판정에 적극 반영
+   - 적용여부에서는 담보 dedupe 금지
+   ========================================================= */
+(function(){
+  const _finalPrevAnalyze = analyzeAccident;
+  const _finalPrevClassify = classifyCoverage;
+  const _finalPrevMakeNotes = makeClaimNotes;
+  const _finalPrevBuildQuestions = (typeof buildClaimQuestions === "function") ? buildClaimQuestions : null;
+
+  const uniqPush = (arr, v) => { if (v && !arr.includes(v)) arr.push(v); };
+  const hasN = (t, arr) => arr.some(v => t.includes(claimNorm(v)));
+
+  /* 사고를 상위개념/세부원인/결과로 분리한다. 기존 판정값은 그대로 살리고 필요한 개념만 추가한다. */
+  analyzeAccident = function(accidentText){
+    const a = _finalPrevAnalyze(accidentText);
+    const t = claimNorm(accidentText);
+    a.causes = Array.isArray(a.causes) ? a.causes : [];
+    a.results = Array.isArray(a.results) ? a.results : [];
+
+    const disease = hasN(t,["질병","암","당뇨","고혈압","심근경색","뇌경색","뇌출혈","폐렴","감염병","독감","코로나"]);
+    const injury = hasN(t,[
+      "넘어","미끄러","낙상","추락","떨어","부딪","충돌","골절","접질","삐끗","끼임","눌림","찔림","베임","절단","파열","다침","수상",
+      "화재","폭발","붕괴","산사태","화상","개물림","물림","물려","감전","농기계","자전거","킥보드","버스","지하철","전철","열차","택시","자동차","차량","오토바이"
+    ]) && !disease;
+    a.isInjuryConcept = !!(a.isInjuryConcept || injury);
+
+    /* 수술은 의료비와 별개인 결과축으로도 유지 */
+    if (hasN(t,["수술","수술함","수술받","수술받음","수술시행","봉합수술","수술치료"])) {
+      uniqPush(a.results,"수술");
+      uniqPush(a.results,"의료비");
+    }
+
+    /* 개물림의 실제 입력 표현(물림/물려/물었음)을 동일 세부원인으로 통합 */
+    if (hasN(t,[
+      "개물림","개에게물림","개한테물림","개에물림","개에게물려","개한테물려","개에물려",
+      "강아지에게물림","강아지한테물림","강아지에게물려","강아지한테물려",
+      "반려견에게물림","반려견에게물려","들개에물림","들개에물려","개가물어","개가물었","개가뭄"
+    ])) uniqPush(a.causes,"개물림");
+
+    /* 특수원인이 명확하지 않은 실제 상해는 일반상해 상위개념을 메타값으로 유지 */
+    a.primaryCategory = a.isTraffic ? "교통상해" : (a.isInjuryConcept ? "상해" : "");
+    a.detailCauses = (a.causes || []).filter(c => c !== "일반상해");
+    if (!a.detailCauses.length && a.isInjuryConcept && !a.isTraffic) a.detailCauses = ["일반상해"];
+    return a;
+  };
+
+  /* 담보명과 그 담보의 설명을 반드시 같은 item에서 읽는다. 다른 담보 설명은 절대 참조하지 않는다. */
+  classifyCoverage = function(item){
+    const c = _finalPrevClassify(item || {});
+    c.causes = Array.isArray(c.causes) ? c.causes : [];
+    c.results = Array.isArray(c.results) ? c.results : [];
+    c.sourceItem = item || {};
+    c.sourceName = String((item && item.name) || "");
+    c.sourceDetail = String((item && item.detail) || "");
+    const n = claimNorm(c.sourceName);
+    const d = claimNorm(c.sourceDetail);
+
+    if (/수술|수술비|수술치료/.test(n) || /수술|수술비|수술치료/.test(d)) uniqPush(c.results,"수술");
+
+    /* 담보명이 포괄명인 경우에도 그 담보 자체 detail에 특정 원인이 명시돼 있으면 그 원인을 읽는다. */
+    const causeRules = [
+      ["개물림",["개물림","개에게물림","개한테물림","견물림","반려견","유기견"]],
+      ["화상",["화상","심재성2도","심재성Ⅱ도","열상"]],
+      ["대중교통",["대중교통","전세버스","버스탑승","지하철탑승","열차탑승"]],
+      ["자전거",["자전거"]],
+      ["PM",["전동킥보드","개인형이동장치","PM"]],
+      ["농기계",["농기계","경운기","트랙터","예초기"]],
+      ["익사",["익사","익수"]],
+      ["감전",["감전"]],
+      ["가스",["가스사고","가스상해"]],
+      ["야생동물",["야생동물","뱀물림"]],
+      ["온열질환",["온열질환","열사병","일사병","열탈진"]],
+      ["한랭질환",["한랭질환","저체온증","동상"]],
+      ["자연재난",["자연재해","자연재난","태풍","호우","폭설","홍수","지진","낙뢰"]],
+      ["사회재난",["사회재난","특별재난"]],
+      ["범죄",["강력범죄","강도","범죄피해","성폭력"]]
+    ];
+    causeRules.forEach(([cause,words]) => {
+      if (hasN(n,words) || hasN(d,words)) uniqPush(c.causes,cause);
+    });
+
+    /* 특정 원인이 붙은 담보는 포괄 일반상해로 동시에 오인하지 않도록 특수원인을 우선 */
+    const specials = c.causes.filter(isSpecialCoverageCause);
+    if (specials.length && c.causes.includes("일반상해") && !/일반상해|상해의료비|상해진단|상해사고진단/.test(n)) {
+      c.causes = c.causes.filter(x => x !== "일반상해");
+    }
+    return c;
+  };
+
+  function finalCauseRelevant(accident, coverage){
+    const aSpecial = new Set((accident.causes || []).filter(isSpecialCoverageCause));
+    const cSpecial = (coverage.causes || []).filter(isSpecialCoverageCause);
+
+    if (cSpecial.length) return cSpecial.some(c => aSpecial.has(c));
+
+    if ((coverage.causes || []).includes("일반상해")) {
+      if (!accident.isInjuryConcept && !(accident.causes || []).includes("일반상해")) return false;
+      if (coverage.excludeTraffic && accident.isTraffic) return false;
+      return true;
+    }
+
+    /* 원인 제한이 없는 담보만 결과축으로 판단 가능 */
+    return !/화재|폭발|붕괴|산사태|지반침하|교통|대중교통|자전거|킥보드|개물림|농기계|익사|감전|가스|화상|재난|범죄|야생동물|온열|한랭/.test(coverage.nameRaw || "");
+  }
+
+  function historicalSupportsCoverage(accidentText, coverage){
+    const signals = (typeof getHistoricalTypeSignals === "function") ? getHistoricalTypeSignals(accidentText) : [];
+    if (!signals.length) return false;
+    return signals.some(sig => {
+      if (!sig || Number(sig.score || 0) < 0.68) return false;
+      const hc = classifyCoverage({name:String(sig.type || ""), detail:""});
+      const causeOverlap = !(hc.causes || []).length || (hc.causes || []).some(c => (coverage.causes || []).includes(c));
+      const resultOverlap = !(hc.results || []).length || (hc.results || []).some(r => (coverage.results || []).includes(r));
+      return causeOverlap && resultOverlap;
+    });
+  }
+
+  function finalOutcomeStatus(accident, coverage, accidentText){
+    const cr = coverage.results || [];
+    const ar = accident.results || [];
+
+    if (ar.includes("사망")) return cr.includes("사망") ? "matched" : "excluded";
+    if (cr.includes("사망")) return "excluded";
+
+    if (ar.includes("후유장해") && cr.includes("후유장해")) return "matched";
+
+    const explicit = ["후유장해","진단","입원","의료비","수술","재난비용"].filter(r => ar.includes(r));
+    if (explicit.some(r => cr.includes(r))) return "matched";
+
+    const hist = historicalSupportsCoverage(accidentText, coverage);
+
+    /* 원인은 맞는데 필요한 결과정보가 아직 없으면 누락시키지 않고 확인대상으로 유지 */
+    if (cr.includes("수술")) return hist ? "needs_check" : "needs_check";
+    if (cr.includes("진단")) return hist ? "needs_check" : "needs_check";
+    if (cr.includes("의료비")) return hist ? "needs_check" : "needs_check";
+    if (cr.includes("입원")) return "needs_check";
+    if (cr.includes("재난비용")) return "needs_check";
+
+    return hist ? "matched" : "excluded";
+  }
+
+  function finalEvaluate(item, index, accident, accidentText){
+    const coverage = classifyCoverage(item);
+    if (!coverage.raw || coverage.raw === "0" || coverage.raw === "-") return {status:"excluded", reason:"empty", item,index,coverage};
+    if (coverage.excludeTraffic && accident.isTraffic) return {status:"excluded", reason:"traffic_excluded", item,index,coverage};
+    if (!finalCauseRelevant(accident, coverage)) return {status:"excluded", reason:"cause", item,index,coverage};
+
+    const cc = evaluateCoverageConditions(accident, coverage.conditions, accidentText);
+    if (!cc.pass) return {status:"excluded", reason:"condition", conditionCheck:cc, item,index,coverage};
+
+    let status = finalOutcomeStatus(accident, coverage, accidentText);
+    if (status === "excluded") return {status, reason:"result", conditionCheck:cc, item,index,coverage};
+    if (cc.needs && cc.needs.length) status = "needs_check";
+    return {status, reason:"", conditionCheck:cc, item,index,coverage};
+  }
+
+  /* 조회된 실제 담보를 0번부터 끝까지 모두 검사. 적용여부에서는 dedupe하지 않는다. */
+  getMatchedCoverages = function(items, accidentText){
+    const accident = analyzeAccident(accidentText);
+    const out = [];
+    (items || []).forEach((item,index) => {
+      const ev = finalEvaluate(item,index,accident,accidentText);
+      if (ev.status === "matched" || ev.status === "needs_check") {
+        const notes = makeClaimNotes(item, accidentText);
+        if (ev.status === "needs_check") {
+          notes.unshift('<span style="color:#c46a00;font-weight:800;">※ 현재 사고원인과 관련된 가입담보입니다. 지급조건에 필요한 추가 사실 확인이 필요합니다.</span>');
+        }
+        out.push({
+          item,
+          index,
+          priority: getMatchPriority(accident, ev.coverage),
+          status: ev.status,
+          historicalApplied: historicalSupportsCoverage(accidentText, ev.coverage),
+          notes
+        });
+      }
+    });
+    out.sort((a,b) => a.priority - b.priority || a.index - b.index);
+    return out;
+  };
+
+  /* 조건 때문에 제외된 담보도 같은 item의 담보명/설명/조건으로만 계산 */
+  getConditionExcludedCoverages = function(items, accidentText){
+    const accident = analyzeAccident(accidentText);
+    const out = [];
+    (items || []).forEach((item,index) => {
+      const ev = finalEvaluate(item,index,accident,accidentText);
+      if (ev.reason === "condition" && ev.conditionCheck && ev.conditionCheck.failed && ev.conditionCheck.failed.length) {
+        out.push({item,index,failed:ev.conditionCheck.failed,label:coverageConditionLabel(ev.coverage.conditions)});
+      }
+    });
+    return out;
+  };
+
+  /* 기존 안내문을 유지하면서 수술을 별도 확인항목으로 추가 */
+  makeClaimNotes = function(item, accidentText){
+    const notes = _finalPrevMakeNotes(item, accidentText) || [];
+    const accident = analyzeAccident(accidentText);
+    const coverage = classifyCoverage(item);
+    if ((coverage.results || []).includes("수술") && !(accident.results || []).includes("수술")) {
+      notes.unshift('<span style="color:#c46a00;font-weight:800;">※ 해당 담보는 수술 여부 및 담보설명상 수술조건 확인이 필요합니다.</span>');
+    }
+    return notes;
+  };
+
+  if (_finalPrevBuildQuestions) {
+    buildClaimQuestions = function(matched, accident){
+      const qs = _finalPrevBuildQuestions(matched, accident) || [];
+      const hasSurgery = (matched || []).some(m => classifyCoverage(m.item).results.includes("수술"));
+      if (hasSurgery && !(accident.results || []).includes("수술")) qs.push("해당 사고로 수술을 받으셨나요?");
+      return [...new Set(qs)];
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
