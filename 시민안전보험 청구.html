@@ -39873,6 +39873,7 @@ window.addEventListener("message", function(event){
 
   const uniqPush = (arr, v) => { if (v && !arr.includes(v)) arr.push(v); };
   const hasN = (t, arr) => arr.some(v => t.includes(claimNorm(v)));
+  const isFinalSpecialCause = (cause) => isSpecialCoverageCause(cause) || cause === "의료사고법률";
 
   /* 사고를 상위개념/세부원인/결과로 분리한다. 기존 판정값은 그대로 살리고 필요한 개념만 추가한다. */
   analyzeAccident = function(accidentText){
@@ -39901,6 +39902,13 @@ window.addEventListener("message", function(event){
       "반려견에게물림","반려견에게물려","들개에물림","들개에물려","개가물어","개가물었","개가뭄"
     ])) uniqPush(a.causes,"개물림");
 
+    /* 담보명 전체가 '의료사고/의료사고법률비용'인 담보와 비교할 수 있도록
+       사고내용도 단순 '병원/치료'가 아니라 의료행위 사고·과실·분쟁의 전체 맥락으로 읽는다. */
+    if (hasN(t,[
+      "의료사고","의료소송","의료분쟁","의료과실","의료진과실","의사과실","병원과실",
+      "수술사고","수술중사고","수술중과실","진료중과실","치료중과실","오진","투약오류","수혈사고"
+    ])) uniqPush(a.causes,"의료사고법률");
+
     /* 특수원인이 명확하지 않은 실제 상해는 일반상해 상위개념을 메타값으로 유지 */
     a.primaryCategory = a.isTraffic ? "교통상해" : (a.isInjuryConcept ? "상해" : "");
     a.detailCauses = (a.causes || []).filter(c => c !== "일반상해");
@@ -39920,6 +39928,14 @@ window.addEventListener("message", function(event){
     const d = claimNorm(c.sourceDetail);
 
     if (/수술|수술비|수술치료/.test(n) || /수술|수술비|수술치료/.test(d)) uniqPush(c.results,"수술");
+
+    /* 완성된 담보명 자체의 의미를 먼저 확정한다.
+       '의료사고법률비용지원'을 '의료비' 같은 일부 단어로 일반상해 처리하지 않는다. */
+    if (n === "의료사고" || n.startsWith("의료사고법률비용지원")) {
+      c.causes = (c.causes || []).filter(x => x !== "일반상해");
+      uniqPush(c.causes,"의료사고법률");
+      c.fullNameSemantic = "의료사고법률";
+    }
 
     /* 담보명이 포괄명인 경우에도 그 담보 자체 detail에 특정 원인이 명시돼 있으면 그 원인을 읽는다. */
     const causeRules = [
@@ -39944,7 +39960,7 @@ window.addEventListener("message", function(event){
     });
 
     /* 특정 원인이 붙은 담보는 포괄 일반상해로 동시에 오인하지 않도록 특수원인을 우선 */
-    const specials = c.causes.filter(isSpecialCoverageCause);
+    const specials = c.causes.filter(isFinalSpecialCause);
     if (specials.length && c.causes.includes("일반상해") && !/일반상해|상해의료비|상해진단|상해사고진단/.test(n)) {
       c.causes = c.causes.filter(x => x !== "일반상해");
     }
@@ -39952,8 +39968,8 @@ window.addEventListener("message", function(event){
   };
 
   function finalCauseRelevant(accident, coverage){
-    const aSpecial = new Set((accident.causes || []).filter(isSpecialCoverageCause));
-    const cSpecial = (coverage.causes || []).filter(isSpecialCoverageCause);
+    const aSpecial = new Set((accident.causes || []).filter(isFinalSpecialCause));
+    const cSpecial = (coverage.causes || []).filter(isFinalSpecialCause);
 
     if (cSpecial.length) return cSpecial.some(c => aSpecial.has(c));
 
