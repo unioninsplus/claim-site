@@ -40042,6 +40042,10 @@ window.addEventListener("message", function(event){
   function finalEvaluate(item, index, accident, accidentText){
     const coverage = classifyCoverage(item);
     if (!coverage.raw || coverage.raw === "0" || coverage.raw === "-") return {status:"excluded", reason:"empty", item,index,coverage};
+    /* 승강기·엘리베이터·에스컬레이터 이용 중 사고는 교통승용구 사고이므로 일반상해 담보 제외 */
+    if (accident.conveyanceTrafficInjury && (coverage.causes || []).includes("일반상해")) {
+      return {status:"excluded", reason:"conveyance_traffic", item,index,coverage};
+    }
     if (coverage.excludeTraffic && accident.isTraffic) return {status:"excluded", reason:"traffic_excluded", item,index,coverage};
     if (!finalCauseRelevant(accident, coverage)) return {status:"excluded", reason:"cause", item,index,coverage};
 
