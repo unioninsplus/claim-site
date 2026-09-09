@@ -38304,6 +38304,25 @@ function coverageMatches(accident, coverage, accidentText) {
   return resultMatches(accident, coverage);
 }
 
+function hideClaimDetailTotalAmount(detail, amount) {
+  let s = String(detail || "");
+  const amountText = String(amount || "").trim();
+  const m = amountText.match(/([\d,]+(?:\.\d+)?)/);
+  if (!m) return s;
+
+  const num = m[1].replace(/,/g, "");
+  if (!num) return s;
+
+  const esc = num.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // 적용여부의 담보 설명에서만 보장금액과 중복되는 합계금액을 숨긴다.
+  // 보험사별 금액(예: KB:500)은 유지하고, "/ 1000" 또는 단독 "1000" 합계만 제거.
+  s = s.replace(new RegExp("\\s*\\/\\s*" + esc + "(?:\\s*만원)?(?=\\s*(?:$|\\n|\\/))", "g"), "");
+  s = s.replace(new RegExp("(^|\\n)\\s*" + esc + "(?:\\s*만원)?\\s*(?=\\n|$)", "g"), "$1");
+
+  return s.replace(/[ \t]+$/gm, "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function makeClaimNotes(item, accidentText) {
   const notes = [];
   const coverage = classifyCoverage(item);
@@ -38345,8 +38364,9 @@ function makeClaimNotes(item, accidentText) {
   conditionCheck.met.forEach(v => notes.push(`<span style="color:#0a7a32;font-weight:800;">※ ${escapeHtml(v)}</span>`));
   conditionCheck.needs.forEach(v => notes.push(`<span style="color:#c46a00;font-weight:800;">※ ${escapeHtml(v)}</span>`));
 
+  const claimDisplay = splitDetailAndAmount(item.detail, item.amount);
   if (item.detail) {
-    const detailHtml = escapeHtml(item.detail)
+    const detailHtml = escapeHtml(hideClaimDetailTotalAmount(claimDisplay.detail || item.detail, claimDisplay.amount || item.amount))
       // 적용여부 설명의 긴 약관문구만 보기 좋게 줄바꿈한다.
       .replace(/\s+([가-하]\.)\s*/g, "<br>$1 ")
       .replace(/‧\s*/g, "<br>‧ ")
@@ -38354,7 +38374,7 @@ function makeClaimNotes(item, accidentText) {
       .replace(/\s*(자전거\s*사망\s*\/후유장해\/자전거사고진단금은)/g, "<br>$1");
     notes.push(detailHtml.replace(/^<br>/, ""));
   }
-  if (item.amount) notes.push("보장금액 : " + escapeHtml(item.amount));
+  if (claimDisplay.amount || item.amount) notes.push("보장금액 : " + escapeHtml(claimDisplay.amount || item.amount));
 
   return notes;
 }
@@ -38627,7 +38647,7 @@ function checkClaimPossible(){
             <b style="color:#0d2f6f;">${escapeHtml(m.item?.name || "-")}</b><br>
             <span style="color:#c46a00;font-weight:800;">조건 확인 필요 · 향후 청구 가능성 있음</span><br>
             ${escapeHtml(m.message)}
-            ${m.item?.detail ? `<br>${escapeHtml(m.item.detail)}` : ""}
+            ${m.item?.detail ? `<br>${escapeHtml(hideClaimDetailTotalAmount(m.item.detail, m.item.amount))}` : ""}
             ${m.item?.amount ? `<br>보장금액 : ${escapeHtml(m.item.amount)}` : ""}
           </div>
         `).join("") +
@@ -39103,7 +39123,7 @@ function evaluateCitizenClaimExternal(payload){
       return `<strong>담보별 자동 확인 결과</strong><br>` +
         `<div style="font-size:13px;margin:8px 0 12px;color:#475569;">자동분석: 원인 [${escapeHtml(causeText)}] / 결과 [${escapeHtml(resultText)}]</div>` +
         `<div style="margin-bottom:12px;padding:10px;border:1px solid #ffe1a6;border-radius:10px;background:#fffaf0;"><b style="color:#c46a00;">현재 지급조건은 미확정이지만 관련 가입담보가 확인됩니다.</b><br>현재 상태만으로 '해당 없음'으로 판단하지 않고, 향후 사고결과가 확정되면 아래 담보를 다시 확인할 수 있습니다.</div>` +
-        futureConditional.map(m => `<div style="margin-bottom:12px;padding:10px;border:1px solid #d9e8ff;border-radius:10px;background:#f8fbff;"><b style="color:#0d2f6f;">${escapeHtml(m.item?.name || "-")}</b><br><span style="color:#c46a00;font-weight:800;">조건 확인 필요 · 향후 청구 가능성 있음</span><br>${escapeHtml(m.message)}${m.item?.detail ? `<br>${escapeHtml(m.item.detail)}` : ""}${m.item?.amount ? `<br>보장금액 : ${escapeHtml(m.item.amount)}` : ""}</div>`).join("") +
+        futureConditional.map(m => `<div style="margin-bottom:12px;padding:10px;border:1px solid #d9e8ff;border-radius:10px;background:#f8fbff;"><b style="color:#0d2f6f;">${escapeHtml(m.item?.name || "-")}</b><br><span style="color:#c46a00;font-weight:800;">조건 확인 필요 · 향후 청구 가능성 있음</span><br>${escapeHtml(m.message)}${m.item?.detail ? (() => { const d = splitDetailAndAmount(m.item.detail, m.item.amount); const dd = hideClaimDetailTotalAmount(d.detail || m.item.detail, d.amount || m.item.amount); return `${dd ? `<br>${escapeHtml(dd)}` : ""}${(d.amount || m.item?.amount) ? `<br>보장금액 : ${escapeHtml(d.amount || m.item.amount)}` : ""}`; })() : (m.item?.amount ? `<br>보장금액 : ${escapeHtml(m.item.amount)}` : "")}</div>`).join("") +
         `<div style="margin-top:12px;font-size:12px;color:#64748b;">※ 최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.</div>`;
     }
 
