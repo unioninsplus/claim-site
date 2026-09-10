@@ -39914,7 +39914,7 @@ window.addEventListener("message", function(event){
 
   const uniqPush = (arr, v) => { if (v && !arr.includes(v)) arr.push(v); };
   const hasN = (t, arr) => arr.some(v => t.includes(claimNorm(v)));
-  const isFinalSpecialCause = (cause) => isSpecialCoverageCause(cause) || cause === "의료사고법률";
+  const isFinalSpecialCause = (cause) => isSpecialCoverageCause(cause) || cause === "의료사고법률" || cause === "전동보조기기";
 
   /* 사고를 상위개념/세부원인/결과로 분리한다. 기존 판정값은 그대로 살리고 필요한 개념만 추가한다. */
   analyzeAccident = function(accidentText){
@@ -39954,6 +39954,33 @@ window.addEventListener("message", function(event){
       "수술사고","수술중사고","수술중과실","진료중과실","치료중과실","오진","투약오류","수혈사고"
     ])) uniqPush(a.causes,"의료사고법률");
 
+    /* 전동휠체어·의료용스쿠터는 교통수단이 아니라 사람의 의료용 보조장치다.
+       기기 이용이 사고내용에 명시된 경우에만 전동보조기기 원인을 추가한다.
+       이 단어만으로 교통사고로 바꾸지 않으며, 자동차·오토바이 충돌 여부는
+       기존 사람 대 차량 교통사고 판정 결과를 그대로 따른다. */
+    if (hasN(t,[
+      "전동보조기기","전동보조장치","전동휠체어","전동식휠체어","전동휠체어이용",
+      "의료용스쿠터","의료용전동스쿠터","장애인전동스쿠터","보행보조용의자차"
+    ])) {
+      uniqPush(a.causes,"전동보조기기");
+      a.isInjuryConcept = true;
+      a.medicalAssistiveDevice = true;
+      a.medicalAssistiveDeviceVehicleCollision = hasN(t,[
+        "차에치","차량에치","자동차에치","승용차에치","버스에치","택시에치","오토바이에치",
+        "차와충돌","차량과충돌","자동차와충돌","승용차와충돌","버스와충돌","택시와충돌","오토바이와충돌",
+        "차랑사고","차량과사고","자동차와사고","승용차와사고","버스와사고","택시와사고","오토바이와사고",
+        "차와추돌","차량과추돌","자동차와추돌","승용차와추돌","버스와추돌","택시와추돌","오토바이와추돌",
+        "차가들이받","차량이들이받","자동차가들이받","승용차가들이받","버스가들이받","택시가들이받","오토바이가들이받",
+        "차량이충격","자동차가충격","승용차가충격","버스가충격","택시가충격","오토바이가충격"
+      ]);
+      if (a.medicalAssistiveDeviceVehicleCollision) {
+        a.causes = (a.causes || []).filter(c => ![
+          "교통사고","대중교통","보행중교통사고","교통승용구","자전거","PM","일반상해"
+        ].includes(c));
+        uniqPush(a.causes,"전동보조기기");
+      }
+    }
+
     /* 특수원인이 명확하지 않은 실제 상해는 일반상해 상위개념을 메타값으로 유지 */
     a.primaryCategory = a.isTraffic ? "교통상해" : (a.isInjuryConcept ? "상해" : "");
     a.detailCauses = (a.causes || []).filter(c => c !== "일반상해");
@@ -39983,6 +40010,14 @@ window.addEventListener("message", function(event){
       c.causes = (c.causes || []).filter(x => x !== "일반상해");
       uniqPush(c.causes,"의료사고법률");
       c.fullNameSemantic = "의료사고법률";
+    }
+
+    /* 담보명 자체가 전동휠체어·의료용스쿠터 전용이면 일반 부상치료비로
+       확대하지 않고 전동보조기기 이용 사고에만 일치시킨다. */
+    if (hasN(n,["전동보조기기","전동보조장치","전동휠체어","의료용스쿠터","보행보조용의자차"])) {
+      c.causes = (c.causes || []).filter(x => x !== "일반상해" && x !== "PM" && x !== "대중교통");
+      uniqPush(c.causes,"전동보조기기");
+      c.fullNameSemantic = "전동보조기기";
     }
 
     /* 담보명이 포괄명인 경우에도 그 담보 자체 detail에 특정 원인이 명시돼 있으면 그 원인을 읽는다. */
@@ -40031,7 +40066,7 @@ window.addEventListener("message", function(event){
     }
 
     /* 원인 제한이 없는 담보만 결과축으로 판단 가능 */
-    return !/화재|폭발|붕괴|산사태|지반침하|교통|대중교통|자전거|킥보드|개물림|농기계|익사|감전|가스|화상|재난|범죄|야생동물|온열|한랭/.test(coverage.nameRaw || "");
+    return !/화재|폭발|붕괴|산사태|지반침하|교통|대중교통|자전거|킥보드|개물림|전동보조기기|전동휠체어|의료용스쿠터|농기계|익사|감전|가스|화상|재난|범죄|야생동물|온열|한랭/.test(coverage.nameRaw || "");
   }
 
   function historicalSupportsCoverage(accidentText, coverage){
@@ -40093,8 +40128,15 @@ window.addEventListener("message", function(event){
   getMatchedCoverages = function(items, accidentText){
     const accident = analyzeAccident(accidentText);
     const out = [];
+    /* 조회 지자체에 전동보조기기 전용 담보가 있으면 그 담보를 우선한다.
+       전용 담보가 없을 때에는 의료용 보조장치를 이용한 사람의 일반상해로 판단하며,
+       차량 충돌 시 교통상해 제외 등 각 일반상해 담보의 기존 조건은 그대로 적용한다. */
+    const hasAssistiveDeviceCoverage = !!accident.medicalAssistiveDevice && (items || []).some(item =>
+      (classifyCoverage(item).causes || []).includes("전동보조기기")
+    );
     (items || []).forEach((item,index) => {
       const ev = finalEvaluate(item,index,accident,accidentText);
+      if (hasAssistiveDeviceCoverage && !(ev.coverage.causes || []).includes("전동보조기기")) return;
       if (ev.status === "matched" || ev.status === "needs_check") {
         const notes = makeClaimNotes(item, accidentText);
         if (ev.status === "needs_check") {
