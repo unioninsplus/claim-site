@@ -37886,6 +37886,27 @@ function parseCoverageConditions(item) {
     if (under.length) c.ageMaxExclusive = Math.max(...under);
     if (over.length) c.ageMinExclusive = Math.min(...over);
 
+    /* 보험사 구분용 '15세 이상/미만'보다 괄호 안 실제 가입연령
+       예: '(60세 이상은 현대)', '(12세 이하는 메리츠)'를 우선 적용 */
+    const clarifiedBelow = [...compact.matchAll(/(\d{1,3})세이하(?:는|은)/g)].map(x=>Number(x[1]));
+    const clarifiedAbove = [...compact.matchAll(/(\d{1,3})세이상(?:은|는)/g)].map(x=>Number(x[1]));
+    const clarifiedUnder = [...compact.matchAll(/(\d{1,3})세미만(?:은|는)/g)].map(x=>Number(x[1]));
+    const clarifiedOver  = [...compact.matchAll(/(\d{1,3})세초과(?:는|은)/g)].map(x=>Number(x[1]));
+    if (clarifiedBelow.length) {
+      c.ageMax = Math.max(...clarifiedBelow);
+      c.ageMaxExclusive = null;
+    } else if (clarifiedUnder.length) {
+      c.ageMax = null;
+      c.ageMaxExclusive = Math.max(...clarifiedUnder);
+    }
+    if (clarifiedAbove.length) {
+      c.ageMin = Math.min(...clarifiedAbove);
+      c.ageMinExclusive = null;
+    } else if (clarifiedOver.length) {
+      c.ageMin = null;
+      c.ageMinExclusive = Math.min(...clarifiedOver);
+    }
+
     // 12세 이하 + 65세 이상처럼 양끝 연령만 가입된 경우는 OR 조건
     const maxSide = c.ageMax != null ? c.ageMax : (c.ageMaxExclusive != null ? c.ageMaxExclusive - 1 : null);
     const minSide = c.ageMin != null ? c.ageMin : (c.ageMinExclusive != null ? c.ageMinExclusive + 1 : null);
