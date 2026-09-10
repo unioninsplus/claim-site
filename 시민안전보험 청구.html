@@ -40090,6 +40090,10 @@ window.addEventListener("message", function(event){
 
     if (ar.includes("후유장해") && cr.includes("후유장해")) return "matched";
 
+    /* 조회 지자체에 후유장해 담보가 있어도 단순 부상·진단만 입력된 경우에는
+       상해진단금과 혼동되지 않도록 현재 적용 확정이 아닌 장해확정 대기로 안내한다. */
+    if (cr.includes("후유장해")) return "needs_check";
+
     const explicit = ["후유장해","진단","입원","의료비","수술","재난비용"].filter(r => ar.includes(r));
     if (explicit.some(r => cr.includes(r))) return "matched";
 
@@ -40171,9 +40175,17 @@ window.addEventListener("message", function(event){
 
   /* 기존 안내문을 유지하면서 수술을 별도 확인항목으로 추가 */
   makeClaimNotes = function(item, accidentText){
-    const notes = _finalPrevMakeNotes(item, accidentText) || [];
+    let notes = _finalPrevMakeNotes(item, accidentText) || [];
     const accident = analyzeAccident(accidentText);
     const coverage = classifyCoverage(item);
+    /* 실제 조회된 지자체 담보의 분류를 기준으로 후유장해 안내를 자동 적용한다.
+       같은 지자체에 상해진단금이 함께 있어도 이 안내는 후유장해 담보에만 붙는다. */
+    if ((coverage.results || []).includes("후유장해") && !(accident.results || []).includes("후유장해")) {
+      notes = notes.filter(v => !String(v || "").includes("사고내용과 해당 지자체 가입담보를 함께 비교한 결과 적용 가능성이 확인됩니다"));
+      notes.unshift(
+        '<span style="color:#c46a00;font-weight:800;">※ 조회된 해당 지자체의 후유장해 담보에 관한 안내입니다. 현재 다쳤거나 진단을 받았다는 사실만으로 후유장해 보험금 지급대상이 확정되는 것은 아닙니다. 사고일로부터 약 6개월 정도 치료기간을 거친 후에도 영구적인 장해가 남고, 의사로부터 후유장해진단서가 발급되어 해당 담보의 약관·장해분류표상 지급률에 해당하는 경우 청구할 수 있습니다. 치료기간과 장해진단 시점 및 인정 여부는 상해 상태, 해당 지자체 담보 세부내용과 보험사 심사기준에 따라 달라질 수 있습니다.</span>'
+      );
+    }
     if ((coverage.results || []).includes("수술") && !(accident.results || []).includes("수술")) {
       notes.unshift('<span style="color:#c46a00;font-weight:800;">※ 해당 담보는 수술 여부 및 담보설명상 수술조건 확인이 필요합니다.</span>');
     }
