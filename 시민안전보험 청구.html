@@ -40219,5 +40219,63 @@ window.addEventListener("message", function(event){
 })();
 </script>
 
+<script>
+/* 2026-09-10 추가: 대중교통 승차·하차 중 사고 판정 보강
+   차량에 오르거나 내리는 직접 동작 중 사고는 대중교통사고로 판정하고,
+   정류장·승강장에서 타러 이동하던 중 또는 완전히 내린 뒤 사고는 일반상해로 구분한다. */
+(function(){
+  const _prevAnalyzeAccident_boardingAlighting = analyzeAccident;
+
+  analyzeAccident = function(accidentText){
+    const a = _prevAnalyzeAccident_boardingAlighting(accidentText);
+    const t = claimNorm(accidentText);
+    const has = arr => arr.some(v => t.includes(claimNorm(v)));
+
+    const transitVehicle = has([
+      "버스","마을버스","시내버스","전세버스","지하철","전철",
+      "전동차","기차","열차","택시","대중교통"
+    ]);
+
+    /* 아직 타지 않은 채 정류장·승강장에서 차량을 타러 이동하거나,
+       완전히 내린 이후 발생한 사고는 승하차 중 사고가 아니다. */
+    const beforeOrAfterUse = has([
+      "타러가다가","타러가려다","타러가던중","타려고가다가","타려고뛰다가",
+      "타러뛰다가","승차하러가다가","정류장에서버스타러","승강장에서열차타러",
+      "하차후","내린후","내리고나서","내린뒤","하차한후","하차한다음"
+    ]);
+
+    /* 발을 올리거나 내리는 승하차 동작, 그 과정에서 차량이 출발하여
+       넘어지거나 문·발판 등에 걸린 사고까지 대중교통 이용 중으로 본다. */
+    const boardingOrAlighting = transitVehicle && !beforeOrAfterUse && has([
+      "승차중","하차중","승하차중","승차도중","하차도중","승하차도중",
+      "승차하다","하차하다","승차하려다","하차하려다",
+      "타다가","타던중","타는중","타면서","올라타다가","올라타던중",
+      "오르다가","오르던중","올라가다가","올라가던중",
+      "내리다가","내리던중","내리는중","내리면서",
+      "발을올리다가","발을내리다가","발판에오르다가","발판에서내리다가",
+      "승차중출발","하차중출발","타다가출발","내리다가출발",
+      "오르다가출발","올라가다가출발","문에끼임","문에끼여",
+      "승강장과열차사이"
+    ]);
+
+    if (boardingOrAlighting) {
+      a.causes = (a.causes || []).filter(x => x !== "일반상해");
+      if (!a.causes.includes("대중교통")) a.causes.push("대중교통");
+      a.isTraffic = true;
+      a.transportRelationNeedsCheck = false;
+    } else if (transitVehicle && beforeOrAfterUse) {
+      a.causes = (a.causes || []).filter(x => x !== "대중교통");
+      if (!(a.causes || []).some(x => ["교통사고","보행중교통사고","자전거","PM"].includes(x))) {
+        a.isTraffic = false;
+        if (!a.causes.includes("일반상해")) a.causes.push("일반상해");
+      }
+      a.transportRelationNeedsCheck = false;
+    }
+
+    return a;
+  };
+})();
+</script>
+
 </body>
 </html>
