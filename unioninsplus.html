@@ -68,6 +68,35 @@
   }
   nav a { opacity: 0.9; }
   nav a:hover { opacity: 1; }
+  .language-switch {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    margin-left: auto;
+    border: 1px solid rgba(255,255,255,.38);
+    border-radius: 999px;
+    background: rgba(255,255,255,.12);
+    white-space: nowrap;
+  }
+  .language-switch button {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 11px;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .language-switch button.active {
+    background: #fff;
+    color: #0d2f6f;
+  }
+  .coverage-translation { display:none; }
+  html[lang="en"] .coverage-translation-en { display:block; }
+  html[lang="zh-CN"] .coverage-translation-zh { display:block; }
+  html[lang="ja"] .coverage-translation-ja { display:block; }
 
 .hero {
   background:
@@ -386,6 +415,7 @@ footer {
     .btn { width: 100%; }
     .topbar { padding: 14px 0; }
     .brand-text strong { font-size: 19px; }
+    .language-switch button { padding: 6px 9px; font-size: 12px; }
   }
 
   .cg-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:9999;padding:24px;overflow:auto}
@@ -718,8 +748,35 @@ function cgSearch(){
     btn.type = "button";
     btn.className = "cg-name";
 
+    const labelWrap = document.createElement("span");
+    labelWrap.style.cssText = "display:flex;flex-direction:column;gap:3px;padding-right:12px;";
     const label = document.createElement("span");
     label.textContent = String(item.name || "").trim();
+    const labelEn = document.createElement("span");
+    labelEn.className = "coverage-translation coverage-translation-en";
+    labelEn.style.cssText = "font-size:12px;line-height:1.45;color:#64748b;font-weight:700;";
+    labelEn.setAttribute("lang","en");
+    labelEn.textContent = typeof window.getCoverageEnglishName === "function"
+      ? window.getCoverageEnglishName(item.name)
+      : "";
+    labelWrap.append(label);
+    if(labelEn.textContent) labelWrap.append(labelEn);
+    const labelZh = document.createElement("span");
+    labelZh.className = "coverage-translation coverage-translation-zh";
+    labelZh.style.cssText = "font-size:12px;line-height:1.45;color:#64748b;font-weight:700;";
+    labelZh.setAttribute("lang","zh-CN");
+    labelZh.textContent = typeof window.getCoverageChineseName === "function"
+      ? window.getCoverageChineseName(item.name)
+      : "";
+    if(labelZh.textContent) labelWrap.append(labelZh);
+    const labelJa = document.createElement("span");
+    labelJa.className = "coverage-translation coverage-translation-ja";
+    labelJa.style.cssText = "font-size:12px;line-height:1.45;color:#64748b;font-weight:700;";
+    labelJa.setAttribute("lang","ja");
+    labelJa.textContent = typeof window.getCoverageJapaneseName === "function"
+      ? window.getCoverageJapaneseName(item.name)
+      : "";
+    if(labelJa.textContent) labelWrap.append(labelJa);
 
     const arrow = document.createElement("span");
     arrow.className = "cg-arrow";
@@ -745,13 +802,49 @@ function cgSearch(){
       .replace(/[‧•*※\-]?\s*(총\s*보상\s*한도|총보상한도)\s*:/g, "\n▶ 총보상한도: ")
       .trim();
 
-    desc.textContent = [
+    const koreanDescription = [
       guide,
       detailText,
       amountText ? "보장금액: " + amountText : ""
     ].filter(Boolean).join("\n\n") || "담보 설명 준비 중입니다.";
+    const koreanBlock = document.createElement("div");
+    koreanBlock.textContent = koreanDescription;
+    desc.appendChild(koreanBlock);
+    const englishDescription = typeof window.getCoverageEnglishGuide === "function"
+      ? window.getCoverageEnglishGuide(item.name, detailText, amountText)
+      : "";
+    if(englishDescription){
+      const englishBlock = document.createElement("div");
+      englishBlock.className = "coverage-translation coverage-translation-en";
+      englishBlock.setAttribute("lang","en");
+      englishBlock.style.cssText = "margin-top:12px;padding-top:12px;border-top:1px dashed #cbd5e1;color:#31527c;font-size:13px;line-height:1.7;";
+      englishBlock.textContent = englishDescription;
+      desc.appendChild(englishBlock);
+    }
+    const chineseDescription = typeof window.getCoverageChineseGuide === "function"
+      ? window.getCoverageChineseGuide(item.name, detailText, amountText)
+      : "";
+    if(chineseDescription){
+      const chineseBlock = document.createElement("div");
+      chineseBlock.className = "coverage-translation coverage-translation-zh";
+      chineseBlock.setAttribute("lang","zh-CN");
+      chineseBlock.style.cssText = "margin-top:12px;padding-top:12px;border-top:1px dashed #cbd5e1;color:#31527c;font-size:13px;line-height:1.7;";
+      chineseBlock.textContent = chineseDescription;
+      desc.appendChild(chineseBlock);
+    }
+    const japaneseDescription = typeof window.getCoverageJapaneseGuide === "function"
+      ? window.getCoverageJapaneseGuide(item.name, detailText, amountText)
+      : "";
+    if(japaneseDescription){
+      const japaneseBlock = document.createElement("div");
+      japaneseBlock.className = "coverage-translation coverage-translation-ja";
+      japaneseBlock.setAttribute("lang","ja");
+      japaneseBlock.style.cssText = "margin-top:12px;padding-top:12px;border-top:1px dashed #cbd5e1;color:#31527c;font-size:13px;line-height:1.7;";
+      japaneseBlock.textContent = japaneseDescription;
+      desc.appendChild(japaneseBlock);
+    }
 
-    btn.append(label, arrow);
+    btn.append(labelWrap, arrow);
     btn.onclick = () => {
       document.querySelectorAll("#cgList .cg-item").forEach(el => {
         if(el !== box) el.classList.remove("open");
@@ -1006,7 +1099,7 @@ function runAiSample(){
       sido: sido,
       sigungu: g,
       accidentDate: accidentDate,
-      accidentText: q
+      accidentText: typeof window.addEnglishClaimMeaning === "function" ? window.addEnglishClaimMeaning(q) : q
     }, "*");
   }catch(e){
     AI_CLAIM_PENDING_ID = null;
@@ -1042,6 +1135,12 @@ window.addEventListener("message", function(event){
         <strong>(주)유니온인스플러스</strong>
         <span>지자체 복지보험 · 시민안전보험 · 자전거보험 · 일반보험</span>
       </div>
+    </div>
+    <div class="language-switch" aria-label="Language selection">
+      <button id="langKo" type="button" class="active" onclick="setSiteLanguage('ko')">한국어</button>
+      <button id="langEn" type="button" onclick="setSiteLanguage('en')">English</button>
+      <button id="langZh" type="button" onclick="setSiteLanguage('zh')">中文</button>
+      <button id="langJa" type="button" onclick="setSiteLanguage('ja')">日本語</button>
     </div>
     <nav>
       <a href="#about">회사소개</a>
@@ -1276,6 +1375,575 @@ window.addEventListener("message", function(event){
     <div>서울특별시 강동구 천호대로 176길 8 형도빌딩 2·3층 | 우편번호 05373</div>
   </div>
 </footer>
+
+<script>
+/* 화면 안내문 전용 한·영 전환: 조회 데이터·지자체명·담보명·보험사명은 원문 유지 */
+(function(){
+  const nameTerms = [
+    [/개물림[.·]?부딪힘/g,"Dog Bite / Collision"],[/개물림/g,"Dog Bite"],[/부딪힘/g,"Collision"],
+    [/폭발/g,"Explosion"],[/화재/g,"Fire"],[/붕괴/g,"Collapse"],[/산사태/g,"Landslide"],[/지반침하/g,"Ground Subsidence"],
+    [/자연재해/g,"Natural Disaster"],[/사회재난/g,"Social Disaster"],[/대중교통/g,"Public Transportation"],
+    [/교통사고/g,"Traffic Accident"],[/자전거/g,"Bicycle"],[/개인형이동장치|PM/g,"Personal Mobility Device"],
+    [/스쿨존|어린이보호구역/g,"School Zone"],[/실버존|노인보호구역/g,"Senior Protection Zone"],
+    [/농기계/g,"Agricultural Machinery"],[/익사/g,"Drowning"],[/감전/g,"Electric Shock"],[/가스/g,"Gas Accident"],
+    [/화상/g,"Burn"],[/야생동물/g,"Wild Animal"],[/온열질환/g,"Heat-related Illness"],[/한랭질환/g,"Cold-related Illness"],
+    [/강력범죄/g,"Violent Crime"],[/성폭력범죄/g,"Sexual Violence Crime"],[/의료사고/g,"Medical Accident"],
+    [/상해의료비/g,"Injury Medical Expenses"],[/의료비/g,"Medical Expenses"],[/부상치료비/g,"Injury Treatment Benefit"],
+    [/후유장해/g,"Permanent Disability"],[/후유/g,"Permanent Disability"],[/사망/g,"Death"],[/수술비/g,"Surgery Benefit"],
+    [/진단위로금|진단금|진단비/g,"Diagnosis Benefit"],[/입원위로금|입원일당/g,"Hospitalization Benefit"],
+    [/피해보상금|보상금/g,"Compensation Benefit"],[/법률비용지원|법률비용/g,"Legal Expense Support"],
+    [/연간1회한/g,"Once per Year"],[/교통상해보장제외/g,"Traffic Injuries Excluded"],[/감염병제외/g,"Infectious Diseases Excluded"]
+  ];
+
+  window.getCoverageEnglishName = function(name){
+    let value = String(name || "").trim();
+    let changed = false;
+    nameTerms.forEach(([pattern,replacement]) => {
+      if(pattern.test(value)){ value = value.replace(pattern,replacement); changed = true; }
+      pattern.lastIndex = 0;
+    });
+    return changed ? value.replace(/[()（）]/g," ").replace(/\s+/g," ").trim() : "Registered coverage (official Korean name above)";
+  };
+
+  window.getCoverageEnglishGuide = function(name, detail, amount){
+    const n = String(name || "").replace(/\s+/g,"");
+    let subject = "an accident covered under the policy";
+    if(/개물림|부딪힘/.test(n)) subject = "a dog bite or direct collision with a dog";
+    else if(/폭발|화재|붕괴|산사태/.test(n)) subject = "an explosion, fire, structural collapse, or landslide";
+    else if(/지반침하/.test(n)) subject = "ground subsidence or a sinkhole accident";
+    else if(/대중교통/.test(n)) subject = "an accident while using eligible public transportation";
+    else if(/자전거/.test(n)) subject = "a bicycle accident";
+    else if(/개인형이동장치|PM/.test(n)) subject = "a personal mobility device accident";
+    else if(/스쿨존|어린이보호구역/.test(n)) subject = "an eligible traffic accident in a school zone";
+    else if(/실버존|노인보호구역/.test(n)) subject = "an eligible traffic accident in a senior protection zone";
+    else if(/자연재해/.test(n)) subject = "an eligible natural disaster";
+    else if(/사회재난/.test(n)) subject = "an eligible officially recognized social disaster";
+    else if(/농기계/.test(n)) subject = "an agricultural machinery accident";
+    else if(/익사/.test(n)) subject = "a drowning accident";
+    else if(/감전/.test(n)) subject = "an electric shock accident";
+    else if(/가스/.test(n)) subject = "a gas-related accident";
+    else if(/화상/.test(n)) subject = "an eligible burn injury";
+    else if(/강력범죄|성폭력|범죄/.test(n)) subject = "an eligible crime-related injury";
+    else if(/온열질환/.test(n)) subject = "an eligible heat-related illness";
+    else if(/한랭질환/.test(n)) subject = "an eligible cold-related illness";
+    else if(/상해/.test(n)) subject = "an accidental bodily injury";
+
+    let outcome = "a benefit may be payable if the policy requirements are met";
+    if(/사망/.test(n)) outcome = "the death benefit may be payable";
+    else if(/후유장해|후유/.test(n)) outcome = "a permanent disability benefit may be payable after the disability is assessed";
+    else if(/수술/.test(n)) outcome = "a surgery benefit may be payable when an eligible operation is performed";
+    else if(/입원/.test(n)) outcome = "a hospitalization benefit may be payable when the required admission conditions are met";
+    else if(/진단/.test(n)) outcome = "a diagnosis benefit may be payable when the required diagnosis conditions are met";
+    else if(/의료비|치료비/.test(n)) outcome = "eligible medical or treatment expenses may be covered within the policy limit";
+    else if(/법률비용/.test(n)) outcome = "eligible legal expenses may be supported within the policy limit";
+
+    let text = "For " + subject + ", " + outcome + ".";
+    if(/교통상해보장제외|교통상해제외/.test(n)) text += " Traffic-related injuries may be excluded.";
+    if(/감염병제외/.test(n)) text += " Infectious diseases may be excluded.";
+    if(amount) text += " Coverage amount: " + String(amount).trim() + ".";
+    text += " Final eligibility and payment are determined by the Korean policy wording and the insurer’s review.";
+    return text;
+  };
+
+  const chineseNameTerms = [
+    [/개물림[.·]?부딪힘/g,"犬咬伤／犬碰撞"],[/개물림/g,"犬咬伤"],[/부딪힘/g,"犬碰撞"],
+    [/폭발/g,"爆炸"],[/화재/g,"火灾"],[/붕괴/g,"坍塌"],[/산사태/g,"山体滑坡"],[/지반침하/g,"地面塌陷"],
+    [/자연재해/g,"自然灾害"],[/사회재난/g,"社会灾难"],[/대중교통/g,"公共交通"],[/교통사고/g,"交通事故"],
+    [/자전거/g,"自行车"],[/개인형이동장치|PM/g,"个人移动设备"],[/스쿨존|어린이보호구역/g,"儿童保护区"],
+    [/실버존|노인보호구역/g,"老年人保护区"],[/농기계/g,"农业机械"],[/익사/g,"溺水"],[/감전/g,"触电"],
+    [/가스/g,"燃气事故"],[/화상/g,"烧伤"],[/야생동물/g,"野生动物"],[/온열질환/g,"高温相关疾病"],[/한랭질환/g,"低温相关疾病"],
+    [/강력범죄/g,"暴力犯罪"],[/성폭력범죄/g,"性暴力犯罪"],[/의료사고/g,"医疗事故"],
+    [/상해의료비/g,"意外伤害医疗费"],[/의료비/g,"医疗费"],[/부상치료비/g,"受伤治疗补偿金"],
+    [/후유장해/g,"永久伤残"],[/후유/g,"永久伤残"],[/사망/g,"死亡"],[/수술비/g,"手术补偿金"],
+    [/진단위로금|진단금|진단비/g,"诊断补偿金"],[/입원위로금|입원일당/g,"住院补偿金"],
+    [/피해보상금|보상금/g,"损害补偿金"],[/법률비용지원|법률비용/g,"法律费用补助"],
+    [/연간1회한/g,"每年限一次"],[/교통상해보장제외/g,"不承保交通伤害"],[/감염병제외/g,"不承保传染病"]
+  ];
+
+  window.getCoverageChineseName = function(name){
+    let value = String(name || "").trim();
+    let changed = false;
+    chineseNameTerms.forEach(([pattern,replacement]) => {
+      if(pattern.test(value)){ value = value.replace(pattern,replacement); changed = true; }
+      pattern.lastIndex = 0;
+    });
+    return changed ? value.replace(/[()（）]/g," ").replace(/\s+/g," ").trim() : "已登记保障项目（上方为正式韩文名称）";
+  };
+
+  window.getCoverageChineseGuide = function(name, detail, amount){
+    const n = String(name || "").replace(/\s+/g,"");
+    let subject = "符合保险条款规定的事故";
+    if(/개물림|부딪힘/.test(n)) subject = "被犬咬伤或与犬直接碰撞的事故";
+    else if(/폭발|화재|붕괴|산사태/.test(n)) subject = "爆炸、火灾、坍塌或山体滑坡事故";
+    else if(/지반침하/.test(n)) subject = "地面塌陷或地陷事故";
+    else if(/대중교통/.test(n)) subject = "乘坐符合条件的公共交通工具时发生的事故";
+    else if(/자전거/.test(n)) subject = "自行车事故";
+    else if(/개인형이동장치|PM/.test(n)) subject = "个人移动设备事故";
+    else if(/스쿨존|어린이보호구역/.test(n)) subject = "儿童保护区内符合条件的交通事故";
+    else if(/실버존|노인보호구역/.test(n)) subject = "老年人保护区内符合条件的交通事故";
+    else if(/자연재해/.test(n)) subject = "符合条件的自然灾害";
+    else if(/사회재난/.test(n)) subject = "被正式认定且符合条件的社会灾难";
+    else if(/농기계/.test(n)) subject = "农业机械事故";
+    else if(/익사/.test(n)) subject = "溺水事故";
+    else if(/감전/.test(n)) subject = "触电事故";
+    else if(/가스/.test(n)) subject = "燃气相关事故";
+    else if(/화상/.test(n)) subject = "符合条件的烧伤事故";
+    else if(/강력범죄|성폭력|범죄/.test(n)) subject = "符合条件的犯罪受害事故";
+    else if(/온열질환/.test(n)) subject = "符合条件的高温相关疾病";
+    else if(/한랭질환/.test(n)) subject = "符合条件的低温相关疾病";
+    else if(/상해/.test(n)) subject = "意外身体伤害";
+
+    let outcome = "符合保险条款规定时可能获得保险金";
+    if(/사망/.test(n)) outcome = "可能获得死亡保险金";
+    else if(/후유장해|후유/.test(n)) outcome = "伤残程度评定后可能获得永久伤残保险金";
+    else if(/수술/.test(n)) outcome = "接受符合条件的手术时可能获得手术补偿金";
+    else if(/입원/.test(n)) outcome = "符合住院条件时可能获得住院补偿金";
+    else if(/진단/.test(n)) outcome = "符合诊断条件时可能获得诊断补偿金";
+    else if(/의료비|치료비/.test(n)) outcome = "符合条件的医疗费可在保险限额内获得补偿";
+    else if(/법률비용/.test(n)) outcome = "符合条件的法律费用可在保险限额内获得补助";
+
+    let text = "因" + subject + "，" + outcome + "。";
+    if(/교통상해보장제외|교통상해제외/.test(n)) text += "交通伤害可能不在保障范围内。";
+    if(/감염병제외/.test(n)) text += "传染病可能不在保障范围内。";
+    if(amount) text += "保障金额：" + String(amount).trim() + "。";
+    text += "最终是否符合赔付条件及赔付金额，以韩文保险条款和保险公司的审核结果为准。";
+    return text;
+  };
+
+  const japaneseNameTerms = [
+    [/개물림[.·]?부딪힘/g,"犬咬傷・犬との衝突"],[/개물림/g,"犬咬傷"],[/부딪힘/g,"犬との衝突"],
+    [/폭발/g,"爆発"],[/화재/g,"火災"],[/붕괴/g,"崩壊"],[/산사태/g,"地滑り"],[/지반침하/g,"地盤沈下"],
+    [/자연재해/g,"自然災害"],[/사회재난/g,"社会災害"],[/대중교통/g,"公共交通"],[/교통사고/g,"交通事故"],
+    [/자전거/g,"自転車"],[/개인형이동장치|PM/g,"パーソナルモビリティ"],[/스쿨존|어린이보호구역/g,"スクールゾーン"],
+    [/실버존|노인보호구역/g,"高齢者保護区域"],[/농기계/g,"農業機械"],[/익사/g,"溺水"],[/감전/g,"感電"],
+    [/가스/g,"ガス事故"],[/화상/g,"やけど"],[/야생동물/g,"野生動物"],[/온열질환/g,"熱中症等"],[/한랭질환/g,"寒冷関連疾患"],
+    [/강력범죄/g,"凶悪犯罪"],[/성폭력범죄/g,"性暴力犯罪"],[/의료사고/g,"医療事故"],
+    [/상해의료비/g,"傷害医療費"],[/의료비/g,"医療費"],[/부상치료비/g,"負傷治療給付金"],
+    [/후유장해/g,"後遺障害"],[/후유/g,"後遺障害"],[/사망/g,"死亡"],[/수술비/g,"手術給付金"],
+    [/진단위로금|진단금|진단비/g,"診断給付金"],[/입원위로금|입원일당/g,"入院給付金"],
+    [/피해보상금|보상금/g,"被害補償金"],[/법률비용지원|법률비용/g,"法律費用支援"],
+    [/연간1회한/g,"年1回限度"],[/교통상해보장제외/g,"交通傷害は対象外"],[/감염병제외/g,"感染症は対象外"]
+  ];
+
+  window.getCoverageJapaneseName = function(name){
+    let value = String(name || "").trim();
+    let changed = false;
+    japaneseNameTerms.forEach(([pattern,replacement]) => {
+      if(pattern.test(value)){ value = value.replace(pattern,replacement); changed = true; }
+      pattern.lastIndex = 0;
+    });
+    return changed ? value.replace(/[()（）]/g," ").replace(/\s+/g," ").trim() : "登録補償項目（正式名称は上記の韓国語）";
+  };
+
+  window.getCoverageJapaneseGuide = function(name, detail, amount){
+    const n = String(name || "").replace(/\s+/g,"");
+    let subject = "約款で定める事故";
+    if(/개물림|부딪힘/.test(n)) subject = "犬に咬まれた事故または犬との直接衝突";
+    else if(/폭발|화재|붕괴|산사태/.test(n)) subject = "爆発、火災、建物崩壊または地滑り事故";
+    else if(/지반침하/.test(n)) subject = "地盤沈下または陥没事故";
+    else if(/대중교통/.test(n)) subject = "対象となる公共交通機関の利用中事故";
+    else if(/자전거/.test(n)) subject = "自転車事故";
+    else if(/개인형이동장치|PM/.test(n)) subject = "パーソナルモビリティ事故";
+    else if(/스쿨존|어린이보호구역/.test(n)) subject = "スクールゾーン内の対象交通事故";
+    else if(/실버존|노인보호구역/.test(n)) subject = "高齢者保護区域内の対象交通事故";
+    else if(/자연재해/.test(n)) subject = "対象となる自然災害";
+    else if(/사회재난/.test(n)) subject = "正式に認定された対象社会災害";
+    else if(/농기계/.test(n)) subject = "農業機械事故";
+    else if(/익사/.test(n)) subject = "溺水事故";
+    else if(/감전/.test(n)) subject = "感電事故";
+    else if(/가스/.test(n)) subject = "ガス関連事故";
+    else if(/화상/.test(n)) subject = "対象となるやけど事故";
+    else if(/강력범죄|성폭력|범죄/.test(n)) subject = "対象となる犯罪被害";
+    else if(/온열질환/.test(n)) subject = "対象となる熱中症等";
+    else if(/한랭질환/.test(n)) subject = "対象となる寒冷関連疾患";
+    else if(/상해/.test(n)) subject = "偶発的な身体傷害";
+
+    let outcome = "約款の要件を満たす場合、保険金が支払われる可能性があります";
+    if(/사망/.test(n)) outcome = "死亡保険金が支払われる可能性があります";
+    else if(/후유장해|후유/.test(n)) outcome = "障害認定後、後遺障害保険金が支払われる可能性があります";
+    else if(/수술/.test(n)) outcome = "対象手術を受けた場合、手術給付金が支払われる可能性があります";
+    else if(/입원/.test(n)) outcome = "所定の入院条件を満たす場合、入院給付金が支払われる可能性があります";
+    else if(/진단/.test(n)) outcome = "所定の診断条件を満たす場合、診断給付金が支払われる可能性があります";
+    else if(/의료비|치료비/.test(n)) outcome = "対象医療費が保険限度額内で補償される可能性があります";
+    else if(/법률비용/.test(n)) outcome = "対象法律費用が保険限度額内で支援される可能性があります";
+
+    let text = subject + "により、" + outcome + "。";
+    if(/교통상해보장제외|교통상해제외/.test(n)) text += "交通傷害は補償対象外となる場合があります。";
+    if(/감염병제외/.test(n)) text += "感染症は補償対象外となる場合があります。";
+    if(amount) text += "補償金額：" + String(amount).trim() + "。";
+    text += "最終的な支払可否と金額は、韓国語の保険約款および保険会社の審査により決定されます。";
+    return text;
+  };
+
+  window.addEnglishClaimMeaning = function(input){
+    const original = String(input || "").trim();
+    const chineseMeanings = [];
+    const addChinese = value => { if(value && !chineseMeanings.includes(value)) chineseMeanings.push(value); };
+    if(/[\u3400-\u9fff]/.test(original)){
+      if(/狗|犬|小狗|宠物犬|流浪狗/.test(original)){
+        if(/咬|咬伤|被咬/.test(original)) addChinese("개에게 물림");
+        if(/撞|碰撞|撞到|冲撞|撞倒/.test(original)) addChinese("개와 부딪힘");
+      }
+      if(/公交|公共汽车|巴士|地铁|火车|出租车|公共交通/.test(original)) addChinese("대중교통 이용 중 사고");
+      if(/自行车|单车/.test(original)) addChinese("자전거 사고");
+      if(/电动滑板车|电动踏板车|个人移动设备/.test(original)) addChinese("개인형 이동장치 사고");
+      if(/儿童保护区|学校区域/.test(original)) addChinese("스쿨존 교통사고");
+      if(/老年人保护区|老人保护区/.test(original)) addChinese("실버존 교통사고");
+      if(/火灾|起火/.test(original)) addChinese("화재 사고");
+      if(/爆炸/.test(original)) addChinese("폭발 사고");
+      if(/坍塌|倒塌/.test(original)) addChinese("붕괴 사고");
+      if(/山体滑坡|泥石流/.test(original)) addChinese("산사태 사고");
+      if(/地陷|地面塌陷/.test(original)) addChinese("지반침하 사고");
+      if(/溺水|淹死/.test(original)) addChinese("익사 사고");
+      if(/触电|电击/.test(original)) addChinese("감전 사고");
+      if(/农业机械|拖拉机|耕耘机/.test(original)) addChinese("농기계 사고");
+      if(/燃气|煤气中毒|气体泄漏/.test(original)) addChinese("가스 사고");
+      if(/烧伤|烫伤/.test(original)) addChinese("화상 사고");
+      if(/中暑|热射病/.test(original)) addChinese("온열질환");
+      if(/低温症|冻伤/.test(original)) addChinese("한랭질환");
+      if(/野生动物|野猪/.test(original)) addChinese("야생동물 피해");
+      if(/抢劫|暴力犯罪|殴打|性暴力|强奸/.test(original)) addChinese("범죄 피해");
+      if(/摔倒|跌倒|滑倒|受伤|骨折|扭伤/.test(original)) addChinese("넘어져 상해 치료");
+      if(/死亡|身亡/.test(original)) addChinese("사망");
+      if(/永久伤残|后遗障碍|残疾/.test(original)) addChinese("후유장해");
+      if(/手术/.test(original)) addChinese("수술 받음");
+      if(/住院/.test(original)) addChinese("입원 치료");
+      if(/医院|治疗|急诊/.test(original)) addChinese("병원 치료");
+      if(/医疗费|治疗费/.test(original)) addChinese("의료비 발생");
+      if(/诊断|诊断书/.test(original)) addChinese("진단 받음");
+      const cnWeeks = original.match(/(\d+)\s*(?:周|星期)/);
+      if(cnWeeks) addChinese("진단 " + cnWeeks[1] + "주");
+    }
+    const japaneseMeanings = [];
+    const addJapanese = value => { if(value && !japaneseMeanings.includes(value)) japaneseMeanings.push(value); };
+    if(/[ぁ-んァ-ヶ]/.test(original)){
+      if(/犬|いぬ|ワンちゃん/.test(original)){
+        if(/噛|咬|かまれ|かみつ/.test(original)) addJapanese("개에게 물림");
+        if(/衝突|ぶつか|ぶつけ|当たっ/.test(original)) addJapanese("개와 부딪힘");
+      }
+      if(/バス|地下鉄|電車|列車|タクシー|公共交通/.test(original)) addJapanese("대중교통 이용 중 사고");
+      if(/自転車|サイクリング/.test(original)) addJapanese("자전거 사고");
+      if(/キックボード|電動スクーター|パーソナルモビリティ/.test(original)) addJapanese("개인형 이동장치 사고");
+      if(/スクールゾーン|通学路/.test(original)) addJapanese("스쿨존 교통사고");
+      if(/シルバーゾーン|高齢者保護区域/.test(original)) addJapanese("실버존 교통사고");
+      if(/火災|火事/.test(original)) addJapanese("화재 사고");
+      if(/爆発/.test(original)) addJapanese("폭발 사고");
+      if(/崩壊|倒壊/.test(original)) addJapanese("붕괴 사고");
+      if(/地滑り|土砂崩れ/.test(original)) addJapanese("산사태 사고");
+      if(/陥没|地盤沈下/.test(original)) addJapanese("지반침하 사고");
+      if(/溺水|溺れ/.test(original)) addJapanese("익사 사고");
+      if(/感電/.test(original)) addJapanese("감전 사고");
+      if(/農業機械|トラクター|耕運機/.test(original)) addJapanese("농기계 사고");
+      if(/ガス|一酸化炭素中毒/.test(original)) addJapanese("가스 사고");
+      if(/やけど|火傷/.test(original)) addJapanese("화상 사고");
+      if(/熱中症|日射病/.test(original)) addJapanese("온열질환");
+      if(/低体温症|凍傷/.test(original)) addJapanese("한랭질환");
+      if(/野生動物|イノシシ/.test(original)) addJapanese("야생동물 피해");
+      if(/強盗|暴行|凶悪犯罪|性暴力/.test(original)) addJapanese("범죄 피해");
+      if(/転倒|転ん|滑っ|けが|怪我|骨折|捻挫/.test(original)) addJapanese("넘어져 상해 치료");
+      if(/死亡|亡くな/.test(original)) addJapanese("사망");
+      if(/後遺障害|永久障害/.test(original)) addJapanese("후유장해");
+      if(/手術/.test(original)) addJapanese("수술 받음");
+      if(/入院/.test(original)) addJapanese("입원 치료");
+      if(/病院|治療|救急/.test(original)) addJapanese("병원 치료");
+      if(/医療費|治療費/.test(original)) addJapanese("의료비 발생");
+      if(/診断|診断書/.test(original)) addJapanese("진단 받음");
+      const jaWeeks = original.match(/(\d+)\s*(?:週間|週)/);
+      if(jaWeeks) addJapanese("진단 " + jaWeeks[1] + "주");
+    }
+    chineseMeanings.push(...japaneseMeanings.filter(v => !chineseMeanings.includes(v)));
+    if(!/[A-Za-z]/.test(original)) return chineseMeanings.length ? original + " [판정용 의미: " + chineseMeanings.join(", ") + "]" : original;
+    const t = original.toLowerCase();
+    const meanings = [];
+    const add = value => { if(value && !meanings.includes(value)) meanings.push(value); };
+    const has = pattern => pattern.test(t);
+
+    if(has(/dog|puppy|pet\s*dog|stray/)){
+      if(has(/bit|bite|bitten|mauled/)) add("개에게 물림");
+      if(has(/hit|collid|bump|ran\s+into|knocked/)) add("개와 부딪힘");
+    }
+    if(has(/bus|subway|metro|train|taxi|public\s+transport/)) add("대중교통 이용 중 사고");
+    if(has(/bicycle|bike|cycling/)) add("자전거 사고");
+    if(has(/kickboard|e-scooter|electric\s+scooter|personal\s+mobility|\bpm\b/)) add("개인형 이동장치 사고");
+    if(has(/school\s+zone/)) add("스쿨존 교통사고");
+    if(has(/silver\s+zone|senior\s+zone|elderly\s+protection\s+zone/)) add("실버존 교통사고");
+    if(has(/fire|flame/)) add("화재 사고");
+    if(has(/explosion|exploded|blast/)) add("폭발 사고");
+    if(has(/collapse|collapsed/)) add("붕괴 사고");
+    if(has(/landslide/)) add("산사태 사고");
+    if(has(/sinkhole|ground\s+subsidence/)) add("지반침하 사고");
+    if(has(/drown|submerged/)) add("익사 사고");
+    if(has(/electric\s+shock|electrocut/)) add("감전 사고");
+    if(has(/farm\s+machinery|tractor|cultivator/)) add("농기계 사고");
+    if(has(/gas\s+leak|gas\s+accident|gas\s+poison/)) add("가스 사고");
+    if(has(/burn|scald/)) add("화상 사고");
+    if(has(/heatstroke|heat\s+stroke|heat-related|sunstroke/)) add("온열질환");
+    if(has(/hypothermia|cold-related|frostbite/)) add("한랭질환");
+    if(has(/wild\s+animal|wildlife|boar/)) add("야생동물 피해");
+    if(has(/robbery|violent\s+crime|assault|sexual\s+violence|rape/)) add("범죄 피해");
+    if(has(/fell|fall|slipped|tripped|injured|hurt|fracture|broken\s+bone|sprain/)) add("넘어져 상해 치료");
+
+    if(has(/died|death|deceased|fatal/)) add("사망");
+    if(has(/permanent\s+disabil|disability|impairment|sequela/)) add("후유장해");
+    if(has(/surgery|operation|operated/)) add("수술 받음");
+    if(has(/hospitali[sz]|admitted|inpatient/)) add("입원 치료");
+    if(has(/medical\s+treatment|treated|treatment|hospital|clinic|emergency\s+room|\ber\b/)) add("병원 치료");
+    if(has(/medical\s+expense|medical\s+bill|treatment\s+cost/)) add("의료비 발생");
+    if(has(/diagnos|medical\s+certificate/)) add("진단 받음");
+    const weeks = t.match(/(\d+)\s*(?:week|weeks|wk|wks)/);
+    if(weeks) add("진단 " + weeks[1] + "주");
+    if(has(/no\s+(?:private\s+)?(?:indemnity|medical)\s+insurance|uninsured/)) add("실손보험 미가입");
+    chineseMeanings.forEach(add);
+    return meanings.length ? original + " [판정용 의미: " + meanings.join(", ") + "]" : original;
+  };
+})();
+
+(function(){
+  const exactEnglish = {
+    "지자체 복지보험 · 시민안전보험 · 자전거보험 · 일반보험":"Municipal Welfare Insurance · Citizen Safety Insurance · Bicycle Insurance · General Insurance",
+    "회사소개":"About Us", "사업영역":"Services", "보험금청구":"Claims",
+    "시민안전보험 가입현황":"Citizen Safety Insurance Status",
+    "법인보험대리점":"Corporate Insurance Agency", "지자체 보험 전문":"Municipal Insurance Specialist",
+    "지자체와 시민을 위한":"A Trusted Insurance Partner",
+    "보험서비스의 신뢰 파트너":"for Municipalities and Citizens",
+    "(주)유니온인스플러스는 시민안전보험, 자전거보험, 지자체 복지보험, 일반보험까지 폭넓은 보험서비스를 제공하며 체계적인 접수와 안정적인 운영을 지원합니다.":"Union Ins Plus provides Citizen Safety Insurance, bicycle insurance, municipal welfare insurance, and general insurance, supporting systematic claims intake and reliable administration.",
+    "👉 시민안전보험 청구 절차 방법":"👉 Citizen Safety Insurance Claim Procedure",
+    "보험금 청구 절차 방법 안내":"How to File an Insurance Claim",
+    "① 「시민안전보험 청구 절차 방법」 클릭":"① Click ‘Citizen Safety Insurance Claim Procedure’",
+    "화면의 시민안전보험 청구 절차 방법을 클릭해 주세요.":"Click the Citizen Safety Insurance Claim Procedure button on this page.",
+    "② 사고일자 기준 가입 지자체 조회":"② Find coverage based on the accident date",
+    "사고 발생일을 기준으로 해당 지자체의 시민안전보험 가입 여부를":"Check whether your municipality had Citizen Safety Insurance coverage",
+    "조회해 주세요.":"on the date of the accident.",
+    "③ 가입 담보 및 보장내용 확인 → 적용여부 확인":"③ Review coverages → Check potential eligibility",
+    "해당 지자체의 가입 담보 및 보장내용을 확인한 후, 사고일자와 사고내용을 입력하여 적용여부를 간략하게 확인해 주세요.":"Review the municipality’s coverages, then enter the accident date and details to check potential eligibility.",
+    "④ 보험금 청구 및 구비서류 확인":"④ Download the claim form and required-document guide",
+    "적용 가능한 담보가 확인되면 안내된 절차에 따라 보험금청구서와":"If a potentially applicable coverage is found, download the claim form and",
+    "구비서류 안내문을 다운받아 보험금을 청구해 주세요.":"required-document guide and submit your claim as instructed.",
+    "※ 실제 보험금 지급 여부는 해당 지자체의 가입 담보 및 약관·보장조건 등에 따라 달라질 수 있습니다.":"※ Actual payment depends on the municipality’s coverage, policy terms, and benefit conditions.",
+    "유니온인스플러스는 지자체 보험 운영 경험을 바탕으로 실무 중심의 보험 서비스를 제공하는 전문 파트너입니다. 단순 보험 판매를 넘어 계약 운영, 접수 프로세스, 고객 응대까지 함께 고민합니다.":"Union Ins Plus is a specialist partner providing practical insurance services based on extensive experience in municipal insurance administration, from policy operations and claims intake to customer support.",
+    "회사 비전":"Our Vision", "신뢰 중심":"Trust First", "지속 성장":"Sustainable Growth",
+    "보험이 필요한 현장에 더 빠르고 정확한 서비스가 전달되도록 실무형 시스템을 구축합니다.":"We build practical systems that deliver faster, more accurate service where insurance support is needed.",
+    "지자체 및 고객과의 신뢰를 최우선으로 하며, 책임감 있는 운영과 대응을 지향합니다.":"We place trust with municipalities and customers first and pursue responsible administration and service.",
+    "보험 접수, 조회, 데이터 관리까지 이어지는 확장형 서비스로 꾸준히 발전합니다.":"We continue to grow through scalable services covering claims intake, lookup, and data management.",
+    "유니온인스플러스는 다양한 보험 영역에서 실질적인 운영 경험을 바탕으로 맞춤형 서비스를 제공합니다.":"Union Ins Plus provides tailored services backed by hands-on experience across multiple insurance fields.",
+    "시민안전보험":"Citizen Safety Insurance", "자전거보험":"Bicycle Insurance", "지자체 복지보험":"Municipal Welfare Insurance", "일반보험":"General Insurance",
+    "지자체 시민안전보험 계약 및 접수 운영 지원":"Support for municipal Citizen Safety Insurance policies and claims intake",
+    "자전거 사고 대비 보험 운영 및 안내 서비스":"Insurance administration and guidance for bicycle accidents",
+    "지자체 대상 복지성 보험 상품 기획 및 운영":"Planning and administration of welfare insurance for municipalities",
+    "법인과 개인 고객을 위한 다양한 일반보험 상담":"General insurance consultation for businesses and individuals",
+    "시민안전보험 청구 절차 방법":"Citizen Safety Insurance Claim Procedure",
+    "먼저 가입 지자체와 보상내역을 확인해 주세요.":"First, check the municipality and its registered coverages.",
+    "1. 가입 지자체 및 보상내역 확인":"1. Check Municipality and Coverage",
+    "연도·시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 현재 등록된 담보 설명을 확인할 수 있습니다.":"Select the year, province/city, and district. After searching, click a coverage name to view its registered details.",
+    "조회":"Search", "사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.":"Select the year and area covering the accident date, then search.",
+    "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ This service lists only municipalities currently contracted and administered by us.",
+    "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"For a municipality not listed, please contact that municipality because its claim office may be different.",
+    "2. 적용여부 확인":"2. Check Potential Eligibility", "사고일자":"Accident Date",
+    "사고일자 예: 년월일 8자리 입력 (20260501)":"Enter 8 digits: YYYYMMDD (example: 20260501)",
+    "사고내용":"Accident Details", "적용여부 확인":"Check Potential Eligibility",
+    "※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.":"※ Final eligibility and payment are determined by the policy terms and the insurer’s claim review.",
+    "해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.":"Review the municipality’s registered coverages and check whether any may relate to your accident. If so, prepare the claim form and required documents and submit them as instructed below.",
+    "3. 보험금청구서 작성":"3. Complete the Claim Form",
+    "보험금청구서를 다운로드하여 작성해 주세요.":"Download and complete the insurance claim form.",
+    "보험금청구서 다운로드":"Download Claim Form",
+    "4. 구비서류 준비":"4. Prepare Required Documents",
+    "보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.":"Review the guide to the documents required for your claim.",
+    "구비서류 안내문 다운로드":"Download Required-Document Guide",
+    "청구 전 꼭 확인해 주세요":"Please Check Before Submitting",
+    "본인의 사고내용과 위에서 조회한":"Compare your accident details with",
+    "해당 지자체의 가입 담보 및 보장내용을 비교하여 확인해 주세요.":"the municipality’s registered coverages and benefit details shown above.",
+    "해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 청구를 진행해 주세요.":"If a potentially applicable coverage is found, prepare the claim form and required documents and submit your claim.",
+    "보험금청구 서류접수":"Claim Submission", "팩스 :":"Fax:", "이메일 접수 :":"Email:",
+    "※ 시민안전보험 청구대상 여부가 궁금하신 경우":"※ If you need help checking potential eligibility",
+    "카카오상담(클릭)":"KakaoTalk Support (Click)", "대표번호:":"Main number:",
+    "통화량이 많아 전화 연결이 어려울 수 있으므로 카카오상담 또는 위에서 조회한 해당 지자체의 가입 담보 및 보장내용을 먼저 확인해 주시기 바랍니다.":"Phone lines may be busy. Please use KakaoTalk support or first review the municipality’s coverages and benefit details shown above.",
+    "© 2026 UNIONINSPLUS. All Rights Reserved.":"© 2026 UNIONINSPLUS. All Rights Reserved.",
+    "(주)유니온인스플러스 | 대표번호 1522-3556":"Union Ins Plus Co., Ltd. | Main number 1522-3556",
+    "서울특별시 강동구 천호대로 176길 8 형도빌딩 2·3층 | 우편번호 05373":"2F–3F, Hyeongdo Building, 8, Cheonho-daero 176-gil, Gangdong-gu, Seoul 05373, Republic of Korea",
+    "적용여부를 확인하고 있습니다.":"Checking potential eligibility…",
+    "적용여부 확인 결과":"Potential Eligibility Result",
+    "현재 입력내용과 일치하는 가입 담보가 확인되지 않습니다.":"No registered coverage matching the current information was found.",
+    "사고내용을 조금 더 구체적으로 입력해 주세요.":"Please provide more specific accident details.",
+    "추가 확인 필요":"Additional information required"
+  };
+  const exactChinese = {
+    "지자체 복지보험 · 시민안전보험 · 자전거보험 · 일반보험":"地方政府福利保险 · 市民安全保险 · 自行车保险 · 一般保险",
+    "회사소개":"公司介绍","사업영역":"业务领域","보험금청구":"保险理赔","시민안전보험 가입현황":"市民安全保险参保情况",
+    "법인보험대리점":"法人保险代理机构","지자체 보험 전문":"地方政府保险专业机构",
+    "지자체와 시민을 위한":"面向地方政府与市民的","보험서비스의 신뢰 파트너":"可靠保险服务伙伴",
+    "👉 시민안전보험 청구 절차 방법":"👉 市民安全保险理赔流程",
+    "보험금 청구 절차 방법 안내":"保险理赔流程指南",
+    "① 「시민안전보험 청구 절차 방법」 클릭":"① 点击“市民安全保险理赔流程”",
+    "화면의 시민안전보험 청구 절차 방법을 클릭해 주세요.":"请点击本页面上的市民安全保险理赔流程按钮。",
+    "② 사고일자 기준 가입 지자체 조회":"② 按事故日期查询参保地方政府",
+    "사고 발생일을 기준으로 해당 지자체의 시민안전보험 가입 여부를":"请根据事故发生日期确认该地方政府当时是否投保",
+    "조회해 주세요.":"市民安全保险。",
+    "③ 가입 담보 및 보장내용 확인 → 적용여부 확인":"③ 查看保障项目 → 确认可能适用性",
+    "해당 지자체의 가입 담보 및 보장내용을 확인한 후, 사고일자와 사고내용을 입력하여 적용여부를 간략하게 확인해 주세요.":"查看该地方政府的保障项目后，输入事故日期和事故内容，初步确认是否可能适用。",
+    "④ 보험금 청구 및 구비서류 확인":"④ 下载理赔申请书及所需材料指南",
+    "적용 가능한 담보가 확인되면 안내된 절차에 따라 보험금청구서와":"如确认有可能适用的保障项目，请按照指南下载理赔申请书及",
+    "구비서류 안내문을 다운받아 보험금을 청구해 주세요.":"所需材料指南并申请理赔。",
+    "※ 실제 보험금 지급 여부는 해당 지자체의 가입 담보 및 약관·보장조건 등에 따라 달라질 수 있습니다.":"※ 实际赔付取决于地方政府的保障项目、保险条款及保障条件。",
+    "시민안전보험 청구 절차 방법":"市民安全保险理赔流程",
+    "먼저 가입 지자체와 보상내역을 확인해 주세요.":"请先确认地方政府及其已登记的保障项目。",
+    "1. 가입 지자체 및 보상내역 확인":"1. 查询地方政府及保障内容",
+    "연도·시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 현재 등록된 담보 설명을 확인할 수 있습니다.":"选择年份、省市及市郡区后查询，点击保障项目名称可查看已登记的说明。",
+    "조회":"查询","사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.":"请选择涵盖事故日期的年份和地区后查询。",
+    "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ 本服务仅显示目前由本公司签约并运营的地方政府。",
+    "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"未显示的地方政府可能由其他受理机构负责，请直接咨询相关地方政府。",
+    "2. 적용여부 확인":"2. 确认可能适用性","사고일자":"事故日期",
+    "사고일자 예: 년월일 8자리 입력 (20260501)":"请输入8位数字：年月日（例如：20260501）",
+    "사고내용":"事故内容","적용여부 확인":"确认可能适用性",
+    "※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.":"※ 最终是否赔付及赔付金额，以保险条款和保险公司的审核结果为准。",
+    "해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.":"请查看该地方政府的保障项目，并确认是否有与本人事故相关的保障。如确认有可能适用的保障，请准备理赔申请书和所需材料并按以下流程申请。",
+    "3. 보험금청구서 작성":"3. 填写保险理赔申请书","보험금청구서를 다운로드하여 작성해 주세요.":"请下载并填写保险理赔申请书。",
+    "보험금청구서 다운로드":"下载理赔申请书","4. 구비서류 준비":"4. 准备所需材料",
+    "보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.":"请查看保险理赔所需材料指南。",
+    "구비서류 안내문 다운로드":"下载所需材料指南","청구 전 꼭 확인해 주세요":"提交前请务必确认",
+    "본인의 사고내용과 위에서 조회한":"请将本人的事故内容与上方查询到的",
+    "해당 지자체의 가입 담보 및 보장내용을 비교하여 확인해 주세요.":"该地方政府保障项目及保障内容进行比较确认。",
+    "해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 청구를 진행해 주세요.":"如确认有可能适用的保障，请准备理赔申请书及所需材料后提出申请。",
+    "보험금청구 서류접수":"理赔材料受理","팩스 :":"传真：","이메일 접수 :":"电子邮箱：",
+    "※ 시민안전보험 청구대상 여부가 궁금하신 경우":"※ 如需咨询是否可能符合市民安全保险理赔条件",
+    "카카오상담(클릭)":"KakaoTalk咨询（点击）","대표번호:":"客服电话：",
+    "통화량이 많아 전화 연결이 어려울 수 있으므로 카카오상담 또는 위에서 조회한 해당 지자체의 가입 담보 및 보장내용을 먼저 확인해 주시기 바랍니다.":"电话繁忙时可能难以接通，请使用KakaoTalk咨询，或先确认上方查询到的地方政府保障项目及内容。",
+    "적용여부를 확인하고 있습니다.":"正在确认可能适用性……","적용여부 확인 결과":"可能适用性确认结果",
+    "현재 입력내용과 일치하는 가입 담보가 확인되지 않습니다.":"未找到与当前输入内容相符的已登记保障项目。",
+    "사고내용을 조금 더 구체적으로 입력해 주세요.":"请更详细地填写事故内容。","추가 확인 필요":"需要进一步确认"
+  };
+  const exactJapanese = {
+    "지자체 복지보험 · 시민안전보험 · 자전거보험 · 일반보험":"自治体福祉保険・市民安全保険・自転車保険・一般保険",
+    "회사소개":"会社紹介","사업영역":"事業内容","보험금청구":"保険金請求","시민안전보험 가입현황":"市民安全保険の加入状況",
+    "법인보험대리점":"法人保険代理店","지자체 보험 전문":"自治体保険の専門機関",
+    "지자체와 시민을 위한":"自治体と市民のための","보험서비스의 신뢰 파트너":"信頼できる保険サービスパートナー",
+    "👉 시민안전보험 청구 절차 방법":"👉 市民安全保険の請求手続き",
+    "보험금 청구 절차 방법 안내":"保険金請求手続きのご案内",
+    "① 「시민안전보험 청구 절차 방법」 클릭":"①「市民安全保険の請求手続き」をクリック",
+    "화면의 시민안전보험 청구 절차 방법을 클릭해 주세요.":"この画面の市民安全保険請求手続きボタンをクリックしてください。",
+    "② 사고일자 기준 가입 지자체 조회":"② 事故日を基準に加入自治体を検索",
+    "사고 발생일을 기준으로 해당 지자체의 시민안전보험 가입 여부를":"事故発生日を基準に、該当自治体が市民安全保険に加入していたかを",
+    "조회해 주세요.":"確認してください。",
+    "③ 가입 담보 및 보장내용 확인 → 적용여부 확인":"③ 補償項目を確認 → 適用可能性を確認",
+    "해당 지자체의 가입 담보 및 보장내용을 확인한 후, 사고일자와 사고내용을 입력하여 적용여부를 간략하게 확인해 주세요.":"自治体の補償項目を確認後、事故日と事故内容を入力して適用可能性をご確認ください。",
+    "④ 보험금 청구 및 구비서류 확인":"④ 請求書と必要書類案内をダウンロード",
+    "적용 가능한 담보가 확인되면 안내된 절차에 따라 보험금청구서와":"適用可能性のある補償が確認された場合は、案内に従って請求書と",
+    "구비서류 안내문을 다운받아 보험금을 청구해 주세요.":"必要書類案内をダウンロードして請求してください。",
+    "※ 실제 보험금 지급 여부는 해당 지자체의 가입 담보 및 약관·보장조건 등에 따라 달라질 수 있습니다.":"※ 実際の支払可否は、自治体の補償内容・約款・支払条件により異なります。",
+    "시민안전보험 청구 절차 방법":"市民安全保険の請求手続き",
+    "먼저 가입 지자체와 보상내역을 확인해 주세요.":"まず自治体と登録済みの補償内容をご確認ください。",
+    "1. 가입 지자체 및 보상내역 확인":"1. 自治体と補償内容を確認",
+    "연도·시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 현재 등록된 담보 설명을 확인할 수 있습니다.":"年度、都道府県・市、区市郡を選択して検索し、補償名をクリックすると登録内容を確認できます。",
+    "조회":"検索","사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.":"事故日が保険期間内となる年度と地域を選択して検索してください。",
+    "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ 本サービスでは、現在当社が契約・運営している自治体のみ検索できます。",
+    "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"表示されない自治体は受付先が異なる場合がありますので、該当自治体へお問い合わせください。",
+    "2. 적용여부 확인":"2. 適用可能性を確認","사고일자":"事故日",
+    "사고일자 예: 년월일 8자리 입력 (20260501)":"8桁の年月日を入力（例：20260501）",
+    "사고내용":"事故内容","적용여부 확인":"適用可能性を確認",
+    "※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.":"※ 最終的な支払可否と金額は、保険約款および保険会社の審査により決定されます。",
+    "해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.":"自治体の登録補償と内容を確認し、ご本人の事故に関連する補償があるかをご確認ください。適用可能性のある補償が確認された場合は、請求書と必要書類を準備して以下の手順で請求してください。",
+    "3. 보험금청구서 작성":"3. 保険金請求書を作成","보험금청구서를 다운로드하여 작성해 주세요.":"保険金請求書をダウンロードしてご記入ください。",
+    "보험금청구서 다운로드":"請求書をダウンロード","4. 구비서류 준비":"4. 必要書類を準備",
+    "보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.":"請求に必要な書類の案内をご確認ください。",
+    "구비서류 안내문 다운로드":"必要書類案内をダウンロード","청구 전 꼭 확인해 주세요":"請求前に必ずご確認ください",
+    "본인의 사고내용과 위에서 조회한":"ご本人の事故内容と、上記で検索した",
+    "해당 지자체의 가입 담보 및 보장내용을 비교하여 확인해 주세요.":"自治体の登録補償および補償内容を比較してご確認ください。",
+    "해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 청구를 진행해 주세요.":"適用可能性のある補償が確認された場合は、請求書と必要書類を準備して請求してください。",
+    "보험금청구 서류접수":"請求書類の受付","팩스 :":"FAX：","이메일 접수 :":"メール：",
+    "※ 시민안전보험 청구대상 여부가 궁금하신 경우":"※ 市民安全保険の請求対象となるかご不明な場合",
+    "카카오상담(클릭)":"KakaoTalk相談（クリック）","대표번호:":"代表番号：",
+    "통화량이 많아 전화 연결이 어려울 수 있으므로 카카오상담 또는 위에서 조회한 해당 지자체의 가입 담보 및 보장내용을 먼저 확인해 주시기 바랍니다.":"電話が混み合い、つながりにくい場合があります。KakaoTalk相談をご利用いただくか、上記で検索した自治体の補償内容を先にご確認ください。",
+    "적용여부를 확인하고 있습니다.":"適用可能性を確認しています…","적용여부 확인 결과":"適用可能性の確認結果",
+    "현재 입력내용과 일치하는 가입 담보가 확인되지 않습니다.":"入力内容に一致する登録補償は確認できませんでした。",
+    "사고내용을 조금 더 구체적으로 입력해 주세요.":"事故内容をもう少し具体的に入力してください。","추가 확인 필요":"追加確認が必要"
+  };
+
+  const originalText = new WeakMap();
+  let currentLanguage = "ko";
+  const skipParent = el => el && /^(SCRIPT|STYLE|NOSCRIPT)$/.test(el.nodeName);
+  const trimParts = value => {
+    const m = String(value).match(/^(\s*)([\s\S]*?)(\s*)$/);
+    return {before:m[1], core:m[2], after:m[3]};
+  };
+
+  function englishFor(core){
+    const normalized = String(core).replace(/\s+/g," ").trim();
+    if(exactEnglish[normalized]) return exactEnglish[normalized];
+    return core
+      .replace(/보험기간:/g,"Policy period:")
+      .replace(/보험사:/g,"Insurer:")
+      .replace(/담보수:/g,"Number of coverages:")
+      .replace(/보장금액:/g,"Coverage amount:")
+      .replace(/조회된 가입 담보/g,"Registered coverages found")
+      .replace(/담보 설명 준비 중입니다\./g,"Coverage details are being prepared.")
+      .replace(/의 조회된 가입 담보만 기준으로 확인했습니다\./g,": Only the registered coverages for the selected municipality were reviewed.")
+      .replace(/사고내용과 해당 지자체 가입담보를 함께 비교한 결과 적용 가능성이 확인됩니다\./g,"The accident details and the municipality’s registered coverages indicate potential eligibility.")
+      .replace(/※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다\./g,"※ Final eligibility and payment are determined by the policy terms and the insurer’s claim review.");
+  }
+  function chineseFor(core){
+    const normalized = String(core).replace(/\s+/g," ").trim();
+    if(exactChinese[normalized]) return exactChinese[normalized];
+    return core.replace(/보험기간:/g,"保险期间：").replace(/보험사:/g,"保险公司：").replace(/담보수:/g,"保障项目数：").replace(/보장금액:/g,"保障金额：").replace(/조회된 가입 담보/g,"查询到的保障项目").replace(/담보 설명 준비 중입니다\./g,"保障说明正在准备中。")
+      .replace(/의 조회된 가입 담보만 기준으로 확인했습니다\./g,"：仅根据所选地方政府已登记的保障项目进行确认。")
+      .replace(/사고내용과 해당 지자체 가입담보를 함께 비교한 결과 적용 가능성이 확인됩니다\./g,"综合比较事故内容与该地方政府的保障项目后，确认可能适用。")
+      .replace(/※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다\./g,"※ 最终是否赔付及赔付金额，以保险条款和保险公司的审核结果为准。");
+  }
+  function japaneseFor(core){
+    const normalized = String(core).replace(/\s+/g," ").trim();
+    if(exactJapanese[normalized]) return exactJapanese[normalized];
+    return core.replace(/보험기간:/g,"保険期間：").replace(/보험사:/g,"保険会社：").replace(/담보수:/g,"補償項目数：").replace(/보장금액:/g,"補償金額：").replace(/조회된 가입 담보/g,"検索された補償項目").replace(/담보 설명 준비 중입니다\./g,"補償説明を準備中です。")
+      .replace(/의 조회된 가입 담보만 기준으로 확인했습니다\./g,"：選択した自治体に登録された補償項目のみを基準に確認しました。")
+      .replace(/사고내용과 해당 지자체 가입담보를 함께 비교한 결과 적용 가능성이 확인됩니다\./g,"事故内容と自治体の登録補償を比較した結果、適用可能性が確認されました。")
+      .replace(/※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다\./g,"※ 最終的な支払可否と金額は、保険約款および保険会社の審査により決定されます。");
+  }
+
+  function translateNode(node){
+    if(!node || node.nodeType !== Node.TEXT_NODE || skipParent(node.parentElement)) return;
+    if(!originalText.has(node)) originalText.set(node,node.nodeValue);
+    const original = originalText.get(node);
+    if(currentLanguage === "ko") { node.nodeValue = original; return; }
+    const p = trimParts(original);
+    const translated = currentLanguage === "zh" ? chineseFor(p.core) : (currentLanguage === "ja" ? japaneseFor(p.core) : englishFor(p.core));
+    node.nodeValue = p.before + translated + p.after;
+  }
+
+  function translateTree(root){
+    if(!root) return;
+    if(root.nodeType === Node.TEXT_NODE){ translateNode(root); return; }
+    const walker = document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    let n; while((n=walker.nextNode())) translateNode(n);
+    const q = document.getElementById("aiQuestion");
+    if(q) q.placeholder = currentLanguage === "en" ? "Example: I fell and was injured when the bus stopped suddenly." : (currentLanguage === "zh" ? "例如：乘坐公交车时因急刹车摔倒受伤。" : (currentLanguage === "ja" ? "例：バス乗車中、急停車で転倒してけがをしました。" : "예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다."));
+    document.title = currentLanguage === "ko" ? "(주)유니온인스플러스" : "Union Ins Plus";
+  }
+
+  window.setSiteLanguage = function(lang){
+    currentLanguage = ["en","zh","ja"].includes(lang) ? lang : "ko";
+    document.documentElement.lang = currentLanguage === "zh" ? "zh-CN" : currentLanguage;
+    document.getElementById("langKo")?.classList.toggle("active",currentLanguage === "ko");
+    document.getElementById("langEn")?.classList.toggle("active",currentLanguage === "en");
+    document.getElementById("langZh")?.classList.toggle("active",currentLanguage === "zh");
+    document.getElementById("langJa")?.classList.toggle("active",currentLanguage === "ja");
+    translateTree(document.body);
+    try{ localStorage.setItem("unioninsplus_language",currentLanguage); }catch(e){}
+  };
+
+  const nativeAlert = window.alert.bind(window);
+  window.alert = function(message){
+    const original = String(message == null ? "" : message);
+    nativeAlert(currentLanguage === "en" ? englishFor(original) : (currentLanguage === "zh" ? chineseFor(original) : (currentLanguage === "ja" ? japaneseFor(original) : original)));
+  };
+
+  document.addEventListener("DOMContentLoaded",function(){
+    try{ const saved=localStorage.getItem("unioninsplus_language"); currentLanguage=["en","zh","ja"].includes(saved)?saved:"ko"; }catch(e){}
+    window.setSiteLanguage(currentLanguage);
+    const observer = new MutationObserver(function(records){
+      if(currentLanguage === "ko") return;
+      records.forEach(record => record.addedNodes.forEach(node => translateTree(node)));
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+  });
+})();
+</script>
 
 </body>
 </html>
