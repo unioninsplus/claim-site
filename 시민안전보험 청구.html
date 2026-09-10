@@ -39982,6 +39982,14 @@ window.addEventListener("message", function(event){
     }
 
     /* 특수원인이 명확하지 않은 실제 상해는 일반상해 상위개념을 메타값으로 유지 */
+    /* 개·반려견·야생동물 사고 및 화상·화재 등 특수원인의 상해도
+       특수담보 판단과 별개로 상해진단금에서 사용할 일반상해 사실을 유지한다. */
+    a.animalInjury = (a.causes || []).some(c => c === "개물림" || c === "야생동물");
+    a.specialCauseInjury = (a.causes || []).some(c => [
+      "개물림","야생동물","화상","화재","폭발","붕괴","산사태","지반침하",
+      "감전","가스","농기계","자전거","PM","대중교통","교통사고","보행중교통사고"
+    ].includes(c));
+    if (a.animalInjury || a.specialCauseInjury) a.isInjuryConcept = true;
     a.primaryCategory = a.isTraffic ? "교통상해" : (a.isInjuryConcept ? "상해" : "");
     a.detailCauses = (a.causes || []).filter(c => c !== "일반상해");
     if (!a.detailCauses.length && a.isInjuryConcept && !a.isTraffic) a.detailCauses = ["일반상해"];
@@ -40056,6 +40064,14 @@ window.addEventListener("message", function(event){
   function finalCauseRelevant(accident, coverage){
     const aSpecial = new Set((accident.causes || []).filter(isFinalSpecialCause));
     const cSpecial = (coverage.causes || []).filter(isFinalSpecialCause);
+
+    /* 야생동물·개물림·화상수술비·화상치료비 등 특수담보의 조건은 그 담보에만 적용한다.
+       특수원인이 붙지 않은 순수 일반상해 담보(상해진단위로금 등)는
+       진단주수·연령조건을 자체적으로 다시 검사할 수 있도록 독립 통과시킨다. */
+    if (accident.specialCauseInjury && !cSpecial.length && (coverage.causes || []).includes("일반상해")) {
+      if (coverage.excludeTraffic && accident.isTraffic) return false;
+      return true;
+    }
 
     if (cSpecial.length) return cSpecial.some(c => aSpecial.has(c));
 
