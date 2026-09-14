@@ -38050,6 +38050,7 @@ function analyzeAccident(accidentText) {
 
   if (hasAny(t, ["농기계", "경운기", "트랙터", "콤바인", "관리기", "예초기", "승용예초기", "로타리"])) addCause("농기계");
   if (hasAny(t, ["익사", "물에빠져사망", "물에빠짐", "익수", "수로에빠짐"])) addCause("익사");
+  if (hasAny(t, ["물놀이", "수영중", "수영하다", "해수욕", "물가에서놀", "물속에서놀", "계곡에서놀", "하천에서놀"])) addCause("물놀이");
   if (hasAny(t, ["감전", "감전사고", "전기감전"])) addCause("감전");
   if (hasAny(t, ["가스사고", "가스누출", "가스폭발", "가스중독", "도시가스사고", "엘피가스사고", "lpg가스사고"])) addCause("가스");
   if (hasAny(t, ["유독성물질", "독성물질", "유해화학물질", "화학물질중독", "유독가스중독"])) addCause("유독성물질");
@@ -38166,6 +38167,7 @@ function classifyCoverage(item) {
   if (hasAny(nameT, ["개물림", "견물림", "반려견", "유기견", "개부딪힘"])) addCause("개물림");
   if (hasAny(nameT, ["농기계", "경운기", "트랙터", "예초기"])) addCause("농기계");
   if (hasAny(nameT, ["익사"])) addCause("익사");
+  if (hasAny(nameT, ["물놀이"])) addCause("물놀이");
   if (hasAny(nameT, ["감전"])) addCause("감전");
   if (hasAny(nameT, ["가스사고", "가스상해", "가스"])) addCause("가스");
   if (hasAny(nameT, ["유독성물질", "독성물질", "유해화학물질"])) addCause("유독성물질");
@@ -38233,6 +38235,7 @@ function isSpecialCoverageCause(cause) {
     "개물림",
     "농기계",
     "익사",
+    "물놀이",
     "감전",
     "가스",
     "유독성물질",
@@ -40037,6 +40040,7 @@ window.addEventListener("message", function(event){
       ["PM",["전동킥보드","개인형이동장치","PM"]],
       ["농기계",["농기계","경운기","트랙터","예초기"]],
       ["익사",["익사","익수"]],
+      ["물놀이",["물놀이"]],
       ["감전",["감전"]],
       ["가스",["가스사고","가스상해"]],
       ["야생동물",["야생동물","뱀물림"]],
