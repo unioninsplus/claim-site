@@ -719,17 +719,22 @@ function cgSearch(){
     return;
   }
 
-  const seen = new Set();
-  const items = (block.coverages || []).filter(item => {
+  const uniqueItems = new Map();
+  (block.coverages || []).forEach(item => {
     const originalName = String(item.name || "").trim();
     const key = originalName
       .replace(/\s+/g, "")
       .replace(/\(.*?\)/g, "")
+      .replace(/후유장해/g, "후유")
       .replace(/대중교통상해부상치료비/g, "대중교통부상치료비");
-    if(!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
+    if(!key) return;
+    const saved = uniqueItems.get(key);
+    const savedName = String(saved?.name || "");
+    if(!saved || (/후유장해/.test(originalName) && !/후유장해/.test(savedName))){
+      uniqueItems.set(key, item);
+    }
   });
+  const items = Array.from(uniqueItems.values());
 
   const period = block.end_date ? `${block.start_date || "-"} ~ ${block.end_date}` : (block.start_date || "-");
   sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
@@ -930,16 +935,22 @@ function aiLookup(){
     sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>선택한 조건의 가입 데이터가 없습니다.`;
     cv.classList.remove("on"); qw.classList.remove("on"); return;
   }
-  const seen = new Set();
-  const items = (block.coverages || []).filter(item => {
+  const uniqueItems = new Map();
+  (block.coverages || []).forEach(item => {
     const originalName = String(item.name || "").trim();
     const key = originalName
       .replace(/\s+/g, "")
       .replace(/\(.*?\)/g, "")
+      .replace(/후유장해/g, "후유")
       .replace(/대중교통상해부상치료비/g, "대중교통부상치료비");
-    if(!key || seen.has(key)) return false;
-    seen.add(key); return true;
+    if(!key) return;
+    const saved = uniqueItems.get(key);
+    const savedName = String(saved?.name || "");
+    if(!saved || (/후유장해/.test(originalName) && !/후유장해/.test(savedName))){
+      uniqueItems.set(key, item);
+    }
   });
+  const items = Array.from(uniqueItems.values());
   window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
   const period = block.end_date ? `${block.start_date || "-"} ~ ${block.end_date}` : (block.start_date || "-");
   sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
