@@ -32924,7 +32924,9 @@ async function submitClaimToSheet(event) {
     let phone = document.getElementById('claimPhone')?.value?.trim() || '';
     const phoneDigits = phone.replace(/[^0-9]/g, '');
 
+    const isTestPhone = phoneDigits === '00000000000';
     const validPhone =
+      isTestPhone ||
       /^010\d{8}$/.test(phoneDigits) ||
       /^02\d{7,8}$/.test(phoneDigits) ||
       /^0(3[1-3]|4[1-4]|5[1-5]|6[1-4])\d{7,8}$/.test(phoneDigits);
