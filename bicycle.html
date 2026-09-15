@@ -366,11 +366,12 @@ style="display:none; color:red; font-size:13px; margin-top:4px;">
 </div>
 <div style="grid-column:1/-1;">
   <label>구분</label>
-  <select id="accidentCategorySelect" style="width:90px;">
+  <select id="accidentCategorySelect" style="width:115px;">
     <option value="">구분 선택</option>
     <option value="개인">개인</option>
     <option value="공공">공공</option>
     <option value="PM">PM</option>
+    <option value="도로배상">도로배상</option>
   </select>
 
   <div style="grid-column:1/-1; display:flex; gap:10px; align-items:flex-start;">
@@ -15086,6 +15087,8 @@ function initDropdowns() {
   "자전거사고 후유장해",
   "자전거사고 진단위로금",
   "자전거사고 상해입원위로금",
+  "배상책임",
+  "입원일당",
   "변호사 선임비용",
   "벌금",
   "교통사고처리지원금(형사합의금)"
@@ -15134,6 +15137,8 @@ function clearLookup(resetTop=true) {
   "후유장해",
   "진단위로금",
   "입원위로금",
+  "배상책임",
+  "입원일당",
   "변호사 선임비용",
   "벌금",
   "교통사고처리지원금(형사합의금)"
@@ -15274,6 +15279,8 @@ function runLookup() {
   "후유장해",
   "진단위로금",
   "입원위로금",
+  "배상책임",
+  "입원일당",
   "변호사 선임비용",
   "벌금",
   "교통사고처리지원금(형사합의금)"
