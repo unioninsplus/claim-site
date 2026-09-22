@@ -261,12 +261,6 @@ th { background:#f4f8ff; color:#12419e; }
 </span>
 </div>
       </div>
-      <div class="kv" style="margin-top:12px;">
-        <div class="mini"><b>보험명</b><span id="infoProduct">지자체 시민안전보험</span></div>
-        <div class="mini"><b>계약자</b><span id="infoContractor">-</span></div>
-        <div class="mini"><b>피보험자</b><span id="infoInsured">-</span></div>
-        <div class="mini"><b>청구방법</b><span id="infoClaimMethod">보험상담센터 문의 후 서류 제출</span></div>
-      </div>
       <div id="coverageLookupCards" aria-label="조회된 가입 담보"><div class="note coverage-lookup-empty">조회 전</div></div>
       <div class="table-wrap" id="coverageLookupSource" hidden>
         <table>
@@ -32669,10 +32663,6 @@ window.currentItems = items;
   document.getElementById("infoPop").textContent = block.population || "-";
   document.getElementById("infoContractSummary").innerHTML =
   (block.contract_summary || "-").replace(/\n/g, "<br>");
-  document.getElementById("infoProduct").textContent = regionLabel + " 시민안전보험";
-  document.getElementById("infoContractor").textContent = sigungu === "전체" ? (sido + " 및 관내 지자체") : (sigungu === "전체" ? sido : sigungu + "청/구청");
-  document.getElementById("infoInsured").textContent = sigungu === "전체" ? (sido + " 관내 주민등록자") : (regionLabel + " 주민등록자");
-  document.getElementById("infoClaimMethod").textContent = "보험상담센터 문의 후 청구서류 제출";
 
   const tbody = document.getElementById("coverageTableBody");
   tbody.innerHTML = "";
