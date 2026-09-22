@@ -460,7 +460,8 @@ th { background:#f4f8ff; color:#12419e; }
           <div>
 <label>사고일</label>
 <input id="claimAccidentDate" type="text" maxlength="10" autocomplete="off"
-oninput="formatDate8(this); setTimeout(checkAccidentDateInPolicyPeriod, 0);"
+oninput="formatDate8(this); checkAccidentDateInPolicyPeriod();"
+onblur="checkAccidentDateInPolicyPeriod(true);"
 placeholder="예: 2026-02-05">
 
 <div id="accidentDateError"
@@ -15400,6 +15401,7 @@ function runLookup() {
   document.getElementById("claimInfoRegion").textContent = regionLabel;
   document.getElementById("claimInfoCount").textContent = items.length;
   document.getElementById("claimInfoInsurer").textContent = block.insurer || "-";
+  checkAccidentDateInPolicyPeriod();
 }
 
 function resetLookup() {
@@ -15506,6 +15508,11 @@ function amountTextToWon(amountText) {
 }
 
 function submitClaimToSheet() {
+  if (!checkAccidentDateInPolicyPeriod(true)) {
+    alert(document.getElementById('accidentDateError')?.textContent || '사고일자를 확인하세요.');
+    document.getElementById('claimAccidentDate')?.focus();
+    return;
+  }
   const year = document.getElementById('claimYearView')?.value?.trim() || '';
   const sido = document.getElementById('sidoSelect')?.value?.trim() || '';
 let sigungu = document.getElementById('sigunguSelect')?.value?.trim() || '';
@@ -15551,6 +15558,13 @@ if (sido === "세종특별자치시" && sigungu === "전체") {
   }
 
   accidentDate = accidentDateDigits.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+  document.getElementById('claimAccidentDate').value = accidentDate;
+  if (!checkAccidentDateInPolicyPeriod()) {
+    alert(document.getElementById('accidentDateError')?.textContent || '사고일자를 확인하세요.');
+    document.getElementById('claimAccidentDate')?.focus();
+    return;
+  }
+
 
   let phone = document.getElementById('claimPhone')?.value?.trim() || '';
   const phoneDigits = phone.replace(/[^0-9]/g, '');
@@ -15633,6 +15647,7 @@ if (coverageItems.length === 0) {
       document.getElementById('claimRRN').value = '';
       document.getElementById('claimPhone').value = '';
       document.getElementById('claimAccidentDate').value = '';
+      checkAccidentDateInPolicyPeriod();
       document.getElementById('accidentCategorySelect').value = '';
       document.getElementById('accidentTypeSelect').value = '';
       document.getElementById('claimAccidentDesc').value = '';
@@ -15982,7 +15997,7 @@ function formatDate8(el) {
 
   el.value = v;
 }
-function checkAccidentDateInPolicyPeriod() {
+function checkAccidentDateInPolicyPeriod(requireComplete = false) {
   const year =
     document.getElementById('claimYearView')?.value?.trim() ||
     document.getElementById('yearSelect')?.value?.trim() ||
@@ -15993,7 +16008,41 @@ function checkAccidentDateInPolicyPeriod() {
   const accidentDate = document.getElementById('claimAccidentDate')?.value?.trim() || '';
   const errorEl = document.getElementById('accidentDateError');
 
-  if (errorEl) errorEl.style.display = 'none';
+  if (errorEl) {
+    errorEl.style.display = 'none';
+    errorEl.textContent = '해당 증권 기간 사고일이 아닙니다.';
+  }
+
+  const showDateError = message => {
+    if (errorEl) { errorEl.textContent = message; errorEl.style.display = 'block'; }
+    return false;
+  };
+  if (!accidentDate) {
+    return requireComplete ? showDateError('사고일자를 입력하세요.') : true;
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(accidentDate)) {
+    return requireComplete ? showDateError('사고일자는 YYYYMMDD 숫자 8자리를 정확히 입력하세요.') : true;
+  }
+  const parts = accidentDate.split('-').map(Number);
+  const dateCheck = new Date(parts[0], parts[1] - 1, parts[2]);
+  if (dateCheck.getFullYear() !== parts[0] || dateCheck.getMonth() !== parts[1] - 1 || dateCheck.getDate() !== parts[2]) {
+    return showDateError('사고일자가 올바른 날짜가 아닙니다.');
+  }
+
+  // 보험기간과 별개로 오늘 이후 사고일은 입력할 수 없습니다.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(accidentDate)) {
+    const [y, m, d] = accidentDate.split('-').map(Number);
+    const enteredDate = new Date(y, m - 1, d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (enteredDate > today) {
+      if (errorEl) {
+        errorEl.textContent = '사고일자는 오늘 이후의 미래 날짜로 입력할 수 없습니다.';
+        errorEl.style.display = 'block';
+      }
+      return false;
+    }
+  }
 
   if (!year || !sido || !sigungu || !accidentDate || accidentDate.length < 10) {
     return true;
@@ -16013,13 +16062,19 @@ function checkAccidentDateInPolicyPeriod() {
     startDate = DATASET?.[year]?.[sido]?.[sigungu]?.start_date || '';
   }
 
-  if (!startDate) return true;
+  if (!startDate) return showDateError('선택한 지자체의 보험기간 정보가 없습니다. 보험기간을 확인해 주세요.');
 
- const start = new Date(startDate + 'T00:00:00');
-
-const end = new Date(startDate + 'T23:59:59');
-end.setFullYear(end.getFullYear() + 1);
-end.setDate(end.getDate() - 1);
+  const periodText = String(startDate).replace(/\s+/g, '');
+  const range = periodText.match(/^(\d{4}-\d{2}-\d{2})[~～](\d{4}-\d{2}-\d{2})$/);
+  if (!range && !/^\d{4}-\d{2}-\d{2}$/.test(periodText)) {
+    return showDateError('보험기간에 여러 날짜가 기재되어 있습니다. 해당 담보의 보험기간 정보를 확인·정정한 후 저장해 주세요.');
+  }
+  const start = new Date((range ? range[1] : periodText) + 'T00:00:00');
+  const end = new Date((range ? range[2] : periodText) + 'T23:59:59');
+  if (!range) {
+    end.setFullYear(end.getFullYear() + 1);
+    end.setDate(end.getDate() - 1);
+  }
 
 const accident = new Date(accidentDate + 'T00:00:00');
 
