@@ -32980,6 +32980,18 @@ function checkAccidentDateInPolicyPeriod() {
     return false;
   }
 
+  // 보험기간과 관계없이 한국 기준 오늘 이후의 사고일은 허용하지 않습니다.
+  const todayKST = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date());
+  if (accidentDate > todayKST) {
+    if (errorBox) {
+      errorBox.textContent = '사고일자는 오늘 이후의 미래 날짜로 입력할 수 없습니다.';
+      errorBox.style.display = 'block';
+    }
+    return false;
+  }
+
   const periodText =
     document.getElementById('claimStartText')?.textContent?.trim() ||
     document.getElementById('infoStart')?.textContent?.trim() ||
@@ -33129,11 +33141,10 @@ async function submitClaimToSheet(event) {
       return;
     }
 
-    checkAccidentDateInPolicyPeriod();
-
-    const accidentError = document.getElementById('accidentDateError');
-    if (accidentError && accidentError.style.display !== 'none') {
-      alert('해당 증권 기간 사고일이 아닙니다.');
+    if (!checkAccidentDateInPolicyPeriod()) {
+      const accidentError = document.getElementById('accidentDateError');
+      alert(accidentError?.textContent || '사고일자를 확인해 주세요.');
+      document.getElementById('claimAccidentDate')?.focus();
       return;
     }
 
