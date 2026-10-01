@@ -493,8 +493,53 @@ function openCitizenClaim() {
 
 
 
+const HOMEPAGE_COVERAGE_GUIDE = {
+  "자연재해상해진단금":
+    "자연재해로 인해 상해를 입고 4주 이상 진단받은 경우 지급됩니다.\n진단서 제출이 필요하며 질병 및 기존질환은 제외될 수 있습니다.",
+
+  "사회재난상해진단금(감염병 제외)":
+    "사회재난으로 상해를 입고 4주 이상 진단받은 경우 지급됩니다.\n감염병은 제외되며 진단서 제출이 필요합니다.",
+
+  "폭발화재붕괴산사태상해사망":
+    "폭발·화재·붕괴·산사태 사고로 사망한 경우 지급됩니다.",
+
+  "폭발화재붕괴산사태상해후유장해":
+    "폭발·화재·붕괴·산사태 사고로 후유장해가 발생한 경우 지급됩니다.",
+
+  "대중교통이용중사망":
+    "대중교통 이용 중 발생한 사고로 사망한 경우 지급됩니다.",
+
+  "대중교통이용중후유장해":
+    "대중교통 이용 중 발생한 사고로 후유장해가 발생한 경우 지급됩니다.",
+
+  "스쿨존(1-14급)":
+    "스쿨존 내 교통사고로 부상등급 판정을 받은 경우 지급됩니다.",
+
+  "대중교통상해 부상치료비":
+  "대중교통 이용 중 사고로 부상등급 판정을 받은 경우 지급됩니다.\n교통사고사실확인원 및 진단서 제출이 필요합니다.",
+
+"대중교통상해부상치료비":
+  "대중교통 이용 중 사고로 부상등급 판정을 받은 경우 지급됩니다.\n부상등급에 따라 보험금이 차등 지급될 수 있습니다.",
+
+"화상수술비":
+  "심재성 2도 이상의 화상으로 수술받은 경우 지급됩니다.\n사고 시점과 수술 시점 모두 담보가입 기간 내여야 합니다.",
+
+"가스사고사망":
+  "가스사고로 사망한 경우 지급됩니다.\n사망진단서 및 사고확인서류가 필요합니다.",
+
+"가스사고후유":
+  "가스사고로 후유장해가 발생한 경우 지급됩니다.\n후유장해진단서 제출이 필요합니다.",
+
+"사회재난사망(감염병 제외)":
+  "사회재난 사고로 사망한 경우 지급됩니다.\n감염병은 제외됩니다."
+};
+
 function getCoverageGuideText(name) {
   const n = String(name || "").replace(/\s+/g, "");
+  const baseName = n.replace(/\(.*?\)/g, "");
+  const guideKey = Object.keys(HOMEPAGE_COVERAGE_GUIDE).find(key => key.replace(/\s+/g, "") === baseName);
+  if (guideKey) return HOMEPAGE_COVERAGE_GUIDE[guideKey];
+
 
   const has = (...words) => words.some(w => n.includes(w));
   const hasAll = (...words) => words.every(w => n.includes(w));
@@ -826,8 +871,11 @@ function cgSearch(){
       .replace(/[‧•*※\-]?\s*(공제\s*금액|공제금액)\s*:/g, "\n▶ 공제 금액: ")
       .trim();
 
+    // 목록에서 생략한 원본 담보명의 조건도 상세 설명에 표시합니다.
+    const nameConditions = String(item.name || "").split(/\r?\n/).slice(1).join("\n").trim();
     const koreanDescription = [
       guide,
+      nameConditions && !guide.includes(nameConditions) && !detailText.includes(nameConditions) ? nameConditions : "",
       detailText,
       amountText ? "보장금액: " + amountText : ""
     ].filter(Boolean).join("\n\n") || "담보 설명 준비 중입니다.";
