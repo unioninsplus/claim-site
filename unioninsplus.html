@@ -767,6 +767,14 @@ function cgSearch(){
     return;
   }
 
+  // 재조회 시 이전 사고 입력과 판정 결과 초기화
+  document.getElementById("aiAccidentDate").value = "";
+  document.getElementById("aiQuestion").value = "";
+  const previousResult = document.getElementById("aiResult");
+  if(previousResult){ previousResult.innerHTML = ""; previousResult.classList.remove("on"); }
+  AI_CLAIM_PENDING_ID = null;
+  closeAiPeriodModal();
+
   const block = GUIDE_DATASET?.[y]?.[sido]?.[g];
   if(!block){
     sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>선택한 조건의 가입 데이터가 없습니다.`;
@@ -1191,7 +1199,7 @@ function runAiSample(){
 window.addEventListener("message", function(event){
   const msg = event.data;
   if(!msg || msg.type !== "UNION_CITIZEN_CLAIM_CHECK_RESULT") return;
-  if(AI_CLAIM_PENDING_ID && msg.requestId !== AI_CLAIM_PENDING_ID) return;
+  if(!AI_CLAIM_PENDING_ID || msg.requestId !== AI_CLAIM_PENDING_ID) return;
 
   const result = document.getElementById("aiResult");
   if(!result) return;
