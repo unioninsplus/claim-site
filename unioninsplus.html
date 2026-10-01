@@ -440,6 +440,7 @@ footer {
   @media(max-width:600px){#cgList{grid-template-columns:minmax(0,1fr)}}
   .cg-item{border:1px solid #dbe4f0;border-radius:13px;margin:9px 0;overflow:hidden}
   .cg-name{width:100%;border:0;background:#fff;padding:15px 17px;display:flex;justify-content:space-between;text-align:left;font-weight:500;font-size:15px;cursor:pointer}
+  #cgList .cg-name:hover{background:#f4f8ff}
   .cg-desc{display:none;padding:16px 17px;border-top:1px solid #edf2f7;background:#fbfdff;white-space:pre-line;line-height:1.75;color:#475569}
   .cg-item.open .cg-desc{display:block}.cg-item.open .cg-arrow{transform:rotate(180deg)}
   .cg-note{margin-top:20px;padding:15px;border-radius:13px;background:#eef4ff;color:#1e3a8a;font-size:14px}
@@ -765,19 +766,12 @@ function cgSearch(){
     labelWrap.style.cssText = "display:flex;flex-direction:column;gap:3px;padding-right:12px;";
     const label = document.createElement("span");
     const originalCoverageName = String(item.name || "").trim();
-    const acuteInfectionName = originalCoverageName.match(/급성\s*감염병(?:\s*(?:사망보험금|사망위로금|사망|진단비|진단금|입원비|입원일당))?/);
-    const burnSurgeryName = originalCoverageName.match(/화상\s*수술(?:비|보험금|급여금|지원금)?/);
-    const shortCoverageName = acuteInfectionName || burnSurgeryName;
-    const displayCoverageName = originalCoverageName
-      .replace(/\([^()]*\)|（[^（）]*）|\[[^\[\]]*\]|【[^【】]*】/g, part => part.length > 30 ? "" : part)
-      .split(/\r?\n|[※▶]|\s+(?:보장내용|보상내용|지급조건|지급기준)\s*[:：]/)[0]
-      .replace(/\s+/g, " ").trim();
-    const preserveFullCoverageName = /영문\s*종합\s*배상|CGL/i.test(originalCoverageName);
-    label.textContent = preserveFullCoverageName
-      ? originalCoverageName
-      : shortCoverageName && originalCoverageName.length > 35
-        ? shortCoverageName[0].replace(/\s+/g, "")
-        : (displayCoverageName || originalCoverageName);
+    // 기본은 전체 담보명 표시, 급성감염병사망 및 긴 화상수술비 설명만 축약.
+    label.textContent = originalCoverageName.includes('급성감염병사망')
+      ? originalCoverageName.split(/\r?\n/)[0].trim()
+      : /화상\s*수술비/.test(originalCoverageName) && originalCoverageName.length > 35
+        ? '화상수술비'
+        : originalCoverageName;
     const labelEn = document.createElement("span");
     labelEn.className = "coverage-translation coverage-translation-en";
     labelEn.style.cssText = "font-size:12px;line-height:1.45;color:#64748b;font-weight:700;";
