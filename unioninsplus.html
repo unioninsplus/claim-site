@@ -1261,6 +1261,8 @@ window.addEventListener("message", function(event){
 <a class="btn" href="https://pf.kakao.com/_exaHyn/chat" target="_blank" rel="noopener noreferrer" style="background:#fee500;color:#191919;padding:16px 18px;font-size:17px;line-height:1.5;text-align:center;">
   <span>💬 카카오톡<br>서류 안내·상담</span>
 </a>
+<button type="button" class="btn btn-primary" id="claimUploadOpen" style="border:0;cursor:pointer;font-family:inherit;font-size:17px;padding:16px 20px;">📎 보상서류 등록하기</button>
+
 
 <a class="btn btn-primary"
    style="display:none;"
@@ -2031,6 +2033,34 @@ window.addEventListener("message", function(event){
     });
     observer.observe(document.body,{childList:true,subtree:true});
   });
+})();
+</script>
+
+
+<style>
+#claimUploadDialog{width:min(640px,94vw);max-height:90vh;overflow:auto;border:0;border-radius:18px;padding:26px;color:#172b48;box-shadow:0 18px 70px #0004}#claimUploadDialog::backdrop{background:#152238aa}#claimUploadDialog h2{margin:0;font-size:25px}#claimUploadDialog p{line-height:1.65}#claimUploadDialog .cu-head{display:flex;justify-content:space-between;align-items:center;gap:15px}#claimUploadDialog label{display:block;margin:15px 0 6px;font-weight:700}#claimUploadDialog input,#claimUploadDialog textarea{width:100%;padding:12px;border:1px solid #bac9d8;border-radius:8px;font:inherit;background:white;color:#172b48}#claimUploadDialog .cu-close{background:#edf1f5;border:0;border-radius:6px;padding:8px 12px;cursor:pointer}#claimUploadDialog .cu-info{background:#fff6dd;padding:14px;border-radius:8px}#claimUploadDialog .cu-submit{width:100%;margin-top:20px;padding:15px;border:0;border-radius:8px;font-size:17px;background:#7b8794;color:white}#claimUploadDialog ul{padding-left:22px;overflow-wrap:anywhere}#claimUploadDialog .cu-hint{font-size:14px;color:#51647a}
+</style>
+<dialog id="claimUploadDialog" aria-labelledby="claimUploadTitle">
+<div class="cu-head"><h2 id="claimUploadTitle">보상서류 등록하기</h2><button type="button" class="cu-close" id="claimUploadClose" aria-label="닫기">✕</button></div>
+<p>보험금청구서와 구비서류를 사진 또는 파일로 첨부해 주세요.</p>
+<p class="cu-info"><strong>온라인 서류 접수 준비 중입니다.</strong><br>현재는 아래 파일을 선택해도 전송되지 않습니다. 서류는 기존 접수 메일 <strong>simin@siminins.co.kr</strong>로 보내주세요.</p>
+<form id="claimUploadForm">
+<label for="cuName">피보험자 성명</label><input id="cuName" name="insured_name" autocomplete="off" maxlength="50" placeholder="다치신 분의 성명" required>
+<label for="cuPhone">연락처</label><input id="cuPhone" name="phone" type="tel" autocomplete="off" maxlength="20" placeholder="010-0000-0000" required>
+<label for="cuCity">가입 지자체</label><input id="cuCity" name="municipality" autocomplete="off" maxlength="80" placeholder="예: 경기도 남양주시" required>
+<label for="cuFiles">청구서·구비서류 첨부</label><input id="cuFiles" name="documents" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif" multiple>
+<p class="cu-hint">사진·PDF를 여러 개 선택할 수 있습니다. 최대 10개, 합계 10MB까지 선택 가능합니다.</p>
+<ul id="cuFileList" aria-live="polite"></ul><p id="cuFileError" role="alert" style="color:#b91c1c"></p>
+<label for="cuMemo">전달사항 (선택)</label><textarea id="cuMemo" name="memo" rows="3" maxlength="1000" placeholder="추가로 전달할 내용을 적어주세요."></textarea>
+<button class="cu-submit" type="submit" disabled>온라인 접수 준비 중</button>
+</form></dialog>
+<script>
+(function(){
+const dialog=document.getElementById('claimUploadDialog'),files=document.getElementById('cuFiles'),list=document.getElementById('cuFileList'),error=document.getElementById('cuFileError');
+document.getElementById('claimUploadOpen').addEventListener('click',()=>dialog.showModal());
+document.getElementById('claimUploadClose').addEventListener('click',()=>dialog.close());
+document.getElementById('claimUploadForm').addEventListener('submit',event=>event.preventDefault());
+files.addEventListener('change',()=>{list.replaceChildren();error.textContent='';const selected=Array.from(files.files);const total=selected.reduce((sum,file)=>sum+file.size,0);if(selected.length>10||total>10*1024*1024){error.textContent='첨부는 최대 10개, 합계 10MB까지 가능합니다.';files.value='';return;}if(selected.some(file=>!(/\.(pdf|jpe?g|png|heic|heif)$/i.test(file.name)))){error.textContent='사진 또는 PDF 파일을 선택해 주세요.';files.value='';return;}selected.forEach(file=>{const row=document.createElement('li');row.textContent=file.name+' ('+(file.size/1024/1024).toFixed(2)+' MB)';list.append(row)});});
 })();
 </script>
 
