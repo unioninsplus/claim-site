@@ -2042,25 +2042,41 @@ window.addEventListener("message", function(event){
 </style>
 <dialog id="claimUploadDialog" aria-labelledby="claimUploadTitle">
 <div class="cu-head"><h2 id="claimUploadTitle">보상서류 등록하기</h2><button type="button" class="cu-close" id="claimUploadClose" aria-label="닫기">✕</button></div>
-<p>보험금청구서와 구비서류를 사진 또는 파일로 첨부해 주세요.</p>
-<p class="cu-info"><strong>온라인 서류 접수 준비 중입니다.</strong><br>현재는 아래 파일을 선택해도 전송되지 않습니다. 서류는 기존 접수 메일 <strong>simin@siminins.co.kr</strong>로 보내주세요.</p>
+<p>보험금청구서와 구비서류를 첨부해 주세요. 모든 파일 형식을 선택할 수 있습니다.</p>
+<p class="cu-info">첨부하신 서류는 담당자 접수 메일로 전달됩니다. 전송 완료 안내가 나올 때까지 기다려 주세요.</p>
 <form id="claimUploadForm">
 <label for="cuName">피보험자 성명</label><input id="cuName" name="insured_name" autocomplete="off" maxlength="50" placeholder="다치신 분의 성명" required>
 <label for="cuPhone">연락처</label><input id="cuPhone" name="phone" type="tel" autocomplete="off" maxlength="20" placeholder="010-0000-0000" required>
 <label for="cuCity">가입 지자체</label><input id="cuCity" name="municipality" autocomplete="off" maxlength="80" placeholder="예: 경기도 남양주시" required>
-<label for="cuFiles">청구서·구비서류 첨부</label><input id="cuFiles" name="documents" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif" multiple>
-<p class="cu-hint">사진·PDF를 여러 개 선택할 수 있습니다. 최대 10개, 합계 10MB까지 선택 가능합니다.</p>
+<label for="cuFiles">청구서·구비서류 첨부</label><input id="cuFiles" name="documents[]" type="file" required multiple>
+<p class="cu-hint">파일 종류에 제한 없이 여러 개 선택할 수 있습니다. 최대 10개, 합계 20MB까지 첨부 가능합니다. 수신 메일의 보안 정책에 따라 일부 파일은 차단될 수 있습니다.</p>
 <ul id="cuFileList" aria-live="polite"></ul><p id="cuFileError" role="alert" style="color:#b91c1c"></p>
 <label for="cuMemo">전달사항 (선택)</label><textarea id="cuMemo" name="memo" rows="3" maxlength="1000" placeholder="추가로 전달할 내용을 적어주세요."></textarea>
-<button class="cu-submit" type="submit" disabled>온라인 접수 준비 중</button>
+<input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none"><button class="cu-submit" type="submit" style="background:#174d83;cursor:pointer">서류 보내기</button>
 </form></dialog>
 <script>
 (function(){
 const dialog=document.getElementById('claimUploadDialog'),files=document.getElementById('cuFiles'),list=document.getElementById('cuFileList'),error=document.getElementById('cuFileError');
 document.getElementById('claimUploadOpen').addEventListener('click',()=>dialog.showModal());
 document.getElementById('claimUploadClose').addEventListener('click',()=>dialog.close());
-document.getElementById('claimUploadForm').addEventListener('submit',event=>event.preventDefault());
-files.addEventListener('change',()=>{list.replaceChildren();error.textContent='';const selected=Array.from(files.files);const total=selected.reduce((sum,file)=>sum+file.size,0);if(selected.length>10||total>10*1024*1024){error.textContent='첨부는 최대 10개, 합계 10MB까지 가능합니다.';files.value='';return;}if(selected.some(file=>!(/\.(pdf|jpe?g|png|heic|heif)$/i.test(file.name)))){error.textContent='사진 또는 PDF 파일을 선택해 주세요.';files.value='';return;}selected.forEach(file=>{const row=document.createElement('li');row.textContent=file.name+' ('+(file.size/1024/1024).toFixed(2)+' MB)';list.append(row)});});
+document.getElementById('claimUploadForm').addEventListener('submit',async event=>{
+ event.preventDefault(); const form=event.currentTarget,button=form.querySelector('[type="submit"]');
+ if(button.disabled)return;
+ error.textContent='';
+ if(location.protocol!=='https:'){error.textContent='파일질러로 업로드한 뒤 HTTPS 홈페이지에서 이용해 주세요.';return;}
+ if(!files.files.length){error.textContent='첨부파일을 선택해 주세요.';return;}
+ button.disabled=true;button.textContent='전송 중…';
+ try{
+  const session=await fetch('/claim/send.php',{credentials:'same-origin',cache:'no-store'});
+  const auth=await session.json();if(!session.ok||!auth.token)throw new Error(auth.message||'메일 연결을 확인해 주세요.');
+  const data=new FormData(form);data.append('token',auth.token);
+  const response=await fetch('/claim/send.php',{method:'POST',body:data,credentials:'same-origin'});
+  const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.message||'메일 전송에 실패했습니다.');
+  form.reset();list.replaceChildren();alert(result.message);dialog.close();
+ }catch(e){error.textContent=e instanceof SyntaxError?'메일 연결 파일 또는 서버 설정을 확인해 주세요.':(e.message||'연결이 끊겼습니다. 담당자에게 수신 여부를 확인해 주세요.');}
+ finally{button.disabled=false;button.textContent='서류 보내기';}
+});
+files.addEventListener('change',()=>{list.replaceChildren();error.textContent='';const selected=Array.from(files.files);const total=selected.reduce((sum,file)=>sum+file.size,0);if(selected.length>10||total>20*1024*1024){error.textContent='첨부는 최대 10개, 합계 20MB까지 가능합니다.';files.value='';return;}selected.forEach(file=>{const row=document.createElement('li');row.textContent=file.name+' ('+(file.size/1024/1024).toFixed(2)+' MB)';list.append(row)});});
 })();
 </script>
 
