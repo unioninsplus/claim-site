@@ -427,8 +427,8 @@ footer {
   .cg-body{padding:26px}.cg-title{font-size:21px;font-weight:900;color:#0d2f6f;margin-bottom:8px}
   .cg-sub{color:#64748b;margin-bottom:18px}
   .cg-search{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  .cg-search select,.cg-search button{height:48px;border-radius:11px;font-size:15px;padding:0 11px}
-  .cg-search select{border:1px solid #cbd5e1;background:#fff}.cg-search button{border:0;background:#0d2f6f;color:#fff;font-weight:900;cursor:pointer}
+  .cg-search input,.cg-search select,.cg-search button{min-width:0;width:100%;box-sizing:border-box;height:48px;border-radius:11px;font-size:15px;padding:0 11px}
+  .cg-search input,.cg-search select{border:1px solid #cbd5e1;background:#fff}.cg-search button{border:0;background:#0d2f6f;color:#fff;font-weight:900;cursor:pointer}
   .cg-summary{margin:20px 0 12px;padding:14px 16px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0;line-height:1.7}
   #cgList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start;margin:9px 0}
   #cgList .cg-item{min-width:0;margin:0}
@@ -728,12 +728,12 @@ function cgFill(id, arr, placeholder){
 }
 
 function cgInit(){
-  const years = Object.keys(GUIDE_DATASET || {}).sort((a,b)=>Number(b)-Number(a));
-  cgFill("cgYear", years, "연도 선택");
+  document.getElementById("cgAccidentDate").value = "";
+  cgClearResult();
   cgFill("cgSido", Object.keys(GUIDE_FULL_SIGUNGU || {}).sort((a,b)=>a.localeCompare(b,"ko")), "시도 선택");
   cgFill("cgSigungu", [], "시군구 선택");
   const sum = document.getElementById("cgSummary");
-  if(sum) sum.textContent = "사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.";
+  if(sum) sum.textContent = "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.";
   document.getElementById("aiQuestionWrap")?.classList.remove("on");
   document.getElementById("aiResult")?.classList.remove("on");
   const aiNote = document.getElementById("aiIntegratedNote");
@@ -743,43 +743,113 @@ function cgInit(){
   window.AI_SAMPLE_BLOCK = null;
 }
 
-function cgYearChanged(){
-  const sido = document.getElementById("cgSido").value;
-  if(sido) cgSidoChanged();
+// Compare actual contract periods across all dataset years.
+function cgDate(value){
+  const text = String(value || "").trim();
+  const match = text.match(/^(\d{4})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{1,2})$/)
+    || text.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if(!match) return "";
+  const [y,m,d] = match.slice(1).map(Number);
+  const date = new Date(y,m-1,d);
+  if(date.getFullYear() !== y || date.getMonth() !== m-1 || date.getDate() !== d) return "";
+  return `${match[1]}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+
+function cgPeriod(block){
+  const raw = String(block?.start_date || "");
+  const dates = raw.match(/\d{4}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}|\b\d{8}\b/g) || [];
+  const start = cgDate(dates[0]);
+  if(!start) return null;
+  const explicitEnd = String(block?.end_date || "").trim();
+  let end = cgDate(explicitEnd || dates[1]);
+  if(!end && (explicitEnd || dates.length > 1)) return null;
+  if(!end){
+    // Keep the existing one-year convention when only a start date is registered.
+    const date = new Date(start + "T00:00:00");
+    date.setFullYear(date.getFullYear()+1);
+    date.setDate(date.getDate()-1);
+    end = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+  }
+  return end >= start ? {start,end} : null;
+}
+
+function cgFindContracts(accidentDate, sido, g){
+  const found = [];
+  const seen = new Set();
+  for(const y of Object.keys(GUIDE_DATASET || {}).sort((a,b)=>Number(b)-Number(a))){
+    const block = GUIDE_DATASET?.[y]?.[sido]?.[g];
+    if(!block) continue;
+    const period = cgPeriod(block);
+    if(!period || accidentDate < period.start || accidentDate > period.end) continue;
+    const key = JSON.stringify([period, block]);
+    if(seen.has(key)) continue;
+    seen.add(key);
+    found.push({y,block,period});
+  }
+  return found;
+}
+
+function cgClearResult(){
+  window.AI_SAMPLE_BLOCK = null;
+  AI_CLAIM_PENDING_ID = null;
+  for(const id of ["cgList", "aiResult"]){
+    const el = document.getElementById(id);
+    if(el){ el.innerHTML = ""; el.classList.remove("on"); }
+  }
+  document.getElementById("aiQuestionWrap")?.classList.remove("on");
+  const note = document.getElementById("aiIntegratedNote");
+  if(note) note.style.display = "none";
+  const date = document.getElementById("aiAccidentDate");
+  if(date) date.value = "";
+  const question = document.getElementById("aiQuestion");
+  if(question) question.value = "";
+  const sum = document.getElementById("cgSummary");
+  if(sum) sum.textContent = "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.";
+  closeAiPeriodModal();
 }
 
 function cgSidoChanged(){
+  cgClearResult();
   const sido = document.getElementById("cgSido").value;
   cgFill("cgSigungu", [...(GUIDE_FULL_SIGUNGU?.[sido] || [])].sort((a,b) => a === "전체" ? (b === "전체" ? 0 : -1) : b === "전체" ? 1 : a.localeCompare(b, "ko")), "시군구 선택");
 }
 
-function cgSearch(){
-  const y = document.getElementById("cgYear").value;
+function cgSearch(selectedIndex){
+  const dateInput = document.getElementById("cgAccidentDate");
+  const accidentDate = cgDate(dateInput.value);
   const sido = document.getElementById("cgSido").value;
   const g = document.getElementById("cgSigungu").value;
-
+  cgClearResult();
   const sum = document.getElementById("cgSummary");
   const list = document.getElementById("cgList");
-  list.innerHTML = "";
-
-  if(!(y && sido && g)){
-    alert("연도, 시도, 시군구를 선택해 주세요.");
+  if(!accidentDate){ alert("사고일자를 올바른 년월일 8자리로 입력해 주세요. 예: 20260501"); dateInput.focus(); return; }
+  dateInput.value = accidentDate;
+  const today = new Date();
+  const todayText = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+  if(accidentDate > todayText){ alert("사고일자는 오늘 이후 날짜로 입력할 수 없습니다."); return; }
+  if(!(sido && g)){ alert("시도와 시군구를 선택해 주세요."); return; }
+  if(!GUIDE_DATA_READY){ sum.textContent = "조회 데이터를 불러오는 중입니다. 잠시 후 다시 조회해 주세요."; requestGuideData(); return; }
+  const matches = cgFindContracts(accidentDate, sido, g);
+  if(!matches.length){
+    sum.textContent = `${sido} ${g} · 사고일자: ${accidentDate} — 해당 사고일이 보험기간에 포함되는 등록 계약이 없습니다.`;
     return;
   }
-
-  // 재조회 시 이전 사고 입력과 판정 결과 초기화
-  document.getElementById("aiAccidentDate").value = "";
-  document.getElementById("aiQuestion").value = "";
-  const previousResult = document.getElementById("aiResult");
-  if(previousResult){ previousResult.innerHTML = ""; previousResult.classList.remove("on"); }
-  AI_CLAIM_PENDING_ID = null;
-  closeAiPeriodModal();
-
-  const block = GUIDE_DATASET?.[y]?.[sido]?.[g];
-  if(!block){
-    sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>선택한 조건의 가입 데이터가 없습니다.`;
+  if(matches.length > 1 && !Number.isInteger(selectedIndex)){
+    sum.textContent = `${sido} ${g} · 사고일자: ${accidentDate} — 해당 기간의 계약이 ${matches.length}건입니다. 확인할 계약을 선택해 주세요.`;
+    matches.forEach((match,index)=>{
+      const button = document.createElement("button");
+      button.type = "button";
+      button.style.cssText = "display:block;margin-top:10px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:pointer;text-align:left;";
+      button.textContent = `${match.period.start} ~ ${match.period.end} / ${match.block.insurer || "보험사 미등록"} (${match.y})`;
+      button.onclick = ()=>cgSearch(index);
+      sum.appendChild(button);
+    });
     return;
   }
+  const selected = matches[Number.isInteger(selectedIndex) ? selectedIndex : 0];
+  if(!selected) return;
+  const {y,block} = selected;
+  document.getElementById("aiAccidentDate").value = accidentDate;
 
   const uniqueItems = new Map();
   (block.coverages || []).forEach(item => {
@@ -798,8 +868,8 @@ function cgSearch(){
   });
   const items = Array.from(uniqueItems.values());
 
-  const period = block.end_date ? `${block.start_date || "-"} ~ ${block.end_date}` : (block.start_date || "-");
-  sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
+  const period = `${selected.period.start} ~ ${selected.period.end}`;
+  sum.innerHTML = `<strong>${sido} ${g} / 사고일자: ${accidentDate}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
   window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
   document.getElementById("aiQuestionWrap")?.classList.add("on");
   setAiAccidentDateRange();
@@ -964,7 +1034,7 @@ function aiInit(){
   aiFill("aiSido", Object.keys(GUIDE_FULL_SIGUNGU || {}).sort((a,b)=>a.localeCompare(b,"ko")), "시도 선택");
   aiFill("aiSigungu", [], "시군구 선택");
   const sum = document.getElementById("aiSummary");
-  if(sum) sum.textContent = GUIDE_DATA_READY ? "사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요." : "조회 데이터를 불러오는 중입니다.";
+  if(sum) sum.textContent = GUIDE_DATA_READY ? "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요." : "조회 데이터를 불러오는 중입니다.";
   document.getElementById("aiCoverages")?.classList.remove("on");
   document.getElementById("aiQuestionWrap")?.classList.remove("on");
   document.getElementById("aiResult")?.classList.remove("on");
@@ -1056,7 +1126,7 @@ function showAiPeriodModal(accidentDate, periodStart, periodEnd){
   if(msg){
     msg.innerHTML =
       `입력하신 사고일자 <strong>${accidentDate}</strong>는 현재 조회한 보험기간(${periodStart} ~ ${periodEnd})에 해당하지 않습니다.<br><br>` +
-      `<strong>사고일자에 해당하는 연도·시도·시군구를 다시 선택하여 가입 담보를 조회해 주세요.</strong>`;
+      `<strong>상단의 사고일자와 시도·시군구를 확인하고 다시 조회해 주세요.</strong>`;
   }
   modal.style.display = "flex";
 }
@@ -1081,25 +1151,10 @@ function checkAiAccidentDatePeriod(){
   if(dt.getFullYear()!==yy || dt.getMonth()!==mm-1 || dt.getDate()!==dd) return;
 
   const block = window.AI_SAMPLE_BLOCK.block;
-  const raw = String(block?.start_date || "");
-  const ds = raw.match(/\d{4}[.\/-]\d{1,2}[.\/-]\d{1,2}/g) || [];
-  if(!ds.length) return;
-
-  const norm = s => {
-    const m = String(s || "").match(/(\d{4})[.\/-](\d{1,2})[.\/-](\d{1,2})/);
-    return m ? `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}` : "";
-  };
-
-  const periodStart = norm(ds[0]);
-  let periodEnd;
-  if(ds.length > 1){
-    periodEnd = norm(ds[1]);
-  }else{
-    const d = new Date(periodStart+"T00:00:00");
-    d.setFullYear(d.getFullYear()+1);
-    d.setDate(d.getDate()-1);
-    periodEnd = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-  }
+  const period = cgPeriod(block);
+  if(!period) return;
+  const periodStart = period.start;
+  const periodEnd = period.end;
 
   if(accidentDate < periodStart || accidentDate > periodEnd){
     showAiPeriodModal(accidentDate, periodStart, periodEnd);
@@ -1149,7 +1204,7 @@ function runAiSample(){
 
   const q = String(document.getElementById("aiQuestion")?.value || "").trim();
   const accidentDate = String(document.getElementById("aiAccidentDate")?.value || "").trim();
-  if(!window.AI_SAMPLE_BLOCK){ alert("먼저 연도와 지역을 조회해 주세요."); return; }
+  if(!window.AI_SAMPLE_BLOCK){ alert("먼저 사고일자와 지역을 입력하여 조회해 주세요."); return; }
   if(!accidentDate){ alert("사고일자를 입력해 주세요."); return; }
   if(!/^\d{4}-\d{2}-\d{2}$/.test(accidentDate)){
     alert("사고일자는 2026-05-01 형식으로 입력해 주세요.");
@@ -1363,14 +1418,14 @@ window.addEventListener("message", function(event){
   <div class="cg-title">1. 가입 지자체 및 보상내역 확인</div>
   
 </div>
-      <div class="cg-sub">연도·시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 현재 등록된 담보 설명을 확인할 수 있습니다.</div>
+      <div class="cg-sub">사고일자를 입력하고 시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 등록된 담보 설명을 확인할 수 있습니다.</div>
       <div class="cg-search">
-        <select id="cgYear" onchange="cgYearChanged()"></select>
+        <input id="cgAccidentDate" type="text" inputmode="numeric" maxlength="10" autocomplete="off" aria-label="사고일자" placeholder="사고일자 예: 20260501" oninput="formatAiAccidentDate(this); cgClearResult()" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); cgSearch(); }">
         <select id="cgSido" onchange="cgSidoChanged()"></select>
-        <select id="cgSigungu"></select>
+        <select id="cgSigungu" onchange="cgClearResult()"></select>
         <button type="button" onclick="cgSearch()">조회</button>
       </div>
-      <div id="cgSummary" class="cg-summary">사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.</div>
+      <div id="cgSummary" class="cg-summary">사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.</div>
 <div style="display:flex; justify-content:flex-end; margin-top:10px;">
   <div style="
     font-size:14px;
@@ -1389,11 +1444,7 @@ window.addEventListener("message", function(event){
       <div id="cgList"></div>
       <div id="aiQuestionWrap" class="ai-question-wrap">
         <label class="ai-label" for="aiQuestion" style="font-size:17px;margin-bottom:10px;">2. 적용여부 확인</label>
-        <label class="ai-label" for="aiAccidentDate" style="display:block;font-size:16px;margin-top:14px;margin-bottom:8px;font-weight:800;">사고일자</label>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-<input id="aiAccidentDate" class="ai-date" type="text" inputmode="numeric" maxlength="10" autocomplete="off" style="margin-bottom:0;" oninput="checkAiAccidentDatePeriod()" onchange="checkAiAccidentDatePeriod()" blur="checkAiAccidentDatePeriod()">
-<span style="font-size:14px;color:#475569;font-weight:800;">사고일자 예: 년월일 8자리 입력 (20260501)</span>
-</div>
+        <input id="aiAccidentDate" type="hidden">
         <label class="ai-label" for="aiQuestion" style="font-size:16px;margin-top:14px;margin-bottom:8px;font-weight:800;">사고내용</label>
 <textarea id="aiQuestion" class="ai-input" placeholder="예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다." oninput="const r=document.getElementById('aiResult'); if(r){r.innerHTML=''; r.classList.remove('on');}"></textarea>
         <div class="ai-actions" style="margin-top:14px;"><button class="ai-ask" type="button" onclick="runAiSample()" style="padding:13px 20px;font-size:15px;">적용여부 확인</button></div>
@@ -1825,8 +1876,8 @@ window.addEventListener("message", function(event){
     "시민안전보험 청구 절차 방법":"Citizen Safety Insurance Claim Procedure",
     "먼저 가입 지자체와 보상내역을 확인해 주세요.":"First, check the municipality and its registered coverages.",
     "1. 가입 지자체 및 보상내역 확인":"1. Check Municipality and Coverage",
-    "연도·시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 현재 등록된 담보 설명을 확인할 수 있습니다.":"Select the year, province/city, and district. After searching, click a coverage name to view its registered details.",
-    "조회":"Search", "사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.":"Select the year and area covering the accident date, then search.",
+    "사고일자를 입력하고 시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 등록된 담보 설명을 확인할 수 있습니다.":"Enter the accident date and select the province/city and district. After searching, click a coverage name to view its registered details.",
+    "조회":"Search", "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.":"Enter the accident date and select the area, then search.",
     "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ This service lists only municipalities currently contracted and administered by us.",
     "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"For a municipality not listed, please contact that municipality because its claim office may be different.",
     "2. 적용여부 확인":"2. Check Potential Eligibility", "사고일자":"Accident Date",
@@ -1878,8 +1929,8 @@ window.addEventListener("message", function(event){
     "시민안전보험 청구 절차 방법":"市民安全保险理赔流程",
     "먼저 가입 지자체와 보상내역을 확인해 주세요.":"请先确认地方政府及其已登记的保障项目。",
     "1. 가입 지자체 및 보상내역 확인":"1. 查询地方政府及保障内容",
-    "연도·시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 현재 등록된 담보 설명을 확인할 수 있습니다.":"选择年份、省市及市郡区后查询，点击保障项目名称可查看已登记的说明。",
-    "조회":"查询","사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.":"请选择涵盖事故日期的年份和地区后查询。",
+    "사고일자를 입력하고 시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 등록된 담보 설명을 확인할 수 있습니다.":"输入事故日期并选择省市及市郡区后查询，点击保障项目名称可查看已登记的说明。",
+    "조회":"查询","사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.":"请输入事故日期并选择地区后查询。",
     "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ 本服务仅显示目前由本公司签约并运营的地方政府。",
     "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"未显示的地方政府可能由其他受理机构负责，请直接咨询相关地方政府。",
     "2. 적용여부 확인":"2. 确认可能适用性","사고일자":"事故日期",
@@ -1923,8 +1974,8 @@ window.addEventListener("message", function(event){
     "시민안전보험 청구 절차 방법":"市民安全保険の請求手続き",
     "먼저 가입 지자체와 보상내역을 확인해 주세요.":"まず自治体と登録済みの補償内容をご確認ください。",
     "1. 가입 지자체 및 보상내역 확인":"1. 自治体と補償内容を確認",
-    "연도·시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 현재 등록된 담보 설명을 확인할 수 있습니다.":"年度、都道府県・市、区市郡を選択して検索し、補償名をクリックすると登録内容を確認できます。",
-    "조회":"検索","사고일자 기준의 보험기간내 연도와 지역을 선택하고 조회해 주세요.":"事故日が保険期間内となる年度と地域を選択して検索してください。",
+    "사고일자를 입력하고 시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 등록된 담보 설명을 확인할 수 있습니다.":"事故日を入力し、都道府県・市、区市郡を選択して検索し、補償名をクリックすると登録内容を確認できます。",
+    "조회":"検索","사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.":"事故日を入力し、地域を選択して検索してください。",
     "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ 本サービスでは、現在当社が契約・運営している自治体のみ検索できます。",
     "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"表示されない自治体は受付先が異なる場合がありますので、該当自治体へお問い合わせください。",
     "2. 적용여부 확인":"2. 適用可能性を確認","사고일자":"事故日",
