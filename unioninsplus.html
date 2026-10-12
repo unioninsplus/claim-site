@@ -861,10 +861,17 @@ function cgSearch(selectedIndex){
       .replace(/대중교통상해부상치료비/g, "대중교통부상치료비");
     if(!key) return;
     const saved = uniqueItems.get(key);
-    const savedName = String(saved?.name || "");
-    if(!saved || (/후유장해/.test(originalName) && !/후유장해/.test(savedName))){
+    if(!saved){
       uniqueItems.set(key, item);
+      return;
     }
+    // 최종_시트연결완료와 동일하게 중복 담보의 더 자세한 설명을 보존합니다.
+    uniqueItems.set(key, {
+      ...saved,
+      name: String(item.name || "").length > String(saved.name || "").length ? item.name : saved.name,
+      detail: String(item.detail || "").length > String(saved.detail || "").length ? item.detail : saved.detail,
+      amount: String(saved.amount || "").trim() || String(item.amount || "").trim()
+    });
   });
   const items = Array.from(uniqueItems.values());
 
@@ -1086,10 +1093,17 @@ function aiLookup(){
       .replace(/대중교통상해부상치료비/g, "대중교통부상치료비");
     if(!key) return;
     const saved = uniqueItems.get(key);
-    const savedName = String(saved?.name || "");
-    if(!saved || (/후유장해/.test(originalName) && !/후유장해/.test(savedName))){
+    if(!saved){
       uniqueItems.set(key, item);
+      return;
     }
+    // 최종_시트연결완료와 동일하게 중복 담보의 더 자세한 설명을 보존합니다.
+    uniqueItems.set(key, {
+      ...saved,
+      name: String(item.name || "").length > String(saved.name || "").length ? item.name : saved.name,
+      detail: String(item.detail || "").length > String(saved.detail || "").length ? item.detail : saved.detail,
+      amount: String(saved.amount || "").trim() || String(item.amount || "").trim()
+    });
   });
   const items = Array.from(uniqueItems.values());
   window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
