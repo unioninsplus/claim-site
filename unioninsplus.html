@@ -2122,10 +2122,17 @@ window.addEventListener("message", function(event){
 <script>
 (function(){
 const dialog=document.getElementById('claimUploadDialog'),files=document.getElementById('cuFiles'),list=document.getElementById('cuFileList'),error=document.getElementById('cuFileError');
-document.getElementById('claimUploadOpen').addEventListener('click',()=>dialog.showModal());
+const claimIntakeUrl='https://wjdbs1.gabia.io/unioninsplus.html#claimUploadOpen';
+const onClaimHost=location.origin==='https://wjdbs1.gabia.io';
+document.getElementById('claimUploadOpen').addEventListener('click',()=>{
+ if(!onClaimHost){location.assign(claimIntakeUrl);return;}
+ dialog.showModal();
+});
 document.getElementById('claimUploadClose').addEventListener('click',()=>dialog.close());
 document.getElementById('claimUploadForm').addEventListener('submit',async event=>{
- event.preventDefault(); const form=event.currentTarget,button=form.querySelector('[type="submit"]');
+ event.preventDefault();
+ if(!onClaimHost){location.assign(claimIntakeUrl);return;}
+ const form=event.currentTarget,button=form.querySelector('[type="submit"]');
  if(button.disabled)return;
  error.textContent='';
  if(location.protocol!=='https:'){error.textContent='파일질러로 업로드한 뒤 HTTPS 홈페이지에서 이용해 주세요.';return;}
