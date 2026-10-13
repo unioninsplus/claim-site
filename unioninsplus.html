@@ -2124,6 +2124,11 @@ window.addEventListener("message", function(event){
 const dialog=document.getElementById('claimUploadDialog'),files=document.getElementById('cuFiles'),list=document.getElementById('cuFileList'),error=document.getElementById('cuFileError');
 const claimIntakeUrl='https://wjdbs1.gabia.io/unioninsplus.html#claimUploadOpen';
 const onClaimHost=location.origin==='https://wjdbs1.gabia.io';
+function openClaimFromLink(){
+ if(onClaimHost && location.hash==='#claimUploadOpen' && !dialog.open)dialog.showModal();
+}
+window.addEventListener('hashchange',openClaimFromLink);
+openClaimFromLink();
 document.getElementById('claimUploadOpen').addEventListener('click',()=>{
  if(!onClaimHost){location.assign(claimIntakeUrl);return;}
  dialog.showModal();
