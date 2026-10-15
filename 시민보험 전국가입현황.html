@@ -72,6 +72,68 @@ th { background:#f4f8ff; color:#12419e; }
   .hero h1 { font-size:32px; }
 }
 </style>
+
+<style id="homepage-lookup-design">
+:root{--navy:#493c31;--blue:#58412e;--line:#d9ccba;--bg:#fff;--text:#40372e;--muted:#64594f}
+body{background:#fff;color:#40372e}
+.top{background:#0f172a;border-bottom:1px solid #ffffff24;color:#fff}
+.top .inner{padding:16px 0;gap:20px;padding-right:48px}.top .brand,.top .menu,.top a{color:#fff}.top .brand>div>div{color:#fff!important}
+.top .menu a{text-decoration:none}.top .menu a:hover{text-decoration:underline;text-underline-offset:5px}
+.logo:before{background:#d7c4a7}.logo:after{background:#0f172a}
+.hero{background:#0f172a;color:#fff;border-bottom:4px solid #cbb89e}
+.hero .grid{grid-template-columns:minmax(0,1fr) 290px;align-items:center;padding:20px 0 24px;gap:30px}
+.hero h1{font-size:27px;line-height:1.5;letter-spacing:-.6px;margin:0;max-width:720px}
+.hero .box{border:1px solid #ffffff30;background:#ffffff08;border-radius:12px;padding:14px 18px}.hero .num1{font-size:23px;margin-top:4px}
+.hero .tag{border-radius:6px;padding:5px 9px}.hero .box a:hover{text-decoration:underline!important}
+main.wrap{background:#f5eee3;max-width:1320px;padding:0 24px 26px}
+main section{padding:24px 0 0}.title{font-size:23px;color:#493c31;letter-spacing:-.5px;line-height:1.5}.sub{font-size:15px;color:#64594f;margin-bottom:16px}
+.card{border:1px solid #cbbba4;border-radius:16px;background:#fffdf8;box-shadow:0 5px 18px #49382212;padding:22px;min-width:0}
+.card h3{font-size:20px;color:#493c31;border-bottom:2px solid #bc9665;padding-bottom:12px;margin-bottom:16px}
+.form-grid{background:#e6d8c2;border:1px solid #cbb89e;border-radius:12px;padding:16px;gap:12px}
+label{color:#493c31;font-size:15px}select,input,textarea{background:#fff;border:1px solid #cdbda9;border-radius:10px;color:#40372e;font-size:15px;min-width:0}
+select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #b99b6e66;outline-offset:2px;border-color:#93734e}
+.primary{background:#58412e;color:#fff;border-radius:10px;box-shadow:0 3px 0 #36271b,0 6px 12px #49382220;font-size:15px}.primary:hover{background:#403022}
+.soft{background:#fff;color:#594636;border:1px solid #cdbda9;border-radius:10px;font-size:15px}.soft:hover{background:#eee5d8}
+.note{background:#eee6d9;color:#554637;border:1px solid #ded0bd;border-radius:12px;font-size:14px;line-height:1.75;padding:14px 16px}
+#summaryBox{background:#fff;border-left:4px solid #b09570}
+.mini{background:#f3ede4;border:1px solid #dfd2c3;border-radius:10px;padding:12px;overflow-wrap:anywhere}.mini b{color:#64594f}.mini span{color:#493c31!important}
+.table-wrap{border-color:#cbbba4;border-radius:12px}th{background:#e6d8c2;color:#493c31;padding:12px 10px;font-size:14px}td{border-color:#e5dacb;padding:10px;font-size:14px;line-height:1.6}tbody tr:nth-child(even){background:#f8f3eb}tbody tr:hover{background:#eee4d5}
+.footer{background:#0f172a;color:#fff}.small{color:#c7cedb}
+button[onclick="closeWin()"]{background:#0f172a!important;border:1px solid #ffffff66!important}
+@media(max-width:980px){.hero .grid{grid-template-columns:1fr;gap:16px}.hero h1{font-size:24px}.hero .box{max-width:none}.kv{grid-template-columns:repeat(2,minmax(0,1fr))}main.wrap{padding:0 16px 20px}.card{padding:18px}}
+@media(max-width:600px){.top .inner{flex-wrap:wrap}.top .brand>div>div:first-child{font-size:19px!important}.hero h1{font-size:22px}.title{font-size:21px}.form-grid{grid-template-columns:1fr;padding:12px}.card{padding:16px}.top .menu{gap:14px}}
+</style>
+
+<style id="compact-contained-header">
+.top,.hero{width:min(1320px,calc(100% - 48px));margin-left:auto;margin-right:auto}
+main.wrap{width:min(1320px,calc(100% - 48px))}
+.top .inner{padding-top:10px;padding-bottom:10px}
+.hero .grid{padding-top:12px;padding-bottom:14px;grid-template-columns:minmax(0,1fr) 260px;gap:20px}
+.hero h1{font-size:23px;line-height:1.4}
+.hero .box{padding:10px 14px}.hero .num1{font-size:20px;margin-top:2px}
+.hero .box>div[style="margin-top:12px;"]{margin-top:6px!important}
+@media(max-width:980px){.hero .grid{grid-template-columns:minmax(0,1fr) 240px}.hero h1{font-size:21px}}
+@media(max-width:640px){.top,.hero,main.wrap{width:calc(100% - 24px)}.hero .grid{grid-template-columns:1fr;gap:10px}.hero h1{font-size:20px}}
+</style>
+
+<style id="single-row-intake-header">
+.top .inner{min-height:70px;padding-top:12px;padding-bottom:12px}
+.header-intake{display:flex;flex-direction:column;gap:5px;align-items:flex-end;font-size:15px;line-height:1.4}
+.header-intake a{color:#fff;text-decoration:none;white-space:nowrap}.header-intake a:hover{text-decoration:underline;text-underline-offset:4px}
+.header-intake a:first-child{font-weight:700;font-size:17px}
+@media(max-width:640px){.top .inner{gap:10px}.header-intake{align-items:flex-start;font-size:14px}.header-intake a:first-child{font-size:16px}}
+</style>
+
+<style id="coverage-summary-essential-only">
+#coverage>.card>.kv:nth-of-type(2),#coverage>.card>.note{display:none}
+</style>
+
+<style id="compact-coverage-summary">
+#coverage>.card>.kv:first-child{margin-top:0}
+#coverage>.card>.kv:first-child .mini{padding:8px 12px;line-height:1.4}
+#coverage>.card>.kv:first-child .mini b{margin-bottom:4px}
+#coverage>.card>.kv:first-child .mini>br{display:none}
+</style>
 </head>
 <body>
 
@@ -98,40 +160,14 @@ cursor:pointer;
       <div class="logo"></div>
       <div>
         <div style="font-size:22px;">(주)유니온인스플러스</div>
-        <div style="font-size:12px;color:#667085;">재난보험24식 조회 + 보험금 청구 통합 업그레이드</div>
+        
       </div>
     </div>
-    <nav class="menu">
-  <a href="#lookup">가입현황 조회</a>
-  <a href="#coverage">담보조건 확인</a>
-</nav>
+    <div class="header-intake"><a href="tel:15223556">접수센터 1522-3556</a><a href="http://w.siminins.co.kr/" target="_blank" rel="noopener noreferrer">simin@siminins.co.kr</a></div>
   </div>
 </header>
 
-<section class="hero">
-  <div class="wrap grid">
-    <div>
-      <h1>시민안전보험 연도별 · 시도별 · 시군구별 조회 및 보험접수</h1>
-      
-    </div>
-    <div class="box">
-      <div>고객센터</div>
-      <div class="num1">1522-3556</div>
-      <div class="num2"></div>
-      <div style="margin-top:8px;font-weight:700;">
-  <a href="http://w.siminins.co.kr/" target="_blank" style="color:#fff; text-decoration:none;">
-    simin@siminins.co.kr
-  </a>
-</div>
-<div style="margin-top:12px;">
-  <a href="#lookup" class="tag">조회 화면</a>
-  <a href="#coverage" class="tag">담보조건 확인</a>
-</div>
-</div>
-      
-    </div>
-  </div>
-</section>
+
 
 <main class="wrap">
   <section id="lookup">
@@ -32892,5 +32928,45 @@ function removeCitizenCoverage(index) {
   </button>
 </div>
 
+
+<style id="coverage-two-column-cards">
+#coverageCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px;align-items:start}
+#coverageCards details{border:1px solid #dacdbb;border-radius:12px;background:#fff;overflow:hidden;min-width:0}
+#coverageCards details[open]{grid-column:1 / -1}
+#coverageCards summary{display:flex;justify-content:space-between;gap:12px;align-items:center;list-style:none;padding:15px 17px;cursor:pointer;font-size:14px;font-weight:600;color:#493c31;line-height:1.55;overflow-wrap:anywhere}
+#coverageCards summary::-webkit-details-marker{display:none}#coverageCards summary::after{content:'▼';font-size:11px;flex-shrink:0}#coverageCards details[open] summary::after{content:'▲'}#coverageCards summary:hover{background:#eee4d5}
+#coverageCards .coverage-expanded{padding:16px 18px;background:#fffdf8;border-top:1px solid #e5dacb;color:#50463b;font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+#coverageCards .coverage-expanded h4{margin:12px 0 5px;font-size:14px;color:#493c31}#coverageCards .coverage-expanded h4:first-child{margin-top:0}
+#coverageCards .coverage-text{white-space:pre-line}#coverageCards .coverage-empty{grid-column:1/-1;padding:16px;color:#64594f}
+@media(max-width:600px){#coverageCards{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+ const tbody=document.getElementById('coverageTableBody');
+ if(!tbody)return;
+ const tableWrap=tbody.closest('.table-wrap');
+ const cards=document.createElement('div');cards.id='coverageCards';
+ tableWrap.insertAdjacentElement('afterend',cards);tableWrap.style.display='none';
+ function renderCoverageCards(){
+   cards.replaceChildren();
+   Array.from(tbody.rows).forEach(function(row){
+     const cells=row.cells;
+     if(cells.length<5){const empty=document.createElement('div');empty.className='coverage-empty';empty.textContent=row.textContent;cards.appendChild(empty);return;}
+     const item=document.createElement('details');
+     const title=document.createElement('summary');title.textContent=cells[1].textContent.trim();item.appendChild(title);
+     const body=document.createElement('div');body.className='coverage-expanded';
+     [[2,'증권번호'],[3,'보장내용'],[4,'보장금액']].forEach(function(pair){
+       const heading=document.createElement('h4');heading.textContent=pair[1];body.appendChild(heading);
+       const content=document.createElement('div');content.className='coverage-text';
+       Array.from(cells[pair[0]].childNodes).forEach(function(node){content.appendChild(node.cloneNode(true));});
+       if(!content.textContent.trim())content.textContent='-';body.appendChild(content);
+     });
+     item.appendChild(body);cards.appendChild(item);
+   });
+ }
+ new MutationObserver(renderCoverageCards).observe(tbody,{childList:true,subtree:true,characterData:true});
+ renderCoverageCards();
+})();
+</script>
 </body>
 </html>
