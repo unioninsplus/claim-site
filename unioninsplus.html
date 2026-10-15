@@ -1368,8 +1368,6 @@ html, body { background: #fff; }
       <span class="brand-text"><strong>유니온인스플러스</strong><span>U N I O N &nbsp; I N S &nbsp; P L U S</span></span>
     </a>
     <nav aria-label="주 메뉴">
-      <a href="#about">회사소개</a>
-      <a href="#business">사업영역</a>
       <a href="#" onclick="openClaimGuide(); return false;">보험금청구</a>
       <a href="시민보험 전국가입현황.html" target="citizenStatusWindow" onclick="window.open(this.href,'citizenStatusWindow','width=1200,height=900,resizable=yes,scrollbars=yes'); return false;">시민안전보험 가입현황</a>
     </nav>
@@ -1379,6 +1377,13 @@ html, body { background: #fff; }
       <button id="langZh" type="button" onclick="setSiteLanguage('zh')">中文</button>
       <button id="langJa" type="button" onclick="setSiteLanguage('ja')">日本語</button>
     </div>
+  </div>
+  <div class="container company-menu-container">
+    <nav class="company-side-menu" aria-label="회사 안내">
+      <a href="#top">메인</a>
+      <a href="#about">회사소개</a>
+      <a href="#business">사업영역</a>
+    </nav>
   </div>
 </header>
 <main id="top">
@@ -2373,6 +2378,104 @@ files.addEventListener('change',()=>{list.replaceChildren();error.textContent=''
 #cgOverlay #cgList .cg-name{font-size:14px;line-height:1.55}
 #cgOverlay #aiQuestionWrap .ai-label:first-child{font-size:18px!important}
 #cgOverlay #aiQuestionWrap .ai-label:not(:first-child){font-size:14px!important}
+</style>
+
+<style id="upload-submit-fit">
+#claimUploadDialog #claimUploadForm .cu-submit{width:auto;min-width:0;justify-self:center;display:block;margin:8px auto 0;padding:12px 28px}
+</style>
+
+<style id="company-section-views">
+body:not([data-company-view]) #about,body:not([data-company-view]) #business{display:none}
+body[data-company-view] main#top{display:none}
+body[data-company-view="about"] #business,body[data-company-view="business"] #about{display:none}
+body[data-company-view] #about,body[data-company-view] #business{min-height:60vh;padding-top:48px;padding-bottom:48px}
+.premium-header nav a[aria-current="page"]{text-decoration:underline;text-underline-offset:8px}
+</style>
+<script>
+(function(){
+  function showCompanyView(view){
+    if(view==='about'||view==='business')document.body.dataset.companyView=view;
+    else delete document.body.dataset.companyView;
+    document.querySelectorAll('.premium-header nav a[href="#about"],.premium-header nav a[href="#business"],.company-side-menu a[href="#top"]').forEach(function(a){
+      if(a.getAttribute('href')==='#'+view)a.setAttribute('aria-current','page');
+      else a.removeAttribute('aria-current');
+    });
+    window.scrollTo({top:0,behavior:'auto'});
+  }
+  document.querySelectorAll('.premium-header a[href="#about"],.premium-header a[href="#business"],.premium-header .brand[href="#top"],.company-side-menu a[href="#top"]').forEach(function(a){
+    a.addEventListener('click',function(event){
+      event.preventDefault();
+      var hash=a.getAttribute('href');
+      if(location.hash!==hash)location.hash=hash;
+      showCompanyView(hash.slice(1));
+    });
+  });
+  window.addEventListener('hashchange',function(){showCompanyView(location.hash.slice(1));});
+  showCompanyView(location.hash.slice(1));
+})();
+</script>
+
+<style id="company-menu-left-stack">
+.premium-header .company-menu-container{padding-top:0;padding-bottom:14px}
+.premium-header nav.company-side-menu{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin:0;width:154px;font-size:15px}
+.premium-header .company-side-menu a{display:block;box-sizing:border-box;padding:9px 15px;border:1px solid #ffffff45;border-radius:7px;background:#ffffff0d;color:#fff;font-weight:700;text-align:left;line-height:1.4}
+.premium-header .company-side-menu a:hover,.premium-header .company-side-menu a[aria-current="page"]{background:#ffffff24;border-color:#ffffff99;text-decoration:none}
+@media(max-width:640px){.premium-header nav.company-side-menu{width:142px;font-size:14px}.premium-header .company-menu-container{padding-bottom:10px}}
+</style>
+
+<style id="company-menu-outside-white-margin">
+.premium-header .company-menu-container{position:absolute;top:0;right:calc(100% + 14px);width:116px;margin:0;padding:0;background:#fff}
+.premium-header nav.company-side-menu{width:100%;gap:8px;margin:0}
+.premium-header .company-side-menu a{background:#fff;color:#0f172a;border:1px solid #d4d9e1;border-radius:7px;padding:12px 14px;font-size:15px;box-shadow:0 3px 10px #0f172a0a}
+.premium-header .company-side-menu a:hover,.premium-header .company-side-menu a[aria-current="page"]{color:#0f172a;background:#edf0f5;border-color:#8d99ac}
+@media(min-width:1000px) and (max-width:1559px){
+.premium-header,.premium-hero,.premium-actions,.premium-guide,#about,#business{width:calc(100% - 280px)}
+}
+@media(max-width:999px){
+.premium-header .company-menu-container{position:static;width:100%;padding:8px 12px;background:#fff;box-sizing:border-box}
+.premium-header nav.company-side-menu{width:116px}
+}
+</style>
+
+<style id="company-menu-connected">
+.premium-header .company-menu-container{right:100%}
+.premium-header nav.company-side-menu{gap:0;border:1px solid #d4d9e1;border-right:0;border-radius:0;overflow:hidden;box-sizing:border-box}
+.premium-header .company-side-menu a{margin:0;border:0;border-bottom:1px solid #d4d9e1;border-radius:0;box-shadow:none}
+.premium-header .company-side-menu a:last-child{border-bottom:0}
+</style>
+
+<style id="main-menu-navy">
+.premium-header .company-side-menu a[href="#top"],.premium-header .company-side-menu a[href="#top"]:hover,.premium-header .company-side-menu a[href="#top"][aria-current="page"]{background:#0f172a;color:#fff;border-color:#0f172a}
+</style>
+
+<style id="main-menu-bottom-alignment">
+@media(min-width:1000px){
+.premium-header .company-menu-container{top:calc(100% - 46px)}
+.premium-header .company-side-menu a[href="#top"]{height:46px;display:flex;align-items:center}
+.premium-header nav.company-side-menu{border-top:0}
+}
+</style>
+
+<style id="main-menu-full-header-height">
+@media(min-width:1000px){
+.premium-header .company-menu-container{top:0}
+.premium-header .company-side-menu a[href="#top"]{height:var(--company-header-height,96px);display:flex;align-items:center}
+}
+</style>
+<script>
+(function(){
+ const header=document.querySelector('.premium-header');
+ if(!header)return;
+ function matchHeaderHeight(){header.style.setProperty('--company-header-height',header.getBoundingClientRect().height+'px');}
+ matchHeaderHeight();
+ if(window.ResizeObserver)new ResizeObserver(matchHeaderHeight).observe(header);
+ else window.addEventListener('resize',matchHeaderHeight);
+})();
+</script>
+
+<style id="main-menu-double-divider">
+.premium-header .company-side-menu a[href="#top"]{position:relative}
+.premium-header .company-side-menu a[href="#top"]::after{content:"";position:absolute;right:0;top:14px;bottom:14px;width:3px;border-left:1px solid rgba(255,255,255,.65);border-right:1px solid rgba(255,255,255,.65);pointer-events:none}
 </style>
 </body>
 </html>
