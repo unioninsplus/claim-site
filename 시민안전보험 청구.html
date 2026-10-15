@@ -102,7 +102,37 @@ th{background:#f4f8ff;color:#12419e;}
   .hero h1{font-size:26px;}
 }
 </style>
-</head>
+
+<style id="claim-design-matched">
+:root{--navy:#493c31;--blue:#58412e;--line:#d9ccba;--bg:#fff;--text:#40372e;--muted:#64594f}
+body{background:#fff}.wrap{max-width:1200px;padding:0 22px 20px;background:#f5eee3;margin:18px auto}
+.hero{background:#0f172a;border-radius:0;margin:0 -22px 20px;padding:20px 24px;display:grid;grid-template-columns:1fr auto;gap:8px 24px;text-align:left;align-items:center}
+.hero h1{font-size:25px;margin:0;line-height:1.4}.hero p{font-size:14px;grid-column:1;color:#e1e5ed}.hero .contact{grid-column:2;grid-row:1 / span 2;margin:0;padding:0 0 0 22px;background:none;border:0;border-left:1px solid #ffffff40;border-radius:0;font-size:16px;line-height:1.8}
+.card{background:#fffdf8;border:1px solid #cbbba4;border-radius:16px;box-shadow:0 5px 18px #49382212;padding:20px;margin-bottom:18px}
+.card h2{font-size:21px;color:#493c31;padding-bottom:12px;border-bottom:2px solid #bc9665}
+#lookup .grid3{background:#e6d8c2;border:1px solid #cbb89e;border-radius:12px;padding:15px;gap:12px}
+label{color:#493c31}select,input,textarea{border-color:#cdbda9;background:#fff;color:#40372e;border-radius:10px;font-size:15px}
+select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #b99b6e66;outline-offset:2px}
+.primary,#claimCheckBox button{background:#58412e;color:#fff;border-radius:10px;box-shadow:0 3px 0 #36271b,0 6px 12px #49382220}
+#lookup .primary{width:auto;min-width:0;padding:10px 20px;font-size:15px}.primary:hover,#claimCheckBox button:hover{background:#403022}
+.soft{background:#fff;color:#594636;border-color:#cdbda9}.note{background:#eee6d9;color:#554637;border-color:#ded0bd;font-size:14px;line-height:1.75}
+#summaryBox{background:#fff;border-left:4px solid #b09570}.mini{background:#f3ede4;border-color:#dfd2c3;padding:8px 12px;border-radius:10px;line-height:1.4}.mini b{margin-bottom:4px;color:#64594f}.mini span{color:#493c31!important}
+#coverage>.table-wrap{border:0;overflow:visible;border-radius:0}
+#claimCheckBox{background:#eee6d9!important;border-color:#d7c6af!important;padding:18px!important}#claimCheckBox h3{color:#493c31;font-size:19px;margin-top:0}#claimCheckText{background:#fff!important;border-color:#cdbda9!important;font-size:15px}
+.footer{color:#64594f}
+@media(max-width:820px){.wrap{margin:10px 12px;padding:0 14px 14px}.hero{margin:0 -14px 16px;grid-template-columns:1fr;padding:18px}.hero h1{font-size:22px}.hero .contact{grid-column:1;grid-row:auto;border-left:0;padding:0;font-size:15px}.card{padding:16px}}
+</style>
+<style id="coverage-two-column-cards">
+#coverageCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px;align-items:start}
+#coverageCards details{border:1px solid #dacdbb;border-radius:12px;background:#fff;overflow:hidden;min-width:0}
+#coverageCards details[open]{grid-column:1 / -1}
+#coverageCards summary{display:flex;justify-content:space-between;gap:12px;align-items:center;list-style:none;padding:15px 17px;cursor:pointer;font-size:14px;font-weight:600;color:#493c31;line-height:1.55;overflow-wrap:anywhere}
+#coverageCards summary::-webkit-details-marker{display:none}#coverageCards summary::after{content:'▼';font-size:11px;flex-shrink:0}#coverageCards details[open] summary::after{content:'▲'}#coverageCards summary:hover{background:#eee4d5}
+#coverageCards .coverage-expanded{padding:16px 18px;background:#fffdf8;border-top:1px solid #e5dacb;color:#50463b;font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+#coverageCards .coverage-expanded h4{margin:12px 0 5px;font-size:14px;color:#493c31}#coverageCards .coverage-expanded h4:first-child{margin-top:0}
+#coverageCards .coverage-text{white-space:pre-line}#coverageCards .coverage-empty{grid-column:1/-1;padding:16px;color:#64594f}
+@media(max-width:600px){#coverageCards{grid-template-columns:1fr}}
+</style></head>
 <body autocomplete="off">
 
 <div class="wrap">
@@ -40314,5 +40344,32 @@ window.addEventListener("message", function(event){
 })();
 </script>
 
-</body>
+<script>
+(function(){
+ const tbody=document.getElementById('coverageTableBody');
+ if(!tbody)return;
+ const tableWrap=tbody.closest('table');
+ const cards=document.createElement('div');cards.id='coverageCards';
+ tableWrap.insertAdjacentElement('afterend',cards);tableWrap.style.display='none';
+ function renderCoverageCards(){
+   cards.replaceChildren();
+   Array.from(tbody.rows).forEach(function(row){
+     const cells=row.cells;
+     if(cells.length<4){const empty=document.createElement('div');empty.className='coverage-empty';empty.textContent=row.textContent;cards.appendChild(empty);return;}
+     const item=document.createElement('details');
+     const title=document.createElement('summary');title.textContent=cells[1].textContent.trim();item.appendChild(title);
+     const body=document.createElement('div');body.className='coverage-expanded';
+     [[2,'보장내용'],[3,'보장금액']].forEach(function(pair){
+       const heading=document.createElement('h4');heading.textContent=pair[1];body.appendChild(heading);
+       const content=document.createElement('div');content.className='coverage-text';
+       Array.from(cells[pair[0]].childNodes).forEach(function(node){content.appendChild(node.cloneNode(true));});
+       if(!content.textContent.trim())content.textContent='-';body.appendChild(content);
+     });
+     item.appendChild(body);cards.appendChild(item);
+   });
+ }
+ new MutationObserver(renderCoverageCards).observe(tbody,{childList:true,subtree:true,characterData:true});
+ renderCoverageCards();
+})();
+</script></body>
 </html>
