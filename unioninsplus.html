@@ -1484,7 +1484,7 @@ html, body { background: #fff; }
       <div><h2>시민안전보험 청구 절차 방법</h2><p>먼저 가입 지자체와 보상내역을 확인해 주세요.</p></div>
       <button class="cg-close" type="button" onclick="closeClaimGuide()">×</button>
     </div>
-    <div class="cg-body">
+    <div class="cg-body"><div class="claim-lookup-column">
       <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap;">
   <div class="cg-title">1. 가입 지자체 및 보상내역 확인</div>
   
@@ -1523,49 +1523,49 @@ html, body { background: #fff; }
       <div id="aiResult" class="ai-result"></div>
       <div id="aiIntegratedNote" class="ai-note" style="display:none;font-weight:800;">※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.</div>
       <div class="cg-note">해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.</div>
-<div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;">
-  <div style="flex:1; min-width:300px;">
-<div style="margin-top:18px; padding:18px; border:1px solid #dbe4f0; border-radius:14px; background:#fff;">
-  <div style="font-size:18px; font-weight:900; color:#0d2f6f; margin-bottom:8px;">3. 보험금청구서 작성</div>
-  <div style="font-size:14px; color:#64748b; line-height:1.7; margin-bottom:14px;">
+</div><div class="claim-documents-column" style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;">
+  <div style="flex:1; min-width:min(300px,100%);">
+<div style="margin-top:18px; padding:18px; border:1px solid #dfd2c3; border-radius:14px; background:#fff;">
+  <div style="font-size:18px; font-weight:900; color:#594636; margin-bottom:8px;">3. 보험금청구서 작성</div>
+  <div style="font-size:14px; color:#64594f; line-height:1.7; margin-bottom:14px;">
     보험금청구서를 다운로드하여 작성해 주세요.
   </div>
   <a href="./보험금청구서.html"
      target="_blank"
      rel="noopener noreferrer"
-     style="display:inline-block; padding:13px 20px; border-radius:11px; background:#0d2f6f; color:#fff; font-weight:800; text-decoration:none;">
+     style="display:inline-block; padding:13px 20px; border-radius:11px; background:#594636; color:#fff; font-weight:800; text-decoration:none;">
     보험금청구서 다운로드
   </a>
 </div>
-<div style="margin-top:14px; padding:18px; border:1px solid #dbe4f0; border-radius:14px; background:#fff;">
-  <div style="font-size:18px; font-weight:900; color:#0d2f6f; margin-bottom:8px;">4. 구비서류 준비</div>
-  <div style="font-size:14px; color:#64748b; line-height:1.7; margin-bottom:14px;">
+<div style="margin-top:14px; padding:18px; border:1px solid #dfd2c3; border-radius:14px; background:#fff;">
+  <div style="font-size:18px; font-weight:900; color:#594636; margin-bottom:8px;">4. 구비서류 준비</div>
+  <div style="font-size:14px; color:#64594f; line-height:1.7; margin-bottom:14px;">
     보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.
   </div>
   <a href="./docs/"
      target="_blank"
      rel="noopener noreferrer"
-     style="display:inline-block; padding:13px 20px; border-radius:11px; background:#fff; color:#0d2f6f; border:1px solid #0d2f6f; font-weight:800; text-decoration:none;">
+     style="display:inline-block; padding:13px 20px; border-radius:11px; background:#fff; color:#594636; border:1px solid #594636; font-weight:800; text-decoration:none;">
     구비서류 안내문 다운로드
   </a>
 </div>
   </div>
 
-<div style="flex:1; min-width:280px; padding:18px; border:1px solid #dbe4f0; border-radius:14px; background:#f8fafc; align-self:stretch;">
-  <div style="font-size:18px; font-weight:900; color:#0d2f6f; margin-bottom:10px;">청구 전 꼭 확인해 주세요</div>
-  <div style="font-size:14px; color:#475569; line-height:1.8;">
+<div style="flex:1; min-width:min(280px,100%); padding:18px; border:1px solid #dfd2c3; border-radius:14px; background:#f3ede4; align-self:stretch;">
+  <div style="font-size:18px; font-weight:900; color:#594636; margin-bottom:10px;">청구 전 꼭 확인해 주세요</div>
+  <div style="font-size:14px; color:#534a42; line-height:1.8;">
     본인의 사고내용과 위에서 조회한 <strong>해당 지자체의 가입 담보 및 보장내용을 비교하여 확인해 주세요.</strong>
     해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 청구를 진행해 주세요.
   </div>
-  <div style="margin-top:14px; padding-top:14px; border-top:1px solid #dbe4f0; font-size:16px; color:#475569; line-height:1.9;">
-    <strong style="color:#0d2f6f; font-size:17px;">보험금청구 서류접수</strong><br>
+  <div style="margin-top:14px; padding-top:14px; border-top:1px solid #dfd2c3; font-size:16px; color:#534a42; line-height:1.9;">
+    <strong style="color:#594636; font-size:17px;">보험금청구 서류접수</strong><br>
     팩스 : <span style="font-size:18px; font-weight:700;">0507-774-0662</span><br>
     이메일 접수 : <span style="font-size:18px; font-weight:700;">simin@siminins.co.kr</span>
   </div>
-  <div style="margin-top:22px; padding-top:18px; border-top:1px solid #dbe4f0; font-size:14px; color:#475569; line-height:1.9;">
+  <div style="margin-top:22px; padding-top:18px; border-top:1px solid #dfd2c3; font-size:14px; color:#534a42; line-height:1.9;">
     <strong>※ 시민안전보험 청구대상 여부가 궁금하신 경우</strong><br>
     <a href="https://pf.kakao.com/_exaHyn/chat" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:7px; padding:6px 12px; background:#fee500; color:#191919; border-radius:8px; font-weight:800; text-decoration:none;">카카오상담(클릭)</a>
-    <span style="display:inline-block; margin-left:14px; font-size:17px; font-weight:800; color:#0d2f6f;"><span style="font-size:14px;">대표번호:</span> ☎ 1522-3556</span>
+    <span style="display:inline-block; margin-left:14px; font-size:17px; font-weight:800; color:#594636;"><span style="font-size:14px;">대표번호:</span> ☎ 1522-3556</span>
     <br>
     <span style="display:inline-block; margin-top:7px;">통화량이 많아 전화 연결이 어려울 수 있으므로 카카오상담 또는 위에서 조회한 해당 지자체의 가입 담보 및 보장내용을 먼저 확인해 주시기 바랍니다.</span>
   </div>
@@ -2181,15 +2181,15 @@ html, body { background: #fff; }
 <div class="cu-head"><h2 id="claimUploadTitle">보상서류 등록하기</h2><button type="button" class="cu-close" id="claimUploadClose" aria-label="닫기">✕</button></div>
 <p>보험금청구서와 구비서류를 첨부해 주세요. 모든 파일 형식을 선택할 수 있습니다.</p>
 <p class="cu-info">첨부하신 서류는 담당자 접수 메일로 전달됩니다. 전송 완료 안내가 나올 때까지 기다려 주세요.</p>
-<form id="claimUploadForm">
+<form id="claimUploadForm"><div class="cu-person-fields">
 <label for="cuName">피보험자 성명</label><input id="cuName" name="insured_name" autocomplete="off" maxlength="50" placeholder="다치신 분의 성명" required>
 <label for="cuPhone">연락처</label><input id="cuPhone" name="phone" type="tel" autocomplete="off" maxlength="20" placeholder="010-0000-0000" required>
 <label for="cuCity">가입 지자체</label><input id="cuCity" name="municipality" autocomplete="off" maxlength="80" placeholder="예: 경기도 남양주시" required>
-<label for="cuFiles">청구서·구비서류 첨부</label><input id="cuFiles" name="documents[]" type="file" required multiple>
+</div><div class="cu-document-fields"><label for="cuFiles">청구서·구비서류 첨부</label><input id="cuFiles" name="documents[]" type="file" required multiple>
 <p class="cu-hint">파일 종류에 제한 없이 여러 개 선택할 수 있습니다. 최대 10개, 합계 20MB까지 첨부 가능합니다. 수신 메일의 보안 정책에 따라 일부 파일은 차단될 수 있습니다.</p>
 <ul id="cuFileList" aria-live="polite"></ul><p id="cuFileError" role="alert" style="color:#b91c1c"></p>
 <label for="cuMemo">전달사항 (선택)</label><textarea id="cuMemo" name="memo" rows="3" maxlength="1000" placeholder="추가로 전달할 내용을 적어주세요."></textarea>
-<input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none"><button class="cu-submit" type="submit" style="background:#174d83;cursor:pointer">서류 보내기</button>
+</div><input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none"><button class="cu-submit" type="submit" style="background:#174d83;cursor:pointer">서류 보내기</button>
 </form></dialog>
 <script>
 (function(){
@@ -2229,5 +2229,144 @@ files.addEventListener('change',()=>{list.replaceChildren();error.textContent=''
 })();
 </script>
 
+
+<style id="premium-claim-windows">
+.cg-overlay{background:rgba(42,34,28,.68);backdrop-filter:blur(5px);padding:28px 20px}
+.cg-modal{width:min(1080px,100%);border:1px solid #d9cbbb;border-radius:24px;background:#faf7f1;box-shadow:0 28px 90px #21170c55}
+.cg-head{background:linear-gradient(120deg,#493c31,#715d48);padding:30px 32px;border-bottom:4px solid #c9ac83;align-items:flex-start}
+.cg-head h2{font-size:27px;letter-spacing:-.7px;line-height:1.4}.cg-head p{color:#f4eadd;line-height:1.6;opacity:1;font-size:16px}
+.cg-close{flex-shrink:0;border:1px solid #ffffff55;background:#ffffff14;border-radius:50%;transition:background .15s}.cg-close:hover{background:#ffffff30}
+.cg-body{padding:30px 32px;color:#40372e}
+.cg-title{color:#493c31;font-size:22px;letter-spacing:-.4px}.cg-sub{color:#64594f;font-size:16px;line-height:1.75}
+.cg-search{padding:20px;background:#eee5d8;border:1px solid #ddcfbc;border-radius:16px;gap:12px;box-shadow:inset 0 1px #fff}
+.cg-search input,.cg-search select{height:52px;background:#fff;color:#3d342c;border:1px solid #cdbda9;font-size:16px}
+.cg-search button,.cg-body .ai-ask{background:#65503c;color:#fff;box-shadow:0 4px 10px #49382220;border-radius:11px;font-size:16px}
+.cg-search button:hover,.cg-body .ai-ask:hover{background:#493a2c}
+.cg-summary{background:#fff;border:1px solid #ded2c3;border-left:4px solid #b09570;color:#53483b;font-size:16px;padding:18px 20px}
+.cg-item{border-color:#dacdbb;box-shadow:0 3px 10px #49382208}.cg-name{color:#493c31;font-size:16px;font-weight:600;padding:18px}
+#cgList .cg-name:hover{background:#eee4d5}.cg-desc{background:#fffdf8;border-color:#e5dacb;color:#50463b;font-size:16px}
+.cg-body .ai-question-wrap{background:#fff;border:1px solid #dfd2c3;border-radius:16px;padding:22px;margin-top:24px;box-shadow:0 4px 14px #49382208}
+.cg-body .ai-label{color:#493c31}.cg-body .ai-label:first-child{font-size:21px!important}
+.cg-body .ai-input{background:#fff;border:1px solid #cdbda9;border-radius:12px;color:#40372e;font-size:16px;line-height:1.7;padding:15px;box-sizing:border-box}
+.cg-body .ai-result{background:#fffdf8;border-color:#d7c6af;color:#493c31}.cg-body .ai-result strong{color:#594636}
+.cg-note,.cg-body .ai-note{background:#eee6d9;color:#554637;border:1px solid #ded0bd;line-height:1.8;font-size:15px;padding:18px 20px}
+.cg-body input:focus-visible,.cg-body select:focus-visible,.cg-body textarea:focus-visible,#claimUploadDialog input:focus-visible,#claimUploadDialog textarea:focus-visible{outline:3px solid #b99b6e66;outline-offset:2px;border-color:#93734e}
+#claimUploadDialog{box-sizing:border-box;width:min(680px,94vw);padding:30px;border:1px solid #d8c8b3;border-radius:22px;background:#faf7f1;color:#493c31;box-shadow:0 28px 90px #21170c55}
+#claimUploadDialog::backdrop{background:#2a221cad;backdrop-filter:blur(5px)}
+#claimUploadDialog .cu-head{margin:-30px -30px 24px;padding:24px 28px;background:linear-gradient(120deg,#493c31,#715d48);border-bottom:4px solid #c9ac83;color:#fff}
+#claimUploadDialog h2{font-size:25px;letter-spacing:-.5px;color:#fff}
+#claimUploadDialog .cu-close{background:#ffffff18;color:#fff;border:1px solid #ffffff55;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0;font-size:18px}
+#claimUploadDialog p{font-size:16px;line-height:1.75}
+#claimUploadDialog .cu-info{background:#eee5d6;border:1px solid #ddceb6;color:#594936;padding:15px 18px}
+#claimUploadDialog label{font-size:16px;color:#493c31;margin-top:20px;margin-bottom:8px}
+#claimUploadDialog input,#claimUploadDialog textarea{box-sizing:border-box;background:#fff;border:1px solid #cdbda9;border-radius:10px;padding:13px 14px;color:#40372e;font-size:16px}
+#claimUploadDialog input[type=file]{padding:12px;background:#fffdf9;font-size:14px}
+#claimUploadDialog input[type=file]::file-selector-button{padding:10px 14px;margin-right:12px;border:1px solid #cdbda9;border-radius:7px;background:#eee5d8;color:#493c31;font-weight:700;cursor:pointer}
+#claimUploadDialog .cu-hint{font-size:14px;color:#66594b}
+#claimUploadDialog .cu-submit{background:#65503c!important;border-radius:11px;padding:17px;font-weight:700;font-size:18px;box-shadow:0 5px 14px #49382222}
+#claimUploadDialog .cu-submit:hover{background:#493a2c!important}#claimUploadDialog .cu-submit:disabled{opacity:.65}
+@media(max-width:760px){.cg-overlay{padding:8px}.cg-modal{margin:8px auto;border-radius:17px}.cg-head{padding:22px 18px}.cg-head h2{font-size:22px}.cg-body{padding:20px 16px}.cg-search{padding:14px}.cg-title{font-size:20px}.cg-body .ai-question-wrap{padding:17px}#claimUploadDialog{padding:22px}#claimUploadDialog .cu-head{margin:-22px -22px 20px;padding:22px 18px}#claimUploadDialog h2{font-size:22px}}
+</style>
+
+<style id="claim-wide-layout">
+@media(min-width:1000px){
+.cg-overlay{padding:14px 20px}.cg-modal{width:min(1480px,100%);margin:0 auto}.cg-head{padding:20px 26px}.cg-head h2{font-size:26px}.cg-head p{margin-top:4px}
+.cg-body{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:22px;padding:22px;background:#e9dfd0;align-items:start}
+.claim-lookup-column{background:#fffdf8;border:1px solid #cbbbA4;border-radius:16px;padding:22px;min-width:0;box-shadow:0 5px 18px #49382212}
+.claim-documents-column{min-width:0;gap:16px!important;display:grid!important;grid-template-columns:1fr!important}
+.claim-documents-column>div{min-width:0!important}.claim-documents-column>div:first-child{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.claim-documents-column>div:first-child>div{margin-top:0!important;padding:18px!important;background:#fffdf8!important;border-color:#cbbbA4!important;box-shadow:0 5px 18px #49382212}
+.claim-documents-column>div:last-child{background:#fffdf8!important;border:1px solid #cbbbA4!important;padding:22px!important;box-shadow:0 5px 18px #49382212}
+.cg-sub{margin-bottom:14px}.cg-search{grid-template-columns:1.15fr 1fr 1fr .65fr;gap:8px;padding:14px}.cg-search input,.cg-search select{padding:0 8px;font-size:15px}.cg-summary{margin:14px 0 10px;padding:12px 15px}
+.cg-body .ai-question-wrap{margin-top:16px;padding:16px}.cg-body .ai-input{min-height:95px}.cg-note{margin-top:16px;padding:12px 15px}
+#claimUploadDialog{width:min(960px,94vw);padding:26px 30px}#claimUploadDialog .cu-head{margin:-26px -30px 18px;padding:20px 28px}
+#claimUploadDialog>p{margin:10px 0}#claimUploadForm{display:grid;grid-template-columns:1fr 1fr;column-gap:26px;align-items:start}
+#claimUploadForm label[for=cuName]{grid-column:1;grid-row:1}#cuName{grid-column:1;grid-row:2}
+#claimUploadForm label[for=cuPhone]{grid-column:1;grid-row:3}#cuPhone{grid-column:1;grid-row:4}
+#claimUploadForm label[for=cuCity]{grid-column:1;grid-row:5}#cuCity{grid-column:1;grid-row:6}
+#claimUploadForm label[for=cuFiles]{grid-column:2;grid-row:1}#cuFiles{grid-column:2;grid-row:2}
+#claimUploadForm .cu-hint{grid-column:2;grid-row:3 / span 2;margin:8px 0}
+#cuFileList{grid-column:2;grid-row:5;margin:0;max-height:90px;overflow:auto}#cuFileError{grid-column:2;grid-row:6;margin:0}
+#claimUploadForm label[for=cuMemo]{grid-column:1 / -1;grid-row:7}#cuMemo{grid-column:1 / -1;grid-row:8;min-height:75px}
+#claimUploadForm .cu-submit{grid-column:1 / -1;grid-row:9;margin-top:18px}
+}
+.cg-head,#claimUploadDialog .cu-head{background:linear-gradient(115deg,#382d24,#66503c);border-bottom:5px solid #bc9665}
+.cg-title{padding-bottom:12px;border-bottom:2px solid #bc9665;color:#382d24;font-weight:900}
+.cg-search{background:#dfcfb8;border-color:#c2a882}.cg-search button,.cg-body .ai-ask,#claimUploadDialog .cu-submit{background:#58412e!important;box-shadow:0 4px 0 #36271b,0 7px 14px #49382224}
+#claimUploadDialog .cu-info{background:#e6d8c2;border-left:4px solid #a67d48;color:#443323;font-weight:600}
+@media(max-width:999px){.claim-lookup-column{min-width:0}.claim-documents-column{margin-top:18px}}
+</style>
+
+<style id="upload-compact-layout">
+#claimUploadDialog{width:min(1020px,95vw);max-height:94dvh;padding:22px 28px;background:#f5eee3}
+#claimUploadDialog .cu-head{margin:-22px -28px 14px;padding:18px 24px}
+#claimUploadDialog>p{margin:8px 0;font-size:15px;line-height:1.55}
+#claimUploadDialog .cu-info{padding:10px 14px;margin-bottom:14px}
+#claimUploadDialog label{margin:10px 0 6px;font-size:16px}
+#claimUploadDialog input,#claimUploadDialog textarea{padding:11px 13px}
+#claimUploadDialog .cu-hint{line-height:1.5;font-size:14px}
+#claimUploadDialog .cu-submit{margin-top:14px;padding:14px}
+@media(min-width:760px){
+#claimUploadForm{display:grid;grid-template-columns:1fr 1.2fr;column-gap:28px;align-items:start;padding-top:4px;border-top:1px solid #cdb99e}
+#claimUploadForm label[for=cuName]{grid-column:1;grid-row:1}#cuName{grid-column:1;grid-row:2}
+#claimUploadForm label[for=cuPhone]{grid-column:1;grid-row:3}#cuPhone{grid-column:1;grid-row:4}
+#claimUploadForm label[for=cuCity]{grid-column:1;grid-row:5}#cuCity{grid-column:1;grid-row:6}
+#claimUploadForm label[for=cuFiles]{grid-column:2;grid-row:1}#cuFiles{grid-column:2;grid-row:2}
+#claimUploadForm .cu-hint{grid-column:2;grid-row:3;margin:6px 0}
+#cuFileList{grid-column:2;grid-row:4;margin:0;max-height:65px;overflow:auto;font-size:14px}
+#cuFileError{grid-column:2;grid-row:5;margin:0;font-size:14px}
+#claimUploadForm label[for=cuMemo]{grid-column:2;grid-row:6;align-self:end;margin-top:8px}
+#cuMemo{grid-column:2;grid-row:7;min-height:70px;height:70px;resize:vertical}
+#claimUploadForm .cu-submit{grid-column:1 / -1;grid-row:8}
+}
+@media(max-width:759px){#claimUploadDialog{padding:20px}#claimUploadDialog .cu-head{margin:-20px -20px 14px;padding:18px}#claimUploadForm{display:block}}
+</style>
+
+<style id="unified-service-dialogs">
+/* Shared visual system, scoped exclusively to service windows. */
+#cgOverlay .cg-modal,#claimUploadDialog{background:#f5eee3;border:1px solid #cbb89e;border-radius:22px;box-shadow:0 28px 90px #21170c55;color:#493c31}
+#cgOverlay .cg-head,#claimUploadDialog .cu-head{background:linear-gradient(115deg,#382d24,#66503c);border-bottom:5px solid #bc9665;padding:20px 26px;color:#fff}
+#cgOverlay .cg-head h2,#claimUploadDialog .cu-head h2{font-size:26px;font-weight:800;line-height:1.4;letter-spacing:-.6px;color:#fff;margin:0}
+#cgOverlay .cg-close,#claimUploadDialog .cu-close{box-sizing:border-box;width:42px;height:42px;padding:0;flex-shrink:0;border:1px solid #ffffff55;border-radius:50%;background:#ffffff18;color:#fff;font-size:24px;cursor:pointer}
+#cgOverlay .cg-body{background:#f5eee3}
+#cgOverlay .cg-search,#claimUploadDialog .cu-info{background:#e6d8c2;border:1px solid #cbb89e;border-radius:12px;color:#493c31}
+#cgOverlay .cg-search input,#cgOverlay .cg-search select,#cgOverlay .ai-input,#claimUploadDialog input,#claimUploadDialog textarea{box-sizing:border-box;background:#fff;border:1px solid #cdbda9;border-radius:10px;color:#40372e;font-size:16px}
+#cgOverlay .cg-search button,#cgOverlay .ai-ask,#claimUploadDialog .cu-submit{background:#58412e!important;color:#fff;border:0;border-radius:10px;font-weight:800;box-shadow:0 4px 0 #36271b,0 7px 14px #49382224}
+#cgOverlay .cg-search button:hover,#cgOverlay .ai-ask:hover,#claimUploadDialog .cu-submit:hover{background:#403022!important}
+#cgOverlay .cg-sub,#claimUploadDialog .cu-hint{color:#64594f;line-height:1.65}
+#claimUploadForm{background:#fffdf8;border:1px solid #cbbba4;border-radius:16px;padding:18px 22px 22px;box-shadow:0 5px 18px #49382212}
+#claimUploadDialog label{color:#493c31;font-weight:800}
+#claimUploadDialog .cu-head{margin:-22px -28px 14px}
+@media(min-width:1000px){#claimUploadDialog{width:min(1180px,95vw)}#claimUploadForm{column-gap:30px}}
+@media(max-width:759px){#cgOverlay .cg-head,#claimUploadDialog .cu-head{padding:18px}#cgOverlay .cg-head h2,#claimUploadDialog .cu-head h2{font-size:22px}#claimUploadDialog .cu-head{margin:-20px -20px 14px}#claimUploadForm{padding:14px}}
+</style>
+
+<style id="service-window-white-surround">
+#cgOverlay.cg-overlay{background:#fff;backdrop-filter:none}
+#claimUploadDialog::backdrop{background:#fff;backdrop-filter:none}
+</style>
+
+<style id="service-header-match-home">
+#cgOverlay .cg-head,#claimUploadDialog .cu-head{background:#0f172a;border-bottom-color:#0f172a;color:#fff}
+#cgOverlay .cg-head h2,#claimUploadDialog .cu-head h2,#cgOverlay .cg-head p{color:#fff}
+</style>
+
+<style id="upload-short-form">
+#claimUploadDialog{width:min(1100px,96vw);max-height:94dvh;padding:18px 24px}
+#claimUploadDialog .cu-head{margin:-18px -24px 10px;padding:15px 22px}
+#claimUploadDialog .cu-head h2{font-size:24px}
+#claimUploadDialog>p{margin:6px 0;font-size:15px;line-height:1.45}
+#claimUploadDialog .cu-info{padding:8px 12px;margin-bottom:10px}
+#claimUploadForm{display:grid;grid-template-columns:1fr 1.2fr;gap:12px 24px;padding:12px 18px 16px;align-items:start}
+#claimUploadForm .cu-person-fields,#claimUploadForm .cu-document-fields{min-width:0;display:block}
+#claimUploadForm label{display:block;margin:8px 0 5px;font-size:16px}
+#claimUploadForm input,#claimUploadForm textarea{padding:9px 12px}
+#claimUploadForm .cu-hint{margin:7px 0;font-size:14px;line-height:1.45}
+#claimUploadForm #cuFileList{margin:0;max-height:55px;overflow:auto;font-size:14px}
+#claimUploadForm #cuFileError{margin:0;font-size:14px}
+#claimUploadForm #cuMemo{height:64px;min-height:64px;resize:vertical}
+#claimUploadForm .cu-submit{grid-column:1 / -1;grid-row:auto;margin:0;padding:12px;font-size:17px}
+@media(max-width:640px){#claimUploadDialog{padding:16px}#claimUploadDialog .cu-head{margin:-16px -16px 10px;padding:14px 16px}#claimUploadForm{grid-template-columns:1fr;padding:10px 14px;gap:6px}#claimUploadDialog .cu-head h2{font-size:22px}}
+</style>
 </body>
 </html>
