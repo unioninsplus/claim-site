@@ -1564,11 +1564,18 @@ html, body { background: #fff; }
     본인의 사고내용과 위에서 조회한 <strong>해당 지자체의 가입 담보 및 보장내용을 비교하여 확인해 주세요.</strong>
     해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 청구를 진행해 주세요.
   </div>
+<div class="claim-contact-upload">
   <div style="margin-top:14px; padding-top:14px; border-top:1px solid #dfd2c3; font-size:16px; color:#534a42; line-height:1.9;">
     <strong style="color:#594636; font-size:17px;">보험금청구 서류접수</strong><br>
     팩스 : <span style="font-size:18px; font-weight:700;">0507-774-0662</span><br>
     이메일 접수 : <span style="font-size:18px; font-weight:700;">simin@siminins.co.kr</span>
   </div>
+<div class="claim-upload-shortcut">
+<strong>📎 홈페이지에서 서류 보내기</strong>
+<p>보험금청구서와 구비서류를 사진이나 파일로 첨부해 보내실 수 있습니다.</p>
+<button type="button" onclick="closeClaimGuide(); document.getElementById('claimUploadOpen').click();">보상서류 등록하기</button>
+</div>
+</div>
   <div style="margin-top:22px; padding-top:18px; border-top:1px solid #dfd2c3; font-size:14px; color:#534a42; line-height:1.9;">
     <strong>※ 시민안전보험 청구대상 여부가 궁금하신 경우</strong><br>
     <a href="https://pf.kakao.com/_exaHyn/chat" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:7px; padding:6px 12px; background:#fee500; color:#191919; border-radius:8px; font-weight:800; text-decoration:none;">카카오상담(클릭)</a>
@@ -2503,6 +2510,17 @@ footer a[href="tel:15223556"]:hover,footer a[href="tel:15223556"]:focus-visible{
 <style id="company-menu-double-dividers">
 .premium-header .company-side-menu a[href="#about"],.premium-header .company-side-menu a[href="#business"]{position:relative}
 .premium-header .company-side-menu a[href="#about"]::after,.premium-header .company-side-menu a[href="#business"]::after{content:"";position:absolute;right:0;top:10px;bottom:10px;width:3px;border-left:1px solid rgba(0,0,0,.45);border-right:1px solid rgba(0,0,0,.45);pointer-events:none}
+</style>
+
+<style id="claim-contact-upload-layout">
+#cgOverlay .claim-contact-upload{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+#cgOverlay .claim-contact-upload>div{min-width:0;overflow-wrap:anywhere}
+#cgOverlay .claim-upload-shortcut{margin-top:14px;padding:14px 0 0 16px;border-top:1px solid #dfd2c3;border-left:1px solid #dfd2c3}
+#cgOverlay .claim-upload-shortcut strong{color:#594636;font-size:16px;line-height:1.6}
+#cgOverlay .claim-upload-shortcut p{margin:6px 0 10px;color:#534a42;font-size:14px;line-height:1.65}
+#cgOverlay .claim-upload-shortcut button{background:#58412e;color:#fff;border:0;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer}
+#cgOverlay .claim-upload-shortcut button:hover{background:#403022}
+@media(max-width:640px){#cgOverlay .claim-contact-upload{grid-template-columns:1fr;gap:0}#cgOverlay .claim-upload-shortcut{border-left:0;padding-left:0}}
 </style>
 </body>
 </html>
