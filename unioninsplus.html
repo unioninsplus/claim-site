@@ -1385,6 +1385,7 @@ html, body { background: #fff; }
       <a href="#top">메인</a>
       <a href="#about">회사소개</a>
       <a href="#business">사업영역</a>
+      <a href="#faq">자주 묻는 질문</a>
     </nav>
   </div>
 </header>
@@ -1485,6 +1486,10 @@ html, body { background: #fff; }
 </style>
 
 
+<section id="faq" aria-labelledby="faq-title">
+<div class="container"><h2 class="section-title" id="faq-title">자주 묻는 질문</h2>
+<p class="section-sub">조회부터 서류 접수까지, 궁금한 내용을 눌러 확인해 주세요.</p>
+<div class="faq-list"><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">01</span><span>시민안전보험은 어떻게 가입하나요?</span></summary><div class="faq-answer"><p><strong style="font-weight:800;color:#0f172a;">가입을 위해 주민등록번호를 제출하거나 별도로 신청하실 필요가 없습니다.</strong><br>시민안전보험은 지자체가 보험료를 부담하여 주민 전체를 대상으로 가입하는 복지 성격의 보험입니다. 해당 지자체가 시민안전보험에 가입했다면, 그 지역에 주민등록을 둔 주민은 별도 신청 없이 자동으로 가입 대상이 됩니다. 개인이 보험료를 내실 필요도 없습니다.<br><br><strong>다만, 보험금을 청구할 때에는 본인 확인과 사고 당시 주소지 확인을 위한 서류가 필요합니다.</strong><br><br><strong>사고 발생 당시 주민등록상 주소지와 해당 지자체의 보험기간이 기준입니다.</strong> 보험기간 중 발생한 사고가 해당 지자체의 가입 담보와 보장조건에 해당하면 보험금을 청구하실 수 있습니다. 보험기간과 보장내용은 지자체별·연도별로 다르므로 사고일자를 기준으로 조회해 주세요.</p><button type="button" onclick="openClaimGuide()">우리 지자체 가입내용 조회</button></div></details><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">02</span><span>우리 지자체의 가입내용은 어디서 확인하나요?</span></summary><div class="faq-answer"><p>「시민안전보험 조회 · 청구 안내」에서 사고일자를 입력하고 시도·시군구를 선택해 조회해 주세요. 조회된 담보명을 누르면 보장내용을 확인할 수 있습니다.</p><button type="button" onclick="openClaimGuide()">가입내용 조회</button></div></details><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">03</span><span>우리 지자체가 조회되지 않으면 어떻게 하나요?</span></summary><div class="faq-answer"><p>본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다. 조회되지 않는 경우에는 접수처가 다를 수 있으므로 해당 지자체로 문의해 주세요.</p></div></details><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">04</span><span>보험금청구서와 구비서류는 어디서 받나요?</span></summary><div class="faq-answer"><p>조회 · 청구 안내 화면에서 가입 담보와 보장내용을 확인한 뒤, 「보험금청구서 다운로드」와 「구비서류 안내문 다운로드」를 이용해 주세요.</p><button type="button" onclick="openClaimGuide()">청구서·구비서류 안내</button></div></details><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">05</span><span>홈페이지에서 서류를 보낼 수 있나요?</span></summary><div class="faq-answer"><p>「보상서류 등록하기」에서 피보험자 성명, 연락처, 가입 지자체를 입력하고 보험금청구서와 구비서류를 첨부해 보내실 수 있습니다. 전송 완료 안내가 나올 때까지 기다려 주세요.</p><button type="button" onclick="document.getElementById('claimUploadOpen').click()">보상서류 등록하기</button></div></details><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">06</span><span>어떤 파일을 몇 개까지 첨부할 수 있나요?</span></summary><div class="faq-answer"><p>사진, PDF, 한글, 워드, 엑셀 등 파일 종류에 제한 없이 선택할 수 있습니다. 최대 10개, 합계 20MB까지 첨부 가능합니다. 수신 메일의 보안 정책에 따라 일부 파일은 차단될 수 있습니다.</p></div></details><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">07</span><span>팩스나 이메일로도 접수할 수 있나요?</span></summary><div class="faq-answer"><p>팩스 0507-774-0662 또는 이메일 simin@siminins.co.kr로 보험금청구서와 구비서류를 보내실 수 있습니다.</p></div></details><details class="faq-item"><summary><span class="faq-number" aria-hidden="true">08</span><span>제 사고가 청구 대상인지 궁금해요.</span></summary><div class="faq-answer"><p>먼저 사고일자 기준으로 조회한 해당 지자체의 가입 담보 및 보장내용과 사고내용을 비교해 주세요. 확인이 어려우면 카카오상담 또는 <strong style="font-weight:800;color:#0f172a;">대표번호 1522-3556</strong>으로 문의해 주세요. 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.</p><a href="https://pf.kakao.com/_exaHyn/chat" target="_blank" rel="noopener noreferrer">카카오상담</a></div></details></div></div></section>
 <div id="cgOverlay" class="cg-overlay">
   <div class="cg-modal">
     <div class="cg-head">
@@ -2403,15 +2408,15 @@ body[data-company-view] #about,body[data-company-view] #business{min-height:60vh
 <script>
 (function(){
   function showCompanyView(view){
-    if(view==='about'||view==='business')document.body.dataset.companyView=view;
+    if(view==='about'||view==='business'||view==='faq')document.body.dataset.companyView=view;
     else delete document.body.dataset.companyView;
-    document.querySelectorAll('.premium-header nav a[href="#about"],.premium-header nav a[href="#business"],.company-side-menu a[href="#top"]').forEach(function(a){
+    document.querySelectorAll('.premium-header nav a[href="#about"],.premium-header nav a[href="#business"],.premium-header nav a[href="#faq"],.company-side-menu a[href="#top"]').forEach(function(a){
       if(a.getAttribute('href')==='#'+view)a.setAttribute('aria-current','page');
       else a.removeAttribute('aria-current');
     });
     window.scrollTo({top:0,behavior:'auto'});
   }
-  document.querySelectorAll('.premium-header a[href="#about"],.premium-header a[href="#business"],.premium-header .brand[href="#top"],.company-side-menu a[href="#top"]').forEach(function(a){
+  document.querySelectorAll('.premium-header a[href="#about"],.premium-header a[href="#business"],.premium-header a[href="#faq"],.premium-header .brand[href="#top"],.company-side-menu a[href="#top"]').forEach(function(a){
     a.addEventListener('click',function(event){
       event.preventDefault();
       var hash=a.getAttribute('href');
@@ -2530,6 +2535,34 @@ footer a[href="tel:15223556"]:hover,footer a[href="tel:15223556"]:focus-visible{
   border-color: #e8dfd3;
   box-shadow: 0 10px 24px rgba(88,62,37,.055), inset 0 1px 0 #ffffff;
 }
+</style>
+
+<style id="faq-layout">
+#faq{display:none;background:var(--warm-panel);max-width:1280px;margin:0 auto;min-height:60vh;padding:48px 0;box-sizing:border-box}
+body[data-company-view="faq"] #faq{display:block}
+body[data-company-view="faq"] #about,body[data-company-view="faq"] #business{display:none}
+.faq-list{max-width:920px;margin:0 auto;display:grid;gap:12px}
+.faq-item{background:linear-gradient(180deg,#fff,#fffdf9);border:1px solid #e8dfd3;border-radius:14px;box-shadow:0 5px 16px rgba(88,62,37,.04);overflow:hidden}
+.faq-item summary{display:flex;align-items:center;gap:14px;padding:19px 22px;cursor:pointer;list-style:none;font-size:16px;font-weight:700;color:#302c28;line-height:1.6}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';margin-left:auto;flex-shrink:0;font-size:23px;font-weight:400;color:#746551}
+.faq-item[open] summary::after{content:'−'}
+.faq-item summary:hover{background:#faf6ef}
+.faq-item summary:focus-visible{outline:2px solid #65543e;outline-offset:-3px}
+.faq-number{font-family:Georgia,serif;font-size:15px;color:#8c7961}
+.faq-answer{padding:0 22px 22px 55px;color:#534a42;font-size:15px;line-height:1.85}
+.faq-answer p{margin:0;padding-top:15px;border-top:1px solid #eee5d9;overflow-wrap:anywhere}
+.faq-answer button,.faq-answer a{display:inline-block;margin-top:14px;background:#0f172a;color:#fff;border:0;border-radius:7px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer}
+.faq-answer button:hover,.faq-answer a:hover{background:#28364e}
+.premium-header .company-side-menu a[href="#faq"]{position:relative;background:#fcf9f4;color:#493c31;border-bottom-color:#ddd1c2}
+.premium-header .company-side-menu a[href="#faq"]:hover,.premium-header .company-side-menu a[href="#faq"][aria-current="page"]{background:#e9ddcd;color:#493c31}
+.premium-header .company-side-menu a[href="#faq"]::after{content:"";position:absolute;right:0;top:10px;bottom:10px;width:3px;border-left:1px solid rgba(0,0,0,.45);border-right:1px solid rgba(0,0,0,.45);pointer-events:none}
+@media(min-width:1000px) and (max-width:1559px){#faq{width:calc(100% - 280px)}}
+@media(max-width:640px){#faq{padding:30px 0}.faq-item summary{font-size:15px;padding:16px 14px;gap:10px}.faq-answer{padding:0 16px 18px;font-size:14px}.faq-list{gap:10px}}
+</style>
+
+<style id="faq-menu-title-fit">
+.premium-header .company-side-menu a[href="#faq"]{font-size:13px;letter-spacing:-.3px;white-space:nowrap;padding:12px 8px;line-height:21px}
 </style>
 </body>
 </html>
