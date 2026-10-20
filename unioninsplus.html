@@ -729,9 +729,6 @@ window.addEventListener("message", function(event){
   if(document.getElementById("cgOverlay")?.classList.contains("on")){
     cgInit();
   }
-  if(document.getElementById("aiOverlay")?.classList.contains("on")){
-    aiInit();
-  }
 });
 
 function openClaimGuide(){
@@ -779,13 +776,6 @@ function cgInit(){
   cgFill("cgSigungu", [], "시군구 선택");
   const sum = document.getElementById("cgSummary");
   if(sum) sum.textContent = "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.";
-  document.getElementById("aiQuestionWrap")?.classList.remove("on");
-  document.getElementById("aiResult")?.classList.remove("on");
-  const aiNote = document.getElementById("aiIntegratedNote");
-  if(aiNote) aiNote.style.display = "none";
-  const aiQ = document.getElementById("aiQuestion");
-  if(aiQ) aiQ.value = "";
-  window.AI_SAMPLE_BLOCK = null;
 }
 
 // Compare actual contract periods across all dataset years.
@@ -835,22 +825,12 @@ function cgFindContracts(accidentDate, sido, g){
 }
 
 function cgClearResult(){
-  window.AI_SAMPLE_BLOCK = null;
-  AI_CLAIM_PENDING_ID = null;
-  for(const id of ["cgList", "aiResult"]){
+  for(const id of ["cgList"]){
     const el = document.getElementById(id);
     if(el){ el.innerHTML = ""; el.classList.remove("on"); }
   }
-  document.getElementById("aiQuestionWrap")?.classList.remove("on");
-  const note = document.getElementById("aiIntegratedNote");
-  if(note) note.style.display = "none";
-  const date = document.getElementById("aiAccidentDate");
-  if(date) date.value = "";
-  const question = document.getElementById("aiQuestion");
-  if(question) question.value = "";
   const sum = document.getElementById("cgSummary");
   if(sum) sum.textContent = "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.";
-  closeAiPeriodModal();
 }
 
 function cgSidoChanged(){
@@ -898,7 +878,6 @@ function cgSearch(selectedIndex){
   const selected = matches[Number.isInteger(selectedIndex) ? selectedIndex : 0];
   if(!selected) return;
   const {y,block} = selected;
-  document.getElementById("aiAccidentDate").value = accidentDate;
 
   const uniqueItems = new Map();
   (block.coverages || []).forEach(item => {
@@ -926,12 +905,6 @@ function cgSearch(selectedIndex){
 
   const period = `${selected.period.start} ~ ${selected.period.end}`;
   sum.innerHTML = `<strong>${sido} ${g} / 사고일자: ${accidentDate}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
-  window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
-  document.getElementById("aiQuestionWrap")?.classList.add("on");
-  setAiAccidentDateRange();
-  document.getElementById("aiResult")?.classList.remove("on");
-  const aiNote = document.getElementById("aiIntegratedNote");
-  if(aiNote) aiNote.style.display = "block";
 
   items.forEach(item => {
     const box = document.createElement("div");
@@ -1069,262 +1042,10 @@ document.addEventListener("keydown", e => {
 
 
 
-function aiFill(id, arr, placeholder){
-  const el = document.getElementById(id);
-  el.innerHTML = "";
-  const first = document.createElement("option");
-  first.value = "";
-  first.textContent = placeholder;
-  el.appendChild(first);
-  (arr || []).forEach(v => {
-    const o = document.createElement("option");
-    o.value = v;
-    o.textContent = v;
-    el.appendChild(o);
-  });
+function formatLookupDate(el){
+  const v=String(el.value||'').replace(/\D/g,'').slice(0,8);
+  el.value=v.length===8?v.slice(0,4)+'-'+v.slice(4,6)+'-'+v.slice(6,8):v;
 }
-
-function aiInit(){
-  const years = Object.keys(GUIDE_DATASET || {}).sort((a,b)=>Number(b)-Number(a));
-  aiFill("aiYear", years, "연도 선택");
-  aiFill("aiSido", Object.keys(GUIDE_FULL_SIGUNGU || {}).sort((a,b)=>a.localeCompare(b,"ko")), "시도 선택");
-  aiFill("aiSigungu", [], "시군구 선택");
-  const sum = document.getElementById("aiSummary");
-  if(sum) sum.textContent = GUIDE_DATA_READY ? "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요." : "조회 데이터를 불러오는 중입니다.";
-  document.getElementById("aiCoverages")?.classList.remove("on");
-  document.getElementById("aiQuestionWrap")?.classList.remove("on");
-  document.getElementById("aiResult")?.classList.remove("on");
-}
-
-function aiSidoChanged(){
-  const sido = document.getElementById("aiSido").value;
-  aiFill("aiSigungu", (GUIDE_FULL_SIGUNGU?.[sido] || []), "시군구 선택");
-}
-
-function openAiSample(){
-  document.getElementById("aiOverlay").classList.add("on");
-  document.body.style.overflow = "hidden";
-  if(GUIDE_DATA_READY){
-    aiInit();
-  }else{
-    aiInit();
-    requestGuideData();
-    setTimeout(requestGuideData, 200);
-    setTimeout(requestGuideData, 600);
-  }
-}
-function closeAiSample(){
-  document.getElementById("aiOverlay").classList.remove("on");
-  document.body.style.overflow = "";
-}
-
-function aiLookup(){
-  const y = document.getElementById("aiYear").value;
-  const sido = document.getElementById("aiSido").value;
-  const g = document.getElementById("aiSigungu").value;
-  if(!(y && sido && g)){ alert("연도, 시도, 시군구를 선택해 주세요."); return; }
-  const block = GUIDE_DATASET?.[y]?.[sido]?.[g];
-  const sum = document.getElementById("aiSummary");
-  const cv = document.getElementById("aiCoverages");
-  const qw = document.getElementById("aiQuestionWrap");
-  document.getElementById("aiResult").classList.remove("on");
-  if(!block){
-    sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong><br>선택한 조건의 가입 데이터가 없습니다.`;
-    cv.classList.remove("on"); qw.classList.remove("on"); return;
-  }
-  const uniqueItems = new Map();
-  (block.coverages || []).forEach(item => {
-    const originalName = String(item.name || "").trim();
-    const key = originalName
-      .replace(/\s+/g, "")
-      .replace(/\(.*?\)/g, "")
-      .replace(/후유장해/g, "후유")
-      .replace(/대중교통상해부상치료비/g, "대중교통부상치료비");
-    if(!key) return;
-    const saved = uniqueItems.get(key);
-    if(!saved){
-      uniqueItems.set(key, item);
-      return;
-    }
-    // 최종_시트연결완료와 동일하게 중복 담보의 더 자세한 설명을 보존합니다.
-    uniqueItems.set(key, {
-      ...saved,
-      name: String(item.name || "").length > String(saved.name || "").length ? item.name : saved.name,
-      detail: String(item.detail || "").length > String(saved.detail || "").length ? item.detail : saved.detail,
-      amount: String(saved.amount || "").trim() || String(item.amount || "").trim()
-    });
-  });
-  const items = Array.from(uniqueItems.values());
-  window.AI_SAMPLE_BLOCK = {y,sido,g,block,items};
-  const period = block.end_date ? `${block.start_date || "-"} ~ ${block.end_date}` : (block.start_date || "-");
-  sum.innerHTML = `<strong>${y} / ${sido} ${g}</strong> · 보험기간: ${period}<br>보험사: ${block.insurer || "-"} · 담보수: <strong>${items.length}개</strong>`;
-  cv.innerHTML = `<div style="font-weight:900;color:#0d2f6f;">조회된 가입 담보</div>` + items.map(it => `<div>${String(it.name || "").trim()}</div>`).join("");
-  cv.classList.add("on");
-  qw.classList.add("on");
-}
-
-
-function closeAiPeriodModal(){
-  const modal = document.getElementById("aiPeriodModal");
-  if(modal) modal.style.display = "none";
-}
-
-function showAiPeriodModal(accidentDate, periodStart, periodEnd){
-  let modal = document.getElementById("aiPeriodModal");
-  if(!modal){
-    modal = document.createElement("div");
-    modal.id = "aiPeriodModal";
-    modal.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.38);display:flex;align-items:center;justify-content:center;padding:20px;";
-    modal.innerHTML =
-      `<div style="width:min(520px,92vw);background:#fff;border-radius:16px;box-shadow:0 20px 55px rgba(15,23,42,.28);padding:24px;text-align:left;">` +
-        `<div style="font-size:20px;font-weight:900;color:#0f172a;margin-bottom:14px;">보험기간 확인</div>` +
-        `<div id="aiPeriodModalText" style="font-size:14px;line-height:1.75;color:#334155;"></div>` +
-        `<div style="text-align:right;margin-top:20px;">` +
-          `<button type="button" onclick="closeAiPeriodModal()" style="border:0;border-radius:9px;padding:9px 22px;background:#0f172a;color:#fff;font-weight:800;cursor:pointer;">닫기</button>` +
-        `</div>` +
-      `</div>`;
-    document.body.appendChild(modal);
-  }
-  const msg = document.getElementById("aiPeriodModalText");
-  if(msg){
-    msg.innerHTML =
-      `입력하신 사고일자 <strong>${accidentDate}</strong>는 현재 조회한 보험기간(${periodStart} ~ ${periodEnd})에 해당하지 않습니다.<br><br>` +
-      `<strong>상단의 사고일자와 시도·시군구를 확인하고 다시 조회해 주세요.</strong>`;
-  }
-  modal.style.display = "flex";
-}
-
-function checkAiAccidentDatePeriod(){
-  const el = document.getElementById("aiAccidentDate");
-  if(!el || !window.AI_SAMPLE_BLOCK) return;
-
-  let accidentDate = String(el.value || "").trim();
-  const digits = accidentDate.replace(/\D/g, "");
-  if(/^\d{8}$/.test(digits)){
-    accidentDate = digits.slice(0,4)+"-"+digits.slice(4,6)+"-"+digits.slice(6,8);
-  }
-
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(accidentDate)){
-    closeAiPeriodModal();
-    return;
-  }
-
-  const [yy,mm,dd] = accidentDate.split("-").map(Number);
-  const dt = new Date(yy, mm-1, dd);
-  if(dt.getFullYear()!==yy || dt.getMonth()!==mm-1 || dt.getDate()!==dd) return;
-
-  const block = window.AI_SAMPLE_BLOCK.block;
-  const period = cgPeriod(block);
-  if(!period) return;
-  const periodStart = period.start;
-  const periodEnd = period.end;
-
-  if(accidentDate < periodStart || accidentDate > periodEnd){
-    showAiPeriodModal(accidentDate, periodStart, periodEnd);
-  }else{
-    closeAiPeriodModal();
-  }
-}
-
-function setAiAccidentDateRange(){}
-
-
-function formatAiAccidentDate(el){
-  let v = String(el.value || "").replace(/\D/g,"").slice(0,8);
-  if(v.length === 8){
-    el.value = v.slice(0,4) + "-" + v.slice(4,6) + "-" + v.slice(6,8);
-  }else{
-    el.value = v;
-  }
-}
-document.addEventListener("DOMContentLoaded", function(){
-  const el = document.getElementById("aiAccidentDate");
-  if(!el) return;
-  el.addEventListener("input", function(){
-    formatAiAccidentDate(this);
-    checkAiAccidentDatePeriod();
-  });
-  el.addEventListener("change", function(){
-    formatAiAccidentDate(this);
-    checkAiAccidentDatePeriod();
-  });
-  el.addEventListener("blur", function(){
-    formatAiAccidentDate(this);
-    checkAiAccidentDatePeriod();
-  });
-});
-
-/* 적용여부 판정은 시민안전보험 청구 파일에서 실행 */
-let AI_CLAIM_REQUEST_SEQ = 0;
-let AI_CLAIM_PENDING_ID = null;
-
-function runAiSample(){
-  const result = document.getElementById("aiResult");
-  if(result){
-    result.innerHTML = "";
-    result.classList.remove("on");
-  }
-
-  const q = String(document.getElementById("aiQuestion")?.value || "").trim();
-  const accidentDate = String(document.getElementById("aiAccidentDate")?.value || "").trim();
-  if(!window.AI_SAMPLE_BLOCK){ alert("먼저 사고일자와 지역을 입력하여 조회해 주세요."); return; }
-  if(!accidentDate){ alert("사고일자를 입력해 주세요."); return; }
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(accidentDate)){
-    alert("사고일자는 2026-05-01 형식으로 입력해 주세요.");
-    return;
-  }
-  const [yy,mm,dd] = accidentDate.split("-").map(Number);
-  const dt = new Date(yy, mm-1, dd);
-  if(dt.getFullYear()!==yy || dt.getMonth()!==mm-1 || dt.getDate()!==dd){
-    alert("올바른 사고일자를 입력해 주세요.");
-    return;
-  }
-  if(!q){ alert("사고내용을 입력해 주세요."); return; }
-
-  const {y,sido,g} = window.AI_SAMPLE_BLOCK;
-  const frame = document.getElementById("citizenGuideDataFrame");
-  if(!frame || !frame.contentWindow){
-    alert("적용여부 판정 파일을 불러올 수 없습니다.");
-    return;
-  }
-
-  AI_CLAIM_PENDING_ID = "claim_" + Date.now() + "_" + Math.random().toString(36).slice(2);
-
-  if(result){
-    result.innerHTML = '<strong>적용여부를 확인하고 있습니다.</strong>';
-    result.classList.add("on");
-  }
-
-  try{
-    frame.contentWindow.postMessage({
-      type: "UNION_CITIZEN_CLAIM_CHECK_REQUEST",
-      requestId: AI_CLAIM_PENDING_ID,
-      year: y,
-      sido: sido,
-      sigungu: g,
-      accidentDate: accidentDate,
-      accidentText: typeof window.addEnglishClaimMeaning === "function" ? window.addEnglishClaimMeaning(q) : q
-    }, "*");
-  }catch(e){
-    AI_CLAIM_PENDING_ID = null;
-    if(result){
-      result.innerHTML = '<strong>적용여부 확인 오류</strong><br><span style="color:#b42318;">' + String(e?.message || e) + '</span>';
-      result.classList.add("on");
-    }
-  }
-}
-
-window.addEventListener("message", function(event){
-  const msg = event.data;
-  if(!msg || msg.type !== "UNION_CITIZEN_CLAIM_CHECK_RESULT") return;
-  if(!AI_CLAIM_PENDING_ID || msg.requestId !== AI_CLAIM_PENDING_ID) return;
-
-  const result = document.getElementById("aiResult");
-  if(!result) return;
-  result.innerHTML = String(msg.html || "");
-  result.classList.add("on");
-  AI_CLAIM_PENDING_ID = null;
-});
 </script>
 
 
@@ -1418,7 +1139,7 @@ html, body { background: #fff; }
     <div class="premium-guide-title"><span class="premium-eyebrow">C L A I M &nbsp; G U I D E</span><h2 id="guide-heading">보험금 청구,<br>이렇게 진행하세요.</h2></div>
     <div class="premium-steps">
       <div><span>01</span><i>⌕</i><strong>지자체 조회</strong><p>사고일자를 기준으로 가입 지자체를 확인합니다.</p></div>
-      <div><span>02</span><i>▤</i><strong>보장내용 확인</strong><p>가입 담보와 보장조건 및 적용 여부를 확인합니다.</p></div>
+      <div><span>02</span><i>▤</i><strong>보장내용 확인</strong><p>가입 담보와 보장내용을 확인합니다.</p></div>
       <div><span>03</span><i>▱</i><strong>청구서류 준비</strong><p>보험금청구서와 필요한 구비서류를 준비합니다.</p></div>
       <div><span>04</span><i>➤</i><strong>서류 접수</strong><p>준비한 서류를 등록하여 보험금 청구를 진행합니다.</p></div>
     </div>
@@ -1507,7 +1228,7 @@ html, body { background: #fff; }
 </div>
       <div class="cg-sub">사고일자를 입력하고 시도·시군구를 선택하여 조회한 뒤, 담보명을 클릭하면 등록된 담보 설명을 확인할 수 있습니다.</div>
       <p class="citizen-address-note">사고 당시 주민등록상 주소지를 선택해 주세요.</p><div class="cg-search">
-        <input id="cgAccidentDate" type="text" inputmode="numeric" maxlength="10" autocomplete="off" aria-label="사고일자" placeholder="사고일자 예: 20260501" oninput="formatAiAccidentDate(this); cgClearResult()" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); cgSearch(); }">
+        <input id="cgAccidentDate" type="text" inputmode="numeric" maxlength="10" autocomplete="off" aria-label="사고일자" placeholder="사고일자 예: 20260501" oninput="formatLookupDate(this); cgClearResult()" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); cgSearch(); }">
         <select id="cgSido" onchange="cgSidoChanged()"></select>
         <select id="cgSigungu" onchange="cgClearResult()"></select>
         <button type="button" onclick="cgSearch()">조회</button>
@@ -1529,20 +1250,11 @@ html, body { background: #fff; }
   </div>
 </div>
       <div id="cgList"></div>
-      <div id="aiQuestionWrap" class="ai-question-wrap">
-        <label class="ai-label" for="aiQuestion" style="font-size:17px;margin-bottom:10px;">2. 적용여부 확인</label>
-        <input id="aiAccidentDate" type="hidden">
-        <label class="ai-label" for="aiQuestion" style="font-size:16px;margin-top:14px;margin-bottom:8px;font-weight:800;">사고내용</label>
-<textarea id="aiQuestion" class="ai-input" placeholder="예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다." oninput="const r=document.getElementById('aiResult'); if(r){r.innerHTML=''; r.classList.remove('on');}"></textarea>
-        <div class="ai-actions" style="margin-top:14px;"><button class="ai-ask" type="button" onclick="runAiSample()" style="padding:13px 20px;font-size:15px;">적용여부 확인</button></div>
-      </div>
-      <div id="aiResult" class="ai-result"></div>
-      <div id="aiIntegratedNote" class="ai-note" style="display:none;font-weight:800;">※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.</div>
       <div class="cg-note">해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.</div>
 </div><div class="claim-documents-column" style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;">
   <div style="flex:1; min-width:min(300px,100%);">
 <div style="margin-top:18px; padding:18px; border:1px solid #dfd2c3; border-radius:14px; background:#fff;">
-  <div style="font-size:18px; font-weight:900; color:#594636; margin-bottom:8px;">3. 보험금청구서 작성</div>
+  <div style="font-size:18px; font-weight:900; color:#594636; margin-bottom:8px;">2. 보험금청구서 작성</div>
   <div style="font-size:14px; color:#64594f; line-height:1.7; margin-bottom:14px;">
     보험금청구서를 다운로드하여 작성해 주세요.
   </div>
@@ -1554,7 +1266,7 @@ html, body { background: #fff; }
   </a>
 </div>
 <div style="margin-top:14px; padding:18px; border:1px solid #dfd2c3; border-radius:14px; background:#fff;">
-  <div style="font-size:18px; font-weight:900; color:#594636; margin-bottom:8px;">4. 구비서류 준비</div>
+  <div style="font-size:18px; font-weight:900; color:#594636; margin-bottom:8px;">3. 구비서류 준비</div>
   <div style="font-size:14px; color:#64594f; line-height:1.7; margin-bottom:14px;">
     보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.
   </div>
@@ -1811,127 +1523,7 @@ html, body { background: #fff; }
     return text;
   };
 
-  window.addEnglishClaimMeaning = function(input){
-    const original = String(input || "").trim();
-    const chineseMeanings = [];
-    const addChinese = value => { if(value && !chineseMeanings.includes(value)) chineseMeanings.push(value); };
-    if(/[\u3400-\u9fff]/.test(original)){
-      if(/狗|犬|小狗|宠物犬|流浪狗/.test(original)){
-        if(/咬|咬伤|被咬/.test(original)) addChinese("개에게 물림");
-        if(/撞|碰撞|撞到|冲撞|撞倒/.test(original)) addChinese("개와 부딪힘");
-      }
-      if(/公交|公共汽车|巴士|地铁|火车|出租车|公共交通/.test(original)) addChinese("대중교통 이용 중 사고");
-      if(/自行车|单车/.test(original)) addChinese("자전거 사고");
-      if(/电动滑板车|电动踏板车|个人移动设备/.test(original)) addChinese("개인형 이동장치 사고");
-      if(/儿童保护区|学校区域/.test(original)) addChinese("스쿨존 교통사고");
-      if(/老年人保护区|老人保护区/.test(original)) addChinese("실버존 교통사고");
-      if(/火灾|起火/.test(original)) addChinese("화재 사고");
-      if(/爆炸/.test(original)) addChinese("폭발 사고");
-      if(/坍塌|倒塌/.test(original)) addChinese("붕괴 사고");
-      if(/山体滑坡|泥石流/.test(original)) addChinese("산사태 사고");
-      if(/地陷|地面塌陷/.test(original)) addChinese("지반침하 사고");
-      if(/溺水|淹死/.test(original)) addChinese("익사 사고");
-      if(/触电|电击/.test(original)) addChinese("감전 사고");
-      if(/农业机械|拖拉机|耕耘机/.test(original)) addChinese("농기계 사고");
-      if(/燃气|煤气中毒|气体泄漏/.test(original)) addChinese("가스 사고");
-      if(/烧伤|烫伤/.test(original)) addChinese("화상 사고");
-      if(/中暑|热射病/.test(original)) addChinese("온열질환");
-      if(/低温症|冻伤/.test(original)) addChinese("한랭질환");
-      if(/野生动物|野猪/.test(original)) addChinese("야생동물 피해");
-      if(/抢劫|暴力犯罪|殴打|性暴力|强奸/.test(original)) addChinese("범죄 피해");
-      if(/摔倒|跌倒|滑倒|受伤|骨折|扭伤/.test(original)) addChinese("넘어져 상해 치료");
-      if(/死亡|身亡/.test(original)) addChinese("사망");
-      if(/永久伤残|后遗障碍|残疾/.test(original)) addChinese("후유장해");
-      if(/手术/.test(original)) addChinese("수술 받음");
-      if(/住院/.test(original)) addChinese("입원 치료");
-      if(/医院|治疗|急诊/.test(original)) addChinese("병원 치료");
-      if(/医疗费|治疗费/.test(original)) addChinese("의료비 발생");
-      if(/诊断|诊断书/.test(original)) addChinese("진단 받음");
-      const cnWeeks = original.match(/(\d+)\s*(?:周|星期)/);
-      if(cnWeeks) addChinese("진단 " + cnWeeks[1] + "주");
-    }
-    const japaneseMeanings = [];
-    const addJapanese = value => { if(value && !japaneseMeanings.includes(value)) japaneseMeanings.push(value); };
-    if(/[ぁ-んァ-ヶ]/.test(original)){
-      if(/犬|いぬ|ワンちゃん/.test(original)){
-        if(/噛|咬|かまれ|かみつ/.test(original)) addJapanese("개에게 물림");
-        if(/衝突|ぶつか|ぶつけ|当たっ/.test(original)) addJapanese("개와 부딪힘");
-      }
-      if(/バス|地下鉄|電車|列車|タクシー|公共交通/.test(original)) addJapanese("대중교통 이용 중 사고");
-      if(/自転車|サイクリング/.test(original)) addJapanese("자전거 사고");
-      if(/キックボード|電動スクーター|パーソナルモビリティ/.test(original)) addJapanese("개인형 이동장치 사고");
-      if(/スクールゾーン|通学路/.test(original)) addJapanese("스쿨존 교통사고");
-      if(/シルバーゾーン|高齢者保護区域/.test(original)) addJapanese("실버존 교통사고");
-      if(/火災|火事/.test(original)) addJapanese("화재 사고");
-      if(/爆発/.test(original)) addJapanese("폭발 사고");
-      if(/崩壊|倒壊/.test(original)) addJapanese("붕괴 사고");
-      if(/地滑り|土砂崩れ/.test(original)) addJapanese("산사태 사고");
-      if(/陥没|地盤沈下/.test(original)) addJapanese("지반침하 사고");
-      if(/溺水|溺れ/.test(original)) addJapanese("익사 사고");
-      if(/感電/.test(original)) addJapanese("감전 사고");
-      if(/農業機械|トラクター|耕運機/.test(original)) addJapanese("농기계 사고");
-      if(/ガス|一酸化炭素中毒/.test(original)) addJapanese("가스 사고");
-      if(/やけど|火傷/.test(original)) addJapanese("화상 사고");
-      if(/熱中症|日射病/.test(original)) addJapanese("온열질환");
-      if(/低体温症|凍傷/.test(original)) addJapanese("한랭질환");
-      if(/野生動物|イノシシ/.test(original)) addJapanese("야생동물 피해");
-      if(/強盗|暴行|凶悪犯罪|性暴力/.test(original)) addJapanese("범죄 피해");
-      if(/転倒|転ん|滑っ|けが|怪我|骨折|捻挫/.test(original)) addJapanese("넘어져 상해 치료");
-      if(/死亡|亡くな/.test(original)) addJapanese("사망");
-      if(/後遺障害|永久障害/.test(original)) addJapanese("후유장해");
-      if(/手術/.test(original)) addJapanese("수술 받음");
-      if(/入院/.test(original)) addJapanese("입원 치료");
-      if(/病院|治療|救急/.test(original)) addJapanese("병원 치료");
-      if(/医療費|治療費/.test(original)) addJapanese("의료비 발생");
-      if(/診断|診断書/.test(original)) addJapanese("진단 받음");
-      const jaWeeks = original.match(/(\d+)\s*(?:週間|週)/);
-      if(jaWeeks) addJapanese("진단 " + jaWeeks[1] + "주");
-    }
-    chineseMeanings.push(...japaneseMeanings.filter(v => !chineseMeanings.includes(v)));
-    if(!/[A-Za-z]/.test(original)) return chineseMeanings.length ? original + " [판정용 의미: " + chineseMeanings.join(", ") + "]" : original;
-    const t = original.toLowerCase();
-    const meanings = [];
-    const add = value => { if(value && !meanings.includes(value)) meanings.push(value); };
-    const has = pattern => pattern.test(t);
 
-    if(has(/dog|puppy|pet\s*dog|stray/)){
-      if(has(/bit|bite|bitten|mauled/)) add("개에게 물림");
-      if(has(/hit|collid|bump|ran\s+into|knocked/)) add("개와 부딪힘");
-    }
-    if(has(/bus|subway|metro|train|taxi|public\s+transport/)) add("대중교통 이용 중 사고");
-    if(has(/bicycle|bike|cycling/)) add("자전거 사고");
-    if(has(/kickboard|e-scooter|electric\s+scooter|personal\s+mobility|\bpm\b/)) add("개인형 이동장치 사고");
-    if(has(/school\s+zone/)) add("스쿨존 교통사고");
-    if(has(/silver\s+zone|senior\s+zone|elderly\s+protection\s+zone/)) add("실버존 교통사고");
-    if(has(/fire|flame/)) add("화재 사고");
-    if(has(/explosion|exploded|blast/)) add("폭발 사고");
-    if(has(/collapse|collapsed/)) add("붕괴 사고");
-    if(has(/landslide/)) add("산사태 사고");
-    if(has(/sinkhole|ground\s+subsidence/)) add("지반침하 사고");
-    if(has(/drown|submerged/)) add("익사 사고");
-    if(has(/electric\s+shock|electrocut/)) add("감전 사고");
-    if(has(/farm\s+machinery|tractor|cultivator/)) add("농기계 사고");
-    if(has(/gas\s+leak|gas\s+accident|gas\s+poison/)) add("가스 사고");
-    if(has(/burn|scald/)) add("화상 사고");
-    if(has(/heatstroke|heat\s+stroke|heat-related|sunstroke/)) add("온열질환");
-    if(has(/hypothermia|cold-related|frostbite/)) add("한랭질환");
-    if(has(/wild\s+animal|wildlife|boar/)) add("야생동물 피해");
-    if(has(/robbery|violent\s+crime|assault|sexual\s+violence|rape/)) add("범죄 피해");
-    if(has(/fell|fall|slipped|tripped|injured|hurt|fracture|broken\s+bone|sprain/)) add("넘어져 상해 치료");
-
-    if(has(/died|death|deceased|fatal/)) add("사망");
-    if(has(/permanent\s+disabil|disability|impairment|sequela/)) add("후유장해");
-    if(has(/surgery|operation|operated/)) add("수술 받음");
-    if(has(/hospitali[sz]|admitted|inpatient/)) add("입원 치료");
-    if(has(/medical\s+treatment|treated|treatment|hospital|clinic|emergency\s+room|\ber\b/)) add("병원 치료");
-    if(has(/medical\s+expense|medical\s+bill|treatment\s+cost/)) add("의료비 발생");
-    if(has(/diagnos|medical\s+certificate/)) add("진단 받음");
-    const weeks = t.match(/(\d+)\s*(?:week|weeks|wk|wks)/);
-    if(weeks) add("진단 " + weeks[1] + "주");
-    if(has(/no\s+(?:private\s+)?(?:indemnity|medical)\s+insurance|uninsured/)) add("실손보험 미가입");
-    chineseMeanings.forEach(add);
-    return meanings.length ? original + " [판정용 의미: " + meanings.join(", ") + "]" : original;
-  };
 })();
 
 (function(){
@@ -1954,8 +1546,8 @@ html, body { background: #fff; }
     "② 사고일자 기준 가입 지자체 조회":"② Find coverage based on the accident date",
     "사고 발생일을 기준으로 해당 지자체의 시민안전보험 가입 여부를":"Check whether your municipality had Citizen Safety Insurance coverage",
     "조회해 주세요.":"on the date of the accident.",
-    "③ 가입 담보 및 보장내용 확인 → 적용여부 확인":"③ Review coverages → Check potential eligibility",
-    "해당 지자체의 가입 담보 및 보장내용을 확인한 후, 사고일자와 사고내용을 입력하여 적용여부를 간략하게 확인해 주세요.":"Review the municipality’s coverages, then enter the accident date and details to check potential eligibility.",
+    
+    
     "④ 보험금 청구 및 구비서류 확인":"④ Download the claim form and required-document guide",
     "적용 가능한 담보가 확인되면 안내된 절차에 따라 보험금청구서와":"If a potentially applicable coverage is found, download the claim form and",
     "구비서류 안내문을 다운받아 보험금을 청구해 주세요.":"required-document guide and submit your claim as instructed.",
@@ -1978,15 +1570,15 @@ html, body { background: #fff; }
     "조회":"Search", "사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.":"Enter the accident date and select the area, then search.",
     "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ This service lists only municipalities currently contracted and administered by us.",
     "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"For a municipality not listed, please contact that municipality because its claim office may be different.",
-    "2. 적용여부 확인":"2. Check Potential Eligibility", "사고일자":"Accident Date",
+     "사고일자":"Accident Date",
     "사고일자 예: 년월일 8자리 입력 (20260501)":"Enter 8 digits: YYYYMMDD (example: 20260501)",
-    "사고내용":"Accident Details", "적용여부 확인":"Check Potential Eligibility",
+     
     "※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.":"※ Final eligibility and payment are determined by the policy terms and the insurer’s claim review.",
     "해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.":"Review the municipality’s registered coverages and check whether any may relate to your accident. If so, prepare the claim form and required documents and submit them as instructed below.",
-    "3. 보험금청구서 작성":"3. Complete the Claim Form",
+    "2. 보험금청구서 작성":"2. Complete the Claim Form",
     "보험금청구서를 다운로드하여 작성해 주세요.":"Download and complete the insurance claim form.",
     "보험금청구서 다운로드":"Download Claim Form",
-    "4. 구비서류 준비":"4. Prepare Required Documents",
+    "3. 구비서류 준비":"3. Prepare Required Documents",
     "보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.":"Review the guide to the documents required for your claim.",
     "구비서류 안내문 다운로드":"Download Required-Document Guide",
     "청구 전 꼭 확인해 주세요":"Please Check Before Submitting",
@@ -2000,12 +1592,11 @@ html, body { background: #fff; }
     "© 2026 UNIONINSPLUS. All Rights Reserved.":"© 2026 UNIONINSPLUS. All Rights Reserved.",
     "(주)유니온인스플러스 | 대표번호 1522-3556":"Union Ins Plus Co., Ltd. | Main number 1522-3556",
     "서울특별시 강동구 천호대로 176길 8 형도빌딩 2·3층 | 우편번호 05373":"2F–3F, Hyeongdo Building, 8, Cheonho-daero 176-gil, Gangdong-gu, Seoul 05373, Republic of Korea",
-    "적용여부를 확인하고 있습니다.":"Checking potential eligibility…",
-    "적용여부 확인 결과":"Potential Eligibility Result",
+    
+    
     "현재 입력내용과 일치하는 가입 담보가 확인되지 않습니다.":"No registered coverage matching the current information was found.",
-    "사고내용을 조금 더 구체적으로 입력해 주세요.":"Please provide more specific accident details.",
-    "추가 확인 필요":"Additional information required"
-  };
+    
+    };
   const exactChinese = {
     "💬 카카오톡":"💬 KakaoTalk",
     "서류 안내·상담":"材料指南与咨询",
@@ -2022,8 +1613,8 @@ html, body { background: #fff; }
     "② 사고일자 기준 가입 지자체 조회":"② 按事故日期查询参保地方政府",
     "사고 발생일을 기준으로 해당 지자체의 시민안전보험 가입 여부를":"请根据事故发生日期确认该地方政府当时是否投保",
     "조회해 주세요.":"市民安全保险。",
-    "③ 가입 담보 및 보장내용 확인 → 적용여부 확인":"③ 查看保障项目 → 确认可能适用性",
-    "해당 지자체의 가입 담보 및 보장내용을 확인한 후, 사고일자와 사고내용을 입력하여 적용여부를 간략하게 확인해 주세요.":"查看该地方政府的保障项目后，输入事故日期和事故内容，初步确认是否可能适用。",
+    
+    
     "④ 보험금 청구 및 구비서류 확인":"④ 下载理赔申请书及所需材料指南",
     "적용 가능한 담보가 확인되면 안내된 절차에 따라 보험금청구서와":"如确认有可能适用的保障项目，请按照指南下载理赔申请书及",
     "구비서류 안내문을 다운받아 보험금을 청구해 주세요.":"所需材料指南并申请理赔。",
@@ -2035,13 +1626,13 @@ html, body { background: #fff; }
     "조회":"查询","사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.":"请输入事故日期并选择地区后查询。",
     "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ 本服务仅显示目前由本公司签约并运营的地方政府。",
     "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"未显示的地方政府可能由其他受理机构负责，请直接咨询相关地方政府。",
-    "2. 적용여부 확인":"2. 确认可能适用性","사고일자":"事故日期",
+    "사고일자":"事故日期",
     "사고일자 예: 년월일 8자리 입력 (20260501)":"请输入8位数字：年月日（例如：20260501）",
-    "사고내용":"事故内容","적용여부 확인":"确认可能适用性",
+    
     "※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.":"※ 最终是否赔付及赔付金额，以保险条款和保险公司的审核结果为准。",
     "해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.":"请查看该地方政府的保障项目，并确认是否有与本人事故相关的保障。如确认有可能适用的保障，请准备理赔申请书和所需材料并按以下流程申请。",
-    "3. 보험금청구서 작성":"3. 填写保险理赔申请书","보험금청구서를 다운로드하여 작성해 주세요.":"请下载并填写保险理赔申请书。",
-    "보험금청구서 다운로드":"下载理赔申请书","4. 구비서류 준비":"4. 准备所需材料",
+    "2. 보험금청구서 작성":"2. 填写保险理赔申请书","보험금청구서를 다운로드하여 작성해 주세요.":"请下载并填写保险理赔申请书。",
+    "보험금청구서 다운로드":"下载理赔申请书","3. 구비서류 준비":"3. 准备所需材料",
     "보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.":"请查看保险理赔所需材料指南。",
     "구비서류 안내문 다운로드":"下载所需材料指南","청구 전 꼭 확인해 주세요":"提交前请务必确认",
     "본인의 사고내용과 위에서 조회한":"请将本人的事故内容与上方查询到的",
@@ -2051,10 +1642,9 @@ html, body { background: #fff; }
     "※ 시민안전보험 청구대상 여부가 궁금하신 경우":"※ 如需咨询是否可能符合市民安全保险理赔条件",
     "카카오상담(클릭)":"KakaoTalk咨询（点击）","대표번호:":"客服电话：",
     "통화량이 많아 전화 연결이 어려울 수 있으므로 카카오상담 또는 위에서 조회한 해당 지자체의 가입 담보 및 보장내용을 먼저 확인해 주시기 바랍니다.":"电话繁忙时可能难以接通，请使用KakaoTalk咨询，或先确认上方查询到的地方政府保障项目及内容。",
-    "적용여부를 확인하고 있습니다.":"正在确认可能适用性……","적용여부 확인 결과":"可能适用性确认结果",
+    
     "현재 입력내용과 일치하는 가입 담보가 확인되지 않습니다.":"未找到与当前输入内容相符的已登记保障项目。",
-    "사고내용을 조금 더 구체적으로 입력해 주세요.":"请更详细地填写事故内容。","추가 확인 필요":"需要进一步确认"
-  };
+    };
   const exactJapanese = {
     "💬 카카오톡":"💬 カカオトーク",
     "서류 안내·상담":"必要書類のご案内・ご相談",
@@ -2071,8 +1661,8 @@ html, body { background: #fff; }
     "② 사고일자 기준 가입 지자체 조회":"② 事故日を基準に加入自治体を検索",
     "사고 발생일을 기준으로 해당 지자체의 시민안전보험 가입 여부를":"事故発生日を基準に、該当自治体が市民安全保険に加入していたかを",
     "조회해 주세요.":"確認してください。",
-    "③ 가입 담보 및 보장내용 확인 → 적용여부 확인":"③ 補償項目を確認 → 適用可能性を確認",
-    "해당 지자체의 가입 담보 및 보장내용을 확인한 후, 사고일자와 사고내용을 입력하여 적용여부를 간략하게 확인해 주세요.":"自治体の補償項目を確認後、事故日と事故内容を入力して適用可能性をご確認ください。",
+    
+    
     "④ 보험금 청구 및 구비서류 확인":"④ 請求書と必要書類案内をダウンロード",
     "적용 가능한 담보가 확인되면 안내된 절차에 따라 보험금청구서와":"適用可能性のある補償が確認された場合は、案内に従って請求書と",
     "구비서류 안내문을 다운받아 보험금을 청구해 주세요.":"必要書類案内をダウンロードして請求してください。",
@@ -2084,13 +1674,13 @@ html, body { background: #fff; }
     "조회":"検索","사고일자를 입력하고 시도·시군구를 선택한 뒤 조회해 주세요.":"事故日を入力し、地域を選択して検索してください。",
     "※ 본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다.":"※ 本サービスでは、現在当社が契約・運営している自治体のみ検索できます。",
     "조회되지 않는 지자체는 접수처가 다를 수 있으므로 해당 지자체로 문의하시기 바랍니다.":"表示されない自治体は受付先が異なる場合がありますので、該当自治体へお問い合わせください。",
-    "2. 적용여부 확인":"2. 適用可能性を確認","사고일자":"事故日",
+    "사고일자":"事故日",
     "사고일자 예: 년월일 8자리 입력 (20260501)":"8桁の年月日を入力（例：20260501）",
-    "사고내용":"事故内容","적용여부 확인":"適用可能性を確認",
+    
     "※최종 보험금 지급 여부는 보험약관 및 보험사의 심사에 따라 결정됩니다.":"※ 最終的な支払可否と金額は、保険約款および保険会社の審査により決定されます。",
     "해당 지자체의 가입 담보와 보장내용을 확인하고, 본인의 사고내용과 관련된 담보가 있는지 확인해 주세요. 해당되는 담보가 확인되면 보험금청구서와 구비서류를 준비하여 아래 절차에 따라 보험금을 청구하시면 됩니다.":"自治体の登録補償と内容を確認し、ご本人の事故に関連する補償があるかをご確認ください。適用可能性のある補償が確認された場合は、請求書と必要書類を準備して以下の手順で請求してください。",
-    "3. 보험금청구서 작성":"3. 保険金請求書を作成","보험금청구서를 다운로드하여 작성해 주세요.":"保険金請求書をダウンロードしてご記入ください。",
-    "보험금청구서 다운로드":"請求書をダウンロード","4. 구비서류 준비":"4. 必要書類を準備",
+    "2. 보험금청구서 작성":"2. 保険金請求書を作成","보험금청구서를 다운로드하여 작성해 주세요.":"保険金請求書をダウンロードしてご記入ください。",
+    "보험금청구서 다운로드":"請求書をダウンロード","3. 구비서류 준비":"3. 必要書類を準備",
     "보험금 청구에 필요한 구비서류 안내문을 확인해 주세요.":"請求に必要な書類の案内をご確認ください。",
     "구비서류 안내문 다운로드":"必要書類案内をダウンロード","청구 전 꼭 확인해 주세요":"請求前に必ずご確認ください",
     "본인의 사고내용과 위에서 조회한":"ご本人の事故内容と、上記で検索した",
@@ -2100,14 +1690,13 @@ html, body { background: #fff; }
     "※ 시민안전보험 청구대상 여부가 궁금하신 경우":"※ 市民安全保険の請求対象となるかご不明な場合",
     "카카오상담(클릭)":"KakaoTalk相談（クリック）","대표번호:":"代表番号：",
     "통화량이 많아 전화 연결이 어려울 수 있으므로 카카오상담 또는 위에서 조회한 해당 지자체의 가입 담보 및 보장내용을 먼저 확인해 주시기 바랍니다.":"電話が混み合い、つながりにくい場合があります。KakaoTalk相談をご利用いただくか、上記で検索した自治体の補償内容を先にご確認ください。",
-    "적용여부를 확인하고 있습니다.":"適用可能性を確認しています…","적용여부 확인 결과":"適用可能性の確認結果",
+    
     "현재 입력내용과 일치하는 가입 담보가 확인되지 않습니다.":"入力内容に一致する登録補償は確認できませんでした。",
-    "사고내용을 조금 더 구체적으로 입력해 주세요.":"事故内容をもう少し具体的に入力してください。","추가 확인 필요":"追加確認が必要"
-  };
+    };
 
-  Object.assign(exactEnglish,{"유니온인스플러스": "Union Ins Plus", "시민의 일상에 안심을,": "Peace of mind for everyday life,", "지자체의 내일에 신뢰를.": "Trust for communities tomorrow.", "지자체와 시민을 잇는 보험 전문 파트너": "Your insurance partner connecting communities and residents", "시민안전보험부터 보험금 청구까지,": "From citizen safety insurance to claims,", "필요한 순간에 함께합니다.": "Here when you need us.", "시민안전보험 조회 · 청구 안내": "Citizen Insurance · Coverage & Claims", "가입 · 보장내용 조회": "Check Coverage", "우리 지자체의 시민안전보험을 확인하세요.": "Check your municipality’s citizen safety insurance.", "보험금 청구서류 보내기": "Submit Claim Documents", "보험금 청구 서류를 간편하게 접수하세요.": "Submit your claim documents easily.", "카카오톡 상담": "KakaoTalk Support", "궁금한 점을 빠르게 상담받으세요.": "Get quick answers to your questions.", "보험금 청구,": "Making a claim?", "이렇게 진행하세요.": "Follow these steps.", "지자체 조회": "Find Your Municipality", "사고일자를 기준으로 가입 지자체를 확인합니다.": "Check municipal coverage as of the accident date.", "보장내용 확인": "Review Coverage", "가입 담보와 보장조건 및 적용 여부를 확인합니다.": "Review coverage, conditions and eligibility.", "청구서류 준비": "Prepare Documents", "보험금청구서와 필요한 구비서류를 준비합니다.": "Prepare the claim form and required documents.", "서류 접수": "Submit Documents", "준비한 서류를 등록하여 보험금 청구를 진행합니다.": "Upload your documents to submit a claim.", "※ 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "※ Payment depends on the insured coverage, policy terms and conditions."});
-  Object.assign(exactChinese,{"유니온인스플러스": "优联保险服务", "시민의 일상에 안심을,": "守护市民日常安心，", "지자체의 내일에 신뢰를.": "为地方政府的未来增添信赖。", "지자체와 시민을 잇는 보험 전문 파트너": "连接地方政府与市民的专业保险伙伴", "시민안전보험부터 보험금 청구까지,": "从市民安全保险到理赔申请，", "필요한 순간에 함께합니다.": "在您需要时与您同行。", "시민안전보험 조회 · 청구 안내": "市民安全保险查询与理赔指南", "가입 · 보장내용 조회": "查询参保与保障内容", "우리 지자체의 시민안전보험을 확인하세요.": "查看所在地方政府的市民安全保险。", "보험금 청구서류 보내기": "提交理赔材料", "보험금 청구 서류를 간편하게 접수하세요.": "便捷提交保险理赔材料。", "카카오톡 상담": "KakaoTalk咨询", "궁금한 점을 빠르게 상담받으세요.": "快速咨询您的疑问。", "보험금 청구,": "保险理赔，", "이렇게 진행하세요.": "请按以下步骤办理。", "지자체 조회": "查询地方政府", "사고일자를 기준으로 가입 지자체를 확인합니다.": "按事故日期确认地方政府的参保情况。", "보장내용 확인": "确认保障内容", "가입 담보와 보장조건 및 적용 여부를 확인합니다.": "确认已投保项目、保障条件及是否适用。", "청구서류 준비": "准备理赔材料", "보험금청구서와 필요한 구비서류를 준비합니다.": "准备保险金申请表及所需材料。", "서류 접수": "提交材料", "준비한 서류를 등록하여 보험금 청구를 진행합니다.": "上传准备好的材料，办理保险理赔申请。", "※ 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "※ 实际赔付与否取决于投保项目、保险条款及保障条件。"});
-  Object.assign(exactJapanese,{"유니온인스플러스": "ユニオンインスプラス", "시민의 일상에 안심을,": "市民の日常に安心を、", "지자체의 내일에 신뢰를.": "自治体の未来に信頼を。", "지자체와 시민을 잇는 보험 전문 파트너": "自治体と市民をつなぐ保険の専門パートナー", "시민안전보험부터 보험금 청구까지,": "市民安全保険から保険金請求まで、", "필요한 순간에 함께합니다.": "必要なときに寄り添います。", "시민안전보험 조회 · 청구 안내": "市民安全保険の照会・請求案内", "가입 · 보장내용 조회": "加入・補償内容の照会", "우리 지자체의 시민안전보험을 확인하세요.": "お住まいの自治体の市民安全保険をご確認ください。", "보험금 청구서류 보내기": "請求書類の提出", "보험금 청구 서류를 간편하게 접수하세요.": "保険金請求書類を簡単に提出できます。", "카카오톡 상담": "KakaoTalk相談", "궁금한 점을 빠르게 상담받으세요.": "ご不明な点はお気軽にご相談ください。", "보험금 청구,": "保険金の請求は、", "이렇게 진행하세요.": "以下の手順で進めてください。", "지자체 조회": "自治体を検索", "사고일자를 기준으로 가입 지자체를 확인합니다.": "事故日を基準に自治体の加入状況を確認します。", "보장내용 확인": "補償内容を確認", "가입 담보와 보장조건 및 적용 여부를 확인합니다.": "加入補償・補償条件と適用可否を確認します。", "청구서류 준비": "請求書類を準備", "보험금청구서와 필요한 구비서류를 준비합니다.": "保険金請求書と必要書類を準備します。", "서류 접수": "書類を提出", "준비한 서류를 등록하여 보험금 청구를 진행합니다.": "準備した書類を提出して保険金を請求します。", "※ 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "※ 実際の支払可否は加入補償・約款・補償条件により異なります。"});
+  Object.assign(exactEnglish,{"유니온인스플러스": "Union Ins Plus", "시민의 일상에 안심을,": "Peace of mind for everyday life,", "지자체의 내일에 신뢰를.": "Trust for communities tomorrow.", "지자체와 시민을 잇는 보험 전문 파트너": "Your insurance partner connecting communities and residents", "시민안전보험부터 보험금 청구까지,": "From citizen safety insurance to claims,", "필요한 순간에 함께합니다.": "Here when you need us.", "시민안전보험 조회 · 청구 안내": "Citizen Insurance · Coverage & Claims", "가입 · 보장내용 조회": "Check Coverage", "우리 지자체의 시민안전보험을 확인하세요.": "Check your municipality’s citizen safety insurance.", "보험금 청구서류 보내기": "Submit Claim Documents", "보험금 청구 서류를 간편하게 접수하세요.": "Submit your claim documents easily.", "카카오톡 상담": "KakaoTalk Support", "궁금한 점을 빠르게 상담받으세요.": "Get quick answers to your questions.", "보험금 청구,": "Making a claim?", "이렇게 진행하세요.": "Follow these steps.", "지자체 조회": "Find Your Municipality", "사고일자를 기준으로 가입 지자체를 확인합니다.": "Check municipal coverage as of the accident date.", "보장내용 확인": "Review Coverage", "가입 담보와 보장내용을 확인합니다.": "Review coverage, conditions and eligibility.", "청구서류 준비": "Prepare Documents", "보험금청구서와 필요한 구비서류를 준비합니다.": "Prepare the claim form and required documents.", "서류 접수": "Submit Documents", "준비한 서류를 등록하여 보험금 청구를 진행합니다.": "Upload your documents to submit a claim.", "※ 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "※ Payment depends on the insured coverage, policy terms and conditions."});
+  Object.assign(exactChinese,{"유니온인스플러스": "优联保险服务", "시민의 일상에 안심을,": "守护市民日常安心，", "지자체의 내일에 신뢰를.": "为地方政府的未来增添信赖。", "지자체와 시민을 잇는 보험 전문 파트너": "连接地方政府与市民的专业保险伙伴", "시민안전보험부터 보험금 청구까지,": "从市民安全保险到理赔申请，", "필요한 순간에 함께합니다.": "在您需要时与您同行。", "시민안전보험 조회 · 청구 안내": "市民安全保险查询与理赔指南", "가입 · 보장내용 조회": "查询参保与保障内容", "우리 지자체의 시민안전보험을 확인하세요.": "查看所在地方政府的市民安全保险。", "보험금 청구서류 보내기": "提交理赔材料", "보험금 청구 서류를 간편하게 접수하세요.": "便捷提交保险理赔材料。", "카카오톡 상담": "KakaoTalk咨询", "궁금한 점을 빠르게 상담받으세요.": "快速咨询您的疑问。", "보험금 청구,": "保险理赔，", "이렇게 진행하세요.": "请按以下步骤办理。", "지자체 조회": "查询地方政府", "사고일자를 기준으로 가입 지자체를 확인합니다.": "按事故日期确认地方政府的参保情况。", "보장내용 확인": "确认保障内容", "가입 담보와 보장내용을 확인합니다.": "确认已投保项目、保障条件及是否适用。", "청구서류 준비": "准备理赔材料", "보험금청구서와 필요한 구비서류를 준비합니다.": "准备保险金申请表及所需材料。", "서류 접수": "提交材料", "준비한 서류를 등록하여 보험금 청구를 진행합니다.": "上传准备好的材料，办理保险理赔申请。", "※ 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "※ 实际赔付与否取决于投保项目、保险条款及保障条件。"});
+  Object.assign(exactJapanese,{"유니온인스플러스": "ユニオンインスプラス", "시민의 일상에 안심을,": "市民の日常に安心を、", "지자체의 내일에 신뢰를.": "自治体の未来に信頼を。", "지자체와 시민을 잇는 보험 전문 파트너": "自治体と市民をつなぐ保険の専門パートナー", "시민안전보험부터 보험금 청구까지,": "市民安全保険から保険金請求まで、", "필요한 순간에 함께합니다.": "必要なときに寄り添います。", "시민안전보험 조회 · 청구 안내": "市民安全保険の照会・請求案内", "가입 · 보장내용 조회": "加入・補償内容の照会", "우리 지자체의 시민안전보험을 확인하세요.": "お住まいの自治体の市民安全保険をご確認ください。", "보험금 청구서류 보내기": "請求書類の提出", "보험금 청구 서류를 간편하게 접수하세요.": "保険金請求書類を簡単に提出できます。", "카카오톡 상담": "KakaoTalk相談", "궁금한 점을 빠르게 상담받으세요.": "ご不明な点はお気軽にご相談ください。", "보험금 청구,": "保険金の請求は、", "이렇게 진행하세요.": "以下の手順で進めてください。", "지자체 조회": "自治体を検索", "사고일자를 기준으로 가입 지자체를 확인합니다.": "事故日を基準に自治体の加入状況を確認します。", "보장내용 확인": "補償内容を確認", "가입 담보와 보장내용을 확인합니다.": "加入補償・補償条件と適用可否を確認します。", "청구서류 준비": "請求書類を準備", "보험금청구서와 필요한 구비서류를 준비합니다.": "保険金請求書と必要書類を準備します。", "서류 접수": "書類を提出", "준비한 서류를 등록하여 보험금 청구를 진행합니다.": "準備した書類を提出して保険金を請求します。", "※ 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "※ 実際の支払可否は加入補償・約款・補償条件により異なります。"});
   Object.assign(exactEnglish,{"자주 묻는 질문": "Frequently asked questions", "조회부터 서류 접수까지, 궁금한 내용을 눌러 확인해 주세요.": "Select a question for help with checking coverage and submitting documents.", "시민안전보험은 어떻게 가입하나요?": "How do I enroll in citizen safety insurance?", "가입을 위해 주민등록번호를 제출하거나 별도로 신청하실 필요가 없습니다.": "You do not need to submit your resident registration number or apply separately to enroll.", "시민안전보험은 지자체가 보험료를 부담하여 주민 전체를 대상으로 가입하는 복지 성격의 보험입니다. 해당 지자체가 시민안전보험에 가입했다면, 그 지역에 주민등록을 둔 주민은 별도 신청 없이 자동으로 가입 대상이 됩니다. 개인이 보험료를 내실 필요도 없습니다.": "Citizen safety insurance is a community welfare insurance policy purchased and paid for by the local government for its residents. If your municipality has a policy, residents registered there are automatically included without a separate application. Residents do not pay the premium.", "다만, 보험금을 청구할 때에는 본인 확인과 사고 당시 주소지 확인을 위한 서류가 필요합니다.": "When making a claim, however, documents verifying your identity and registered address at the time of the accident are required.", "사고 발생 당시 주민등록상 주소지와 해당 지자체의 보험기간이 기준입니다.": "Your registered address at the time of the accident and the municipality’s policy period are the basis for checking coverage.", "보험기간 중 발생한 사고가 해당 지자체의 가입 담보와 보장조건에 해당하면 보험금을 청구하실 수 있습니다. 보험기간과 보장내용은 지자체별·연도별로 다르므로 사고일자를 기준으로 조회해 주세요.": "You may file a claim if the accident occurred within the policy period and meets the policy’s coverage conditions. Policy periods and coverage vary by municipality and year, so search using the accident date.", "우리 지자체 가입내용 조회": "Check my municipality’s coverage", "우리 지자체의 가입내용은 어디서 확인하나요?": "Where can I check my municipality’s coverage?", "「시민안전보험 조회 · 청구 안내」에서 사고일자를 입력하고 시도·시군구를 선택해 조회해 주세요. 조회된 담보명을 누르면 보장내용을 확인할 수 있습니다.": "Open “Citizen safety insurance — coverage and claims”, enter the accident date, select the province/city and municipality, and search. Select a coverage name to read its details.", "가입내용 조회": "Check coverage", "우리 지자체가 조회되지 않으면 어떻게 하나요?": "What if my municipality does not appear?", "본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다. 조회되지 않더라도 미가입을 뜻하지는 않습니다. 접수처가 다를 수 있으므로 해당 지자체로 문의해 주세요.": "This service only lists municipalities whose contracts we currently administer. No result does not necessarily mean there is no insurance. The claims office may be different; contact your municipality.", "보험금청구서와 구비서류는 어디서 받나요?": "Where can I get the claim form and document checklist?", "조회 · 청구 안내 화면에서 가입 담보와 보장내용을 확인한 뒤, 「보험금청구서 다운로드」와 「구비서류 안내문 다운로드」를 이용해 주세요.": "Check the registered coverage in the coverage and claims window, then select “Download claim form” and “Download required documents guide”.", "청구서·구비서류 안내": "Claim form and document guide", "홈페이지에서 서류를 보낼 수 있나요?": "Can I send documents through this website?", "「보험금 청구서류 보내기」에서 사고를 당하신 분 성명, 연락처, 사고 당시 주민등록상 주소지를 입력하고 보험금청구서와 구비서류를 첨부해 보내실 수 있습니다. 전송 완료 안내가 나올 때까지 기다려 주세요.": "Open “Send insurance claim documents”, enter the injured person’s name, contact number and registered municipality at the time of the accident, and attach the claim form and supporting documents. Wait until the transmission confirmation appears.", "보험금 청구서류 보내기": "Send insurance claim documents", "어떤 파일을 몇 개까지 첨부할 수 있나요?": "Which files can I attach, and how many?", "사진, PDF, 한글, 워드, 엑셀 등 파일 종류에 제한 없이 선택할 수 있습니다. 최대 10개, 합계 20MB까지 첨부 가능합니다. 수신 메일의 보안 정책에 따라 일부 파일은 차단될 수 있습니다.": "You can select any file type, including photos, PDF, Hangul, Word and Excel. Attach up to 10 files, totaling no more than 20 MB. The receiving email service’s security policy may block some files.", "팩스나 이메일로도 접수할 수 있나요?": "Can I submit by fax or email?", "팩스 0507-774-0662 또는 이메일 simin@siminins.co.kr로 보험금청구서와 구비서류를 보내실 수 있습니다.": "Send your claim form and supporting documents by fax to 0507-774-0662 or by email to simin@siminins.co.kr.", "제 사고가 청구 대상인지 궁금해요.": "Is my accident eligible for a claim?", "먼저 사고일자 기준으로 조회한 해당 지자체의 가입 담보 및 보장내용과 사고내용을 비교해 주세요. 확인이 어려우면 카카오상담 또는": "Compare your accident with the municipality’s coverage for the accident date. If you need help, contact us via KakaoTalk or", "대표번호 1522-3556": "Main number: 1522-3556", "으로 문의해 주세요. 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": ". Payment eligibility depends on the coverage purchased, policy terms and coverage conditions.", "카카오상담": "KakaoTalk consultation", "지자체가 가입한 시민안전보험은 해당 지역 주민이 별도 가입 신청 없이 보장 대상이 됩니다. 보장내용과 조건은 지자체마다 다릅니다.": "Residents are automatically included in their municipality’s citizen safety insurance without applying separately. Coverage and conditions vary by municipality.", "사고 당시 주민등록상 주소지를 선택해 주세요.": "Select your registered municipality at the time of the accident.", "조회되지 않더라도 미가입을 뜻하지는 않습니다. 해당 지자체에 가입 여부와 접수처를 확인해 주세요.": "No result does not necessarily mean there is no insurance. Ask your municipality about coverage and the claims office.", "사고를 당하신 분 성명": "Name of the person involved in the accident", "사고 당시 주민등록상 주소지": "Registered municipality at the time of the accident", "서류가 담당자 접수 메일로 전송되었습니다. 메일 전송 완료는 보상심사 또는 보험금 지급 확정을 의미하지 않습니다. 추가 확인이 필요하면 카카오상담 또는 대표번호 1522-3556으로 문의해 주세요.": "Your documents have been sent to the claims team’s email inbox. Email transmission does not mean that claim review is complete or payment is approved. For further assistance, contact us via KakaoTalk or at 1522-3556."});
   Object.assign(exactJapanese,{"자주 묻는 질문": "よくあるご質問", "조회부터 서류 접수까지, 궁금한 내용을 눌러 확인해 주세요.": "加入内容の照会から書類提出まで、質問を押してご確認ください。", "시민안전보험은 어떻게 가입하나요?": "市民安全保険にはどうすれば加入できますか？", "가입을 위해 주민등록번호를 제출하거나 별도로 신청하실 필요가 없습니다.": "加入のために住民登録番号を提出したり、別途申し込んだりする必要はありません。", "시민안전보험은 지자체가 보험료를 부담하여 주민 전체를 대상으로 가입하는 복지 성격의 보험입니다. 해당 지자체가 시민안전보험에 가입했다면, 그 지역에 주민등록을 둔 주민은 별도 신청 없이 자동으로 가입 대상이 됩니다. 개인이 보험료를 내실 필요도 없습니다.": "市民安全保険は、自治体が住民全体を対象に保険料を負担して加入する福祉的な保険です。自治体が加入している場合、その地域に住民登録のある住民は別途申込みなしで自動的に加入対象となります。個人で保険料を支払う必要もありません。", "다만, 보험금을 청구할 때에는 본인 확인과 사고 당시 주소지 확인을 위한 서류가 필요합니다.": "ただし、保険金を請求する際には、本人確認と事故当時の住所を確認する書類が必要です。", "사고 발생 당시 주민등록상 주소지와 해당 지자체의 보험기간이 기준입니다.": "事故当時の住民登録上の住所と、自治体の保険期間を基準に確認します。", "보험기간 중 발생한 사고가 해당 지자체의 가입 담보와 보장조건에 해당하면 보험금을 청구하실 수 있습니다. 보험기간과 보장내용은 지자체별·연도별로 다르므로 사고일자를 기준으로 조회해 주세요.": "保険期間中の事故が自治体の加入補償と条件に該当すれば、保険金を請求できます。保険期間と補償内容は自治体・年度ごとに異なるため、事故日を基準に照会してください。", "우리 지자체 가입내용 조회": "自治体の加入内容を確認", "우리 지자체의 가입내용은 어디서 확인하나요?": "自治体の加入内容はどこで確認できますか？", "「시민안전보험 조회 · 청구 안내」에서 사고일자를 입력하고 시도·시군구를 선택해 조회해 주세요. 조회된 담보명을 누르면 보장내용을 확인할 수 있습니다.": "「市民安全保険の照会・請求案内」で事故日を入力し、広域自治体と市・郡・区を選択して検索してください。補償名を押すと詳細を確認できます。", "가입내용 조회": "加入内容を照会", "우리 지자체가 조회되지 않으면 어떻게 하나요?": "自治体が検索に出てこない場合は？", "본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다. 조회되지 않더라도 미가입을 뜻하지는 않습니다. 접수처가 다를 수 있으므로 해당 지자체로 문의해 주세요.": "本サービスは現在契約・運営中の自治体のみ照会できます。検索結果がなくても未加入とは限りません。受付先が異なる場合があるため、該当自治体にお問い合わせください。", "보험금청구서와 구비서류는 어디서 받나요?": "請求書と必要書類の案内はどこで入手できますか？", "조회 · 청구 안내 화면에서 가입 담보와 보장내용을 확인한 뒤, 「보험금청구서 다운로드」와 「구비서류 안내문 다운로드」를 이용해 주세요.": "照会・請求案内画面で加入補償と内容を確認し、「請求書をダウンロード」「必要書類案内をダウンロード」をご利用ください。", "청구서·구비서류 안내": "請求書・必要書類の案内", "홈페이지에서 서류를 보낼 수 있나요?": "ホームページから書類を送れますか？", "「보험금 청구서류 보내기」에서 사고를 당하신 분 성명, 연락처, 사고 당시 주민등록상 주소지를 입력하고 보험금청구서와 구비서류를 첨부해 보내실 수 있습니다. 전송 완료 안내가 나올 때까지 기다려 주세요.": "「保険金請求書類を送る」でけがをされた方の氏名、連絡先、事故当時の住民登録上の自治体を入力し、請求書と必要書類を添付してください。送信完了の案内が出るまでお待ちください。", "보험금 청구서류 보내기": "保険金請求書類を送る", "어떤 파일을 몇 개까지 첨부할 수 있나요?": "添付できるファイルの種類と上限は？", "사진, PDF, 한글, 워드, 엑셀 등 파일 종류에 제한 없이 선택할 수 있습니다. 최대 10개, 합계 20MB까지 첨부 가능합니다. 수신 메일의 보안 정책에 따라 일부 파일은 차단될 수 있습니다.": "写真、PDF、ハングル、Word、Excelなど、ファイル形式を問わず選択できます。最大10件、合計20MBまで添付できます。受信メールのセキュリティ方針により、一部のファイルは遮断される場合があります。", "팩스나 이메일로도 접수할 수 있나요?": "FAXやメールでも提出できますか？", "팩스 0507-774-0662 또는 이메일 simin@siminins.co.kr로 보험금청구서와 구비서류를 보내실 수 있습니다.": "FAX 0507-774-0662 またはメール simin@siminins.co.kr に請求書と必要書類をお送りいただけます。", "제 사고가 청구 대상인지 궁금해요.": "自分の事故が請求対象か知りたいです。", "먼저 사고일자 기준으로 조회한 해당 지자체의 가입 담보 및 보장내용과 사고내용을 비교해 주세요. 확인이 어려우면 카카오상담 또는": "事故日を基準に照会した自治体の補償内容と事故内容を比較してください。不明な場合はKakaoTalk相談、または", "대표번호 1522-3556": "代表番号 1522-3556", "으로 문의해 주세요. 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "へお問い合わせください。支払可否は加入補償、約款および補償条件によって異なります。", "카카오상담": "KakaoTalk相談", "지자체가 가입한 시민안전보험은 해당 지역 주민이 별도 가입 신청 없이 보장 대상이 됩니다. 보장내용과 조건은 지자체마다 다릅니다.": "自治体が加入した市民安全保険は、その地域の住民が別途申込みなしで対象となります。補償内容と条件は自治体によって異なります。", "사고 당시 주민등록상 주소지를 선택해 주세요.": "事故当時の住民登録上の自治体を選択してください。", "조회되지 않더라도 미가입을 뜻하지는 않습니다. 해당 지자체에 가입 여부와 접수처를 확인해 주세요.": "検索結果がなくても未加入とは限りません。加入状況と受付先を自治体にご確認ください。", "사고를 당하신 분 성명": "事故に遭われた方の氏名", "사고 당시 주민등록상 주소지": "事故当時の住民登録上の自治体", "서류가 담당자 접수 메일로 전송되었습니다. 메일 전송 완료는 보상심사 또는 보험금 지급 확정을 의미하지 않습니다. 추가 확인이 필요하면 카카오상담 또는 대표번호 1522-3556으로 문의해 주세요.": "書類を担当窓口のメールに送信しました。送信完了は審査完了や保険金支払の確定を意味しません。確認が必要な場合はKakaoTalk相談または代表番号1522-3556へお問い合わせください。"});
   Object.assign(exactChinese,{"자주 묻는 질문": "常见问题", "조회부터 서류 접수까지, 궁금한 내용을 눌러 확인해 주세요.": "从查询保障到提交材料，请点击问题查看说明。", "시민안전보험은 어떻게 가입하나요?": "如何参加市民安全保险？", "가입을 위해 주민등록번호를 제출하거나 별도로 신청하실 필요가 없습니다.": "参保无需提交居民登记号码，也无需另行申请。", "시민안전보험은 지자체가 보험료를 부담하여 주민 전체를 대상으로 가입하는 복지 성격의 보험입니다. 해당 지자체가 시민안전보험에 가입했다면, 그 지역에 주민등록을 둔 주민은 별도 신청 없이 자동으로 가입 대상이 됩니다. 개인이 보험료를 내실 필요도 없습니다.": "市民安全保险是地方政府为全体居民统一投保并承担保费的福利性质保险。如果所在地政府已投保，在该地区登记居住的居民无需另行申请即可自动成为参保对象，个人也无需缴纳保费。", "다만, 보험금을 청구할 때에는 본인 확인과 사고 당시 주소지 확인을 위한 서류가 필요합니다.": "但申请理赔时，需要提交用于核实本人身份及事故发生时登记地址的材料。", "사고 발생 당시 주민등록상 주소지와 해당 지자체의 보험기간이 기준입니다.": "以事故发生时的居民登记地址和该地方政府的保险期间为准。", "보험기간 중 발생한 사고가 해당 지자체의 가입 담보와 보장조건에 해당하면 보험금을 청구하실 수 있습니다. 보험기간과 보장내용은 지자체별·연도별로 다르므로 사고일자를 기준으로 조회해 주세요.": "保险期间内发生的事故符合当地投保项目及保障条件时，可以申请理赔。保险期间与保障内容因地区和年度而异，请按事故日期查询。", "우리 지자체 가입내용 조회": "查询所在地保障", "우리 지자체의 가입내용은 어디서 확인하나요?": "在哪里查询所在地的保障内容？", "「시민안전보험 조회 · 청구 안내」에서 사고일자를 입력하고 시도·시군구를 선택해 조회해 주세요. 조회된 담보명을 누르면 보장내용을 확인할 수 있습니다.": "打开“市民安全保险查询及理赔指南”，输入事故日期，选择市道及市郡区后查询。点击保障项目名称可查看详细内容。", "가입내용 조회": "查询保障", "우리 지자체가 조회되지 않으면 어떻게 하나요?": "查不到所在地怎么办？", "본 서비스는 현재 계약 및 운영 중인 지자체만 조회됩니다. 조회되지 않더라도 미가입을 뜻하지는 않습니다. 접수처가 다를 수 있으므로 해당 지자체로 문의해 주세요.": "本服务仅提供目前签约及运营中的地方政府查询。查不到并不意味着未参保。受理机构可能不同，请咨询当地政府。", "보험금청구서와 구비서류는 어디서 받나요?": "在哪里获取理赔申请表和所需材料清单？", "조회 · 청구 안내 화면에서 가입 담보와 보장내용을 확인한 뒤, 「보험금청구서 다운로드」와 「구비서류 안내문 다운로드」를 이용해 주세요.": "在查询及理赔指南中确认投保项目和保障内容，然后点击“下载理赔申请表”和“下载所需材料指南”。", "청구서·구비서류 안내": "申请表及材料指南", "홈페이지에서 서류를 보낼 수 있나요?": "可以通过网站发送材料吗？", "「보험금 청구서류 보내기」에서 사고를 당하신 분 성명, 연락처, 사고 당시 주민등록상 주소지를 입력하고 보험금청구서와 구비서류를 첨부해 보내실 수 있습니다. 전송 완료 안내가 나올 때까지 기다려 주세요.": "在“发送保险理赔材料”中输入受伤者姓名、联系电话和事故发生时登记居住的地区，并附上申请表及所需材料。请等待发送完成提示。", "보험금 청구서류 보내기": "发送保险理赔材料", "어떤 파일을 몇 개까지 첨부할 수 있나요?": "可以上传哪些文件，数量上限是多少？", "사진, PDF, 한글, 워드, 엑셀 등 파일 종류에 제한 없이 선택할 수 있습니다. 최대 10개, 합계 20MB까지 첨부 가능합니다. 수신 메일의 보안 정책에 따라 일부 파일은 차단될 수 있습니다.": "照片、PDF、韩文文档、Word、Excel等文件均可选择，不限制格式。最多10个文件，总计不超过20MB。收件邮箱的安全策略可能拦截部分文件。", "팩스나 이메일로도 접수할 수 있나요?": "可以通过传真或电子邮件提交吗？", "팩스 0507-774-0662 또는 이메일 simin@siminins.co.kr로 보험금청구서와 구비서류를 보내실 수 있습니다.": "可将理赔申请表及所需材料传真至0507-774-0662，或发送至simin@siminins.co.kr。", "제 사고가 청구 대상인지 궁금해요.": "我的事故是否属于理赔范围？", "먼저 사고일자 기준으로 조회한 해당 지자체의 가입 담보 및 보장내용과 사고내용을 비교해 주세요. 확인이 어려우면 카카오상담 또는": "请先将事故情况与按事故日期查询到的当地保障内容进行比较。如有疑问，请通过KakaoTalk咨询或拨打", "대표번호 1522-3556": "总机 1522-3556", "으로 문의해 주세요. 실제 보험금 지급 여부는 가입 담보, 약관 및 보장조건에 따라 달라질 수 있습니다.": "进行咨询。实际是否赔付取决于投保项目、保险条款及保障条件。", "카카오상담": "KakaoTalk咨询", "지자체가 가입한 시민안전보험은 해당 지역 주민이 별도 가입 신청 없이 보장 대상이 됩니다. 보장내용과 조건은 지자체마다 다릅니다.": "地方政府投保的市民安全保险无需居民另行申请。保障内容及条件因地区而异。", "사고 당시 주민등록상 주소지를 선택해 주세요.": "请选择事故发生时居民登记所在的地区。", "조회되지 않더라도 미가입을 뜻하지는 않습니다. 해당 지자체에 가입 여부와 접수처를 확인해 주세요.": "查不到并不意味着未参保。请向当地政府确认参保情况和受理机构。", "사고를 당하신 분 성명": "事故当事人姓名", "사고 당시 주민등록상 주소지": "事故发生时居民登记所在地区", "서류가 담당자 접수 메일로 전송되었습니다. 메일 전송 완료는 보상심사 또는 보험금 지급 확정을 의미하지 않습니다. 추가 확인이 필요하면 카카오상담 또는 대표번호 1522-3556으로 문의해 주세요.": "材料已发送至受理人员邮箱。发送完成不代表审核完成或已获赔付批准。如需进一步确认，请通过KakaoTalk或总机1522-3556咨询。"});
@@ -2171,8 +1760,6 @@ Object.assign(exactChinese,{"팩스 0507-774-0662": "传真：0507-774-0662", "�
     if(root.nodeType === Node.TEXT_NODE){ translateNode(root); return; }
     const walker = document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
     let n; while((n=walker.nextNode())) translateNode(n);
-    const q = document.getElementById("aiQuestion");
-    if(q) q.placeholder = currentLanguage === "en" ? "Example: I fell and was injured when the bus stopped suddenly." : (currentLanguage === "zh" ? "例如：乘坐公交车时因急刹车摔倒受伤。" : (currentLanguage === "ja" ? "例：バス乗車中、急停車で転倒してけがをしました。" : "예: 버스를 타고 가다가 급정거로 넘어져 다쳤습니다."));
     document.title = currentLanguage === "ko" ? "(주)유니온인스플러스" : "Union Ins Plus";
   }
 
@@ -2403,8 +1990,6 @@ files.addEventListener('change',()=>{list.replaceChildren();error.textContent=''
 
 <style id="coverage-label-size">
 #cgOverlay #cgList .cg-name{font-size:14px;line-height:1.55}
-#cgOverlay #aiQuestionWrap .ai-label:first-child{font-size:18px!important}
-#cgOverlay #aiQuestionWrap .ai-label:not(:first-child){font-size:14px!important}
 </style>
 
 <style id="upload-submit-fit">
