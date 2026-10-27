@@ -1902,7 +1902,7 @@ Object.assign(exactChinese,{"팩스 0507-774-0662": "传真：0507-774-0662", "�
 <p class="cu-info">첨부하신 서류는 담당자 접수 메일로 전달됩니다. 전송 완료 안내가 나올 때까지 기다려 주세요.</p><p class="cu-hint">담당자가 접수 등록하면 신청서에 기재하신 휴대폰으로 접수 완료 문자가 발송됩니다. 미비서류는 문자로 안내해 드립니다. 별도 확인 전화는 필요 없으며, 서류 발송 후 1~2일이 지나도 문자가 없을 때만 문의해 주세요.</p>
 <form id="claimUploadForm"><div class="cu-person-fields">
 <label for="cuName">사고를 당하신 분 성명</label><input id="cuName" name="insured_name" autocomplete="off" maxlength="50" placeholder="다치신 분의 성명" required>
-<label for="cuPhone">연락처</label><input id="cuPhone" name="phone" type="tel" autocomplete="off" maxlength="20" placeholder="010-0000-0000" required>
+<label for="cuPhone">연락처</label><input id="cuPhone" name="phone" type="tel" inputmode="tel" autocomplete="off" maxlength="20" placeholder="010-0000-0000" required>
 <label for="cuCity">사고 당시 주민등록상 주소지</label><input id="cuCity" name="municipality" autocomplete="off" maxlength="80" placeholder="예: 경기도 남양주시" required>
 </div><div class="cu-document-fields"><label for="cuFiles">청구서·구비서류 첨부</label><input id="cuFiles" name="documents[]" type="file" required multiple>
 <p class="cu-hint">파일 종류에 제한 없이 여러 개 선택할 수 있습니다. 최대 10개, 합계 20MB까지 첨부 가능합니다. 수신 메일의 보안 정책에 따라 일부 파일은 차단될 수 있습니다.</p>
@@ -1910,6 +1910,42 @@ Object.assign(exactChinese,{"팩스 0507-774-0662": "传真：0507-774-0662", "�
 <label for="cuMemo">전달사항 (선택)</label><textarea id="cuMemo" name="memo" rows="3" maxlength="1000" placeholder="추가로 전달할 내용을 적어주세요."></textarea>
 </div><input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none"><button class="cu-submit" type="submit" style="background:#174d83;cursor:pointer">서류 보내기</button>
 </form></dialog>
+<script id="claim-phone-auto-format">
+(function(){
+ const phone=document.getElementById('cuPhone');
+ if(!phone)return;
+ function digits(value){return String(value||'').normalize('NFKC').replace(/\D/g,'');}
+ function format(value){
+  const d=digits(value);
+  // 국내 번호만 표시 정리하며, 긴 번호는 잘라내지 않음.
+  if(!d.startsWith('0')||d.length>11)return d;
+  const head=d.startsWith('02')?2:3;
+  if(d.length<=head)return d;
+  if(d.length<=head+3)return d.slice(0,head)+'-'+d.slice(head);
+  const mid=d.length>head+7?4:3;
+  return d.slice(0,head)+'-'+d.slice(head,head+mid)+'-'+d.slice(head+mid);
+ }
+ function update(){
+  const before=phone.value,start=phone.selectionStart,end=phone.selectionEnd;
+  const a=start===null?null:digits(before.slice(0,start)).length,b=end===null?null:digits(before.slice(0,end)).length;
+  const next=format(before);if(next===before)return;
+  phone.value=next;
+  function position(count){if(count===0)return 0;let seen=0;for(let i=0;i<next.length;i++){if(/\d/.test(next[i])&&++seen===count)return i+1;}return next.length;}
+  if(a!==null&&document.activeElement===phone)phone.setSelectionRange(position(a),position(b));
+ }
+ phone.addEventListener('beforeinput',function(event){
+  const p=phone.selectionStart;if(p===null||p!==phone.selectionEnd)return;
+  if(event.inputType==='deleteContentBackward'&&p>1&&phone.value[p-1]==='-'){
+   event.preventDefault();phone.setRangeText('',p-2,p,'end');update();
+  }else if(event.inputType==='deleteContentForward'&&phone.value[p]==='-'){
+   event.preventDefault();phone.setRangeText('',p,p+2,'end');update();
+  }
+ });
+ phone.addEventListener('input',update);phone.addEventListener('blur',update);
+ const form=document.getElementById('claimUploadForm');if(form)form.addEventListener('submit',update,true);
+ update();
+})();
+</script>
 <script>
 (function(){
 const dialog=document.getElementById('claimUploadDialog'),files=document.getElementById('cuFiles'),list=document.getElementById('cuFileList'),error=document.getElementById('cuFileError');
