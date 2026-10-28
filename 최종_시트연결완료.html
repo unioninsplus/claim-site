@@ -216,6 +216,14 @@ th { background:#f4f8ff; color:#12419e; }
 #coverageDialog .citizen-cgl-inline{font-weight:800;color:#284a30;}
 #coverageDialog .citizen-policy-points{margin:-5px 0 18px;color:#4c5650;font-size:14px;line-height:1.8;}
 #coverageDialog .citizen-policy-points p{margin:0 0 9px;word-break:keep-all;overflow-wrap:anywhere;}
+#coverageDialog .citizen-crime-claims{margin:0 0 22px;}
+#coverageDialog .citizen-crime-insurer{padding:15px 17px;margin-top:12px;border:1px solid #ded4c6;border-radius:9px;background:#faf7f1;}
+#coverageDialog .citizen-crime-insurer h5{margin:0 0 12px;font-size:15px;line-height:1.5;color:#493c31;}
+#coverageDialog .citizen-crime-insurer ul{margin:0;padding-left:20px;font-size:14px;line-height:1.8;}
+#coverageDialog .citizen-crime-insurer li{padding-left:3px;margin:0 0 12px;word-break:keep-all;overflow-wrap:anywhere;}
+#coverageDialog .citizen-crime-insurer li:last-child{margin-bottom:0;}
+#coverageDialog .citizen-crime-insurer li strong{display:block;font-weight:750;color:#344c43;}
+#coverageDialog .citizen-crime-insurer li span{display:block;}
 #coverageDialog .citizen-age-target{display:flex;flex-wrap:wrap;gap:7px 16px;padding:12px 16px;margin:0 0 18px;background:#edf3eb;border-radius:8px;font-size:14px;line-height:1.7;color:#284a30;}
 #coverageDialog .citizen-age-target strong{font-weight:750;}
 #coverageDialog .citizen-age-target span{font-weight:650;}
@@ -237,6 +245,39 @@ th { background:#f4f8ff; color:#12419e; }
 
 #coverageLookupCards .coverage-lookup-name{white-space:normal;overflow-wrap:anywhere;word-break:keep-all;}
 #coverageDialog .citizen-policy-number{margin-top:20px;padding-top:16px;border-top:1px solid #dce2dc;font-size:13px;line-height:1.7;overflow-wrap:anywhere;}
+
+/* INTERNAL_THEME_BEGIN */
+/* 내부 업무 화면과 동일한 블루·블루그레이 색상만 적용 */
+#coverageDialog{background:#f3f6fa;border-color:#b7c6da;color:#1f2937;box-shadow:0 20px 70px rgba(21,42,84,.25);}
+#coverageDialog::backdrop{background:rgba(15,36,74,.50);}
+#coverageDialog .coverage-dialog-header{background:#e9eff6;border-bottom-color:#c9d6e6;}
+#coverageDialog .coverage-dialog-header h3{color:#163b7a;}
+#coverageDialog .coverage-dialog-close{background:#fff;border-color:#b7c6da;color:#174799;}
+#coverageDialog .coverage-dialog-close:hover{background:#edf4ff;}
+#coverageDialog .coverage-dialog-close:focus-visible{outline-color:#2d6cdf;}
+#coverageDialog .coverage-expanded{background:#f3f6fa;color:#1f2937;}
+#coverageDialog .coverage-expanded h4{color:#163b7a;}
+#coverageDialog .citizen-policy-points,#coverageDialog .citizen-cgl-content{color:#475467;}
+#coverageDialog .citizen-conditions{background:#edf4ff;border-left-color:#8da9ce;}
+#coverageDialog .citizen-age-target{background:#e7effa;color:#174799;}
+#coverageDialog .citizen-table-wrap{border-color:#c9d6e6;}
+#coverageDialog .citizen-money-table th,#coverageDialog .citizen-money-table td{border-bottom-color:#e1e8f1;}
+#coverageDialog .citizen-money-table thead th{background:#e4edf8;color:#163b7a;}
+#coverageDialog .citizen-money-table .citizen-money{color:#174799;}
+#coverageDialog .citizen-money-table .citizen-age th{background:#edf3fc;color:#174799;}
+#coverageDialog .citizen-money-table .citizen-contract-note td{background:#f7faff;}
+#coverageDialog .citizen-total{background:#e3edfa;}
+#coverageDialog .citizen-total span,#coverageDialog .citizen-total strong{color:#163b7a;}
+#coverageDialog .citizen-extra-info{background:#e9eff6;}
+#coverageDialog .citizen-small-note{color:#667085;}
+#coverageDialog .citizen-cgl-key{background:#e8f1fd;border-left-color:#2d6cdf;}
+#coverageDialog .citizen-cgl-label,#coverageDialog .citizen-cgl-value,#coverageDialog .citizen-cgl-inline{color:#174799;}
+#coverageDialog .citizen-cgl-total{background:#e9eff6;border-left-color:#94a5bf;}
+#coverageDialog .citizen-cgl-total .citizen-cgl-label,#coverageDialog .citizen-cgl-total .citizen-cgl-value{color:#53647e;}
+#coverageDialog .citizen-policy-number{border-top-color:#c9d6e6;}
+#coverageDialog .citizen-crime-insurer{background:#edf4ff;border-color:#c9d6e6;}
+#coverageDialog .citizen-crime-insurer h5,#coverageDialog .citizen-crime-insurer li strong{color:#163b7a;}
+/* INTERNAL_THEME_END */
 
 </style>
 </head>
@@ -718,7 +759,7 @@ function citizenReadableGuideText(name) {
  if(has('유괴','납치')||n==='청소년')return '유괴·납치·불법감금 등으로 피해를 입은 경우 보장하는 담보입니다. 대상 연령과 신고·발생시간 등의 지급조건을 확인해 주세요.';
  if(has('의사상자'))return '다른 사람을 구하려다 다치거나 사망하여 의사상자로 인정된 경우, 해당 인정기준과 가입내용에 따라 보장하는 담보입니다.';
  if(has('학교폭력'))return '학교폭력으로 피해를 입은 어린이가 아래 연령·진단 등 가입조건에 해당하는 경우 보험금을 지급하는 담보입니다.';
- if(has('강력범죄'))return '가입조건에서 정한 강력범죄로 피해를 입어 사망하거나 다치는 등 지급요건에 해당하는 경우 보장하는 담보입니다. 모든 범죄 피해가 같은 기준으로 보장되는 것은 아닙니다.';
+ if(has('강력범죄'))return '가입한 강력범죄 담보의 대상 범죄로 피해를 입었을 때 보장합니다. 범죄 종류에 따라 기소 여부를 확인하거나, 상해 진단과 치료기간까지 함께 확인합니다.';
  if(has('성폭력'))return '성폭력범죄로 피해를 입어 해당 담보의 지급요건에 해당하는 경우 보험금을 지급하는 담보입니다.';
  if(has('급성감염병'))return '가입조건에서 정한 감염병을 직접적인 원인으로 사망한 경우 보장하는 담보입니다. 대상 감염병·연령과 진단일·사망일의 보험기간 조건을 확인해 주세요.';
  if(has('화상')&&has('수술'))return '사고로 화상을 입고, 보장하는 화상의 정도와 수술기준에 해당하는 수술을 받은 경우 보험금을 지급하는 담보입니다.';
@@ -756,8 +797,9 @@ function citizenCoverageDisplay(item){
   return {title,conditions:name.slice(title.length).split(/\r?\n/).filter(s=>!/(양식.*별도|보험업법|경북\s*경산|부산남구)/.test(s)).join('\n').trim()};
  }
  if(/^강력범죄피해보상금/.test(name)){
-  const type=(name.match(/\((I{1,3})\)/)||[])[1];
-  return {title:'강력범죄피해보상금'+(type?'('+type+')':''),conditions:''};
+  const type=citizenCrimeType(name);
+  const age=(name.match(/\d+\s*세\s*(?:미만|이상|이하|초과)/)||[])[0];
+  return {title:'강력범죄피해보상금'+(type?'('+type+')':''),conditions:age?'가입대상: '+age:''};
  }
  const conditions=[];
  let clean=name.replace(/[（(]([^()（）]*)[）)]/g,(whole,inner)=>{
@@ -774,6 +816,58 @@ function citizenCoverageDisplay(item){
  return {title:title||name.split(/\r?\n/)[0],conditions:conditions.join('\n')};
 }
 function citizenCoverageTitle(item){return citizenCoverageDisplay(item).title;}
+
+function citizenCrimeType(name){
+ const m=String(name||'').match(/^강력범죄피해보상금\s*[（(]\s*(I{1,3}|Ⅰ|Ⅱ|Ⅲ)\s*[）)]/i);
+ return m?({'Ⅰ':'I','Ⅱ':'II','Ⅲ':'III'}[m[1]]||m[1].toUpperCase()):'';
+}
+
+// 보험사와 가입된 특약을 함께 대조한다. 같은 로마숫자라도 타사 약관을 적용하지 않는다.
+// DB 프로미고객사랑보험 2021 PDF 33~34쪽 / 2024.04 PDF 56~58쪽, 각 특약 제1~3조.
+// 메리츠 제공 단체안심생활보험 PDF 138~143쪽, 강력범죄Ⅰ·Ⅱ·Ⅲ 제1~3조.
+// 농협은 제공된 구비서류 안내문만 사용하며, 확인되지 않은 범죄별 면제조건을 만들지 않는다.
+function citizenCrimeClaims(item,rows){
+ if(!/^강력범죄피해보상금/.test(String(item.name||'')))return [];
+ const type=citizenCrimeType(item.name),insurers=[...new Set(rows.map(r=>r.insurer).filter(Boolean))],profiles=[];
+ const crimes='살인, 상해·폭행, 강간, 강도, 폭력행위처벌법상 폭력범죄';
+ for(const insurer of insurers){
+  if(insurer==='DB손해보험'&&['II','III'].includes(type)){
+   profiles.push({insurer,source:'DB손해보험 프로미고객사랑보험 · 강력범죄 특별약관'+(type==='II'?'Ⅱ':'Ⅲ')+' 제1~3조',entries:[
+    ['대상 범죄',crimes+'입니다. 성범죄 항목은 강간죄로 한정됩니다.'],
+    ['살인·상해·폭행·폭력범죄',type==='II'?'기소 요건과 함께, 사망 또는 1개월을 초과하는 의사의 치료가 필요한 신체상해에 해당해야 합니다.':'기소 요건과 함께, 1개월을 초과하는 의사의 치료가 필요한 신체상해에 해당해야 합니다.'],
+    ['강간·강도','위의 1개월 초과 치료조건은 적용되지 않습니다. 해당 범죄의 기소 요건으로 피해 발생을 확인합니다.'],
+    ['기소 요건','검사의 기소(약식기소 포함) 또는 소년보호송치가 대상입니다. 기소유예는 제외됩니다.'],
+    ['사망 보장',type==='II'?'가입대상에 해당하는 사망을 보장하며, 15세 미만자의 사망은 제외됩니다.':'사망은 보장하지 않습니다.'],
+    ['청구 확인자료','사건신고확인원, 공소장·약식명령문 등 기소 확인서류와 공통 청구서류를 준비합니다. 상해·치료기간은 의사진단서로 확인합니다.'],
+    ['적용 범위','보험기간 중 대한민국 안에서 발생한 범죄가 대상이며, 보상 제외사유 등은 가입 약관을 따릅니다.']
+   ]});
+  }
+  if(insurer==='메리츠화재'&&['I','II','III'].includes(type)){
+   const entries=[['대상 범죄',crimes+'입니다. 성범죄 항목은 강간죄로 한정됩니다.']];
+   if(type==='I')entries.push(['신체피해 조건','해당 범죄를 직접 원인으로 사망하거나 신체에 피해가 발생한 경우입니다. 별도의 최소 치료기간 조건은 없습니다.']);
+   if(type==='II'){
+    entries.push(['살인·상해·폭행·폭력범죄','신체상해는 아래 메리츠 가입조건에 정해진 기간을 초과하는 의사의 치료가 필요합니다. 가입된 기간별 금액을 확인해 주세요.']);
+    entries.push(['강간·강도','위의 최소 치료기간 조건은 적용되지 않습니다. 해당 범죄로 인한 피해와 아래 기소·수사 요건을 확인합니다.']);
+   }
+   if(type==='III')entries.push(['상해·치료기간','강간·강도를 포함한 대상 범죄로, 1개월을 초과하는 의사의 치료가 필요한 신체상해를 입은 경우입니다.']);
+   entries.push(['기소·수사 요건','검사가 기소한 경우(약식기소 포함), 또는 경찰 수사로 범죄 발생이 명백하나 범인을 검거하지 못한 경우입니다.']);
+   if(type!=='III')entries.push(['사망 보장','가입대상에 해당하는 사망을 보장하며, 15세 미만자의 사망은 제외됩니다.']);
+   entries.push(['청구 확인자료','사건·사고사실확인원, 공소장·판결문 등 범죄 발생 확인자료, 의사진단서와 공통 청구서류를 확인합니다. 보상 제외사유 등은 가입 약관을 따릅니다.']);
+   profiles.push({insurer,source:'제공된 메리츠화재 단체안심생활보험 · 강력범죄 특별약관'+({I:'Ⅰ',II:'Ⅱ',III:'Ⅲ'}[type])+' 제1~3조',entries});
+  }
+  if(insurer==='NH농협손해보험'&&!type)profiles.push({insurer,source:'제공된 강력범죄피해보상금(농협) 구비서류 안내문',entries:[
+   ['범죄·기소 확인자료','사건신고확인원과 공소장 또는 약식명령문 등 기소 여부를 확인할 수 있는 서류를 준비합니다.'],
+   ['신체상해 청구자료','안내문에 기재된 진단서 기준은 5주 이상 진단입니다.'],
+   ['공통 청구서류','보험금청구서, 개인정보처리 동의서, 주민등록등본 또는 초본, 통장사본 등 안내문상 서류를 준비합니다.']
+  ]});
+ }
+ return profiles;
+}
+function citizenCrimeClaimsHtml(profiles){
+ if(!profiles.length)return '';
+ const e=citizenEscape;
+ return '<section class="citizen-crime-claims"><h4>보험금 청구 조건·확인자료</h4>'+profiles.map(p=>'<div class="citizen-crime-insurer"><h5>'+e(p.insurer)+'</h5><ul>'+p.entries.map(([label,text])=>'<li><strong>'+e(label)+'</strong><span>'+e(text)+'</span></li>').join('')+'</ul><p class="citizen-small-note">근거: '+e(p.source)+'</p></div>').join('')+'</section>';
+}
 
 // 연령 부호 두 개가 함께 있으면 대상의 상·하한 제한으로 오인하지 않는다.
 function citizenDiagnosisAge(item){
@@ -844,14 +938,23 @@ function citizenCoverageModel(item){
   if(m&&insurer){let value=m[1].trim();if(/^[\d,.]+$/.test(value)&&/만원/.test(amount))value+='만원';rows.push({kind:'money',insurer,group,condition:m[2]?m[2].trim():'가입금액',amount:value,raw:body});continue;}
   rows.push({kind:'note',insurer,group,text:body});
  }
+ // 강력범죄 자료의 '150만_1개월초과'도 금액/조건을 분리하고 연령별 합계를 특정 보험사 금액으로 표시하지 않는다.
+ if(/^강력범죄피해보상금/.test(name))rows=rows.map(r=>{
+  if(r.kind==='money'&&/^[\d,.]+$/.test(r.amount)&&/만/.test(amount))return Object.assign({},r,{amount:r.amount+'만원'});
+  if(r.kind!=='note')return r;
+  const part=r.text.match(/^([\d,]+)만(?:원)?\s*_\s*(.+)$/);
+  if(part)return {kind:'money',insurer:r.insurer,group:r.group,condition:part[2],amount:part[1]+'만원',raw:r.text};
+  if(/^[\d,]+만(?:원)?\s*한도$/.test(r.text))return Object.assign({},r,{insurer:'',text:(r.group?'해당 연령 ':'')+'합계 '+r.text});
+  return r;
+ });
  const ageDisplay=citizenMergeEquivalentAgeGroups(name+' '+amount,rows);rows=ageDisplay.rows;
  const display=citizenCoverageDisplay(item),tail=display.conditions;
  const money=rows.filter(r=>r.kind==='money');
  let totalLabel='보장금액·한도';
  if(money.length>1&&money.length===rows.length&&money.every(r=>r.condition==='가입금액'&&/^\d[\d,]*만원$/.test(r.amount))&&numericAmount){const sum=money.reduce((v,r)=>v+Number(r.amount.replace(/[^\d]/g,'')),0);if(sum===Number(numericAmount.replace(/,/g,'')))totalLabel='합계 가입금액';}
- const monetary=/[\d,]+\s*(?:억\s*)?(?:만)?원/.test(amount)||/^[\d,]+(?:\s*(?:한도|\([^)]*\)))*$/.test(amount);
+ const monetary=/[\d,]+\s*(?:억\s*)?(?:만)?원/.test(amount)||/^[\d,]+(?:\s*(?:한도|\([^)]*\)))*$/.test(amount)||(/^강력범죄피해보상금/.test(name)&&/^[\d,]+만한도$/.test(amount));
  if(!monetary)totalLabel='추가 가입안내';
- return {name,title:display.title,description:citizenReadableGuideText(name),tail,rows,amount,totalLabel,monetary,ageGroupsMerged:ageDisplay.merged,diagnosis:/진단금|진단위로/.test(name),age:citizenDiagnosisAge(item),policyPoints:citizenPolicyPoints(item),raw};
+ return {name,title:display.title,description:citizenReadableGuideText(name),tail,rows,amount,totalLabel,monetary,ageGroupsMerged:ageDisplay.merged,diagnosis:/진단금|진단위로/.test(name),age:citizenDiagnosisAge(item),policyPoints:citizenPolicyPoints(item),crimeClaims:citizenCrimeClaims(item,rows),raw};
 }
 function citizenCoverageHtml(item){
  const m=citizenCoverageModel(item),e=citizenEscape;
@@ -860,6 +963,7 @@ function citizenCoverageHtml(item){
  if(m.policyPoints.length)html+='<div class="citizen-policy-points">'+m.policyPoints.map(t=>'<p>'+e(t)+'</p>').join('')+'</div>';
  if(m.age)html+='<div class="citizen-age-target"><strong>보장대상</strong><span>'+e(m.age)+'</span></div>';
  if(m.tail)html+='<section class="citizen-conditions"><h4>함께 확인할 가입조건</h4><div>'+e(m.tail)+'</div></section>';
+ html+=citizenCrimeClaimsHtml(m.crimeClaims);
  if(m.rows.length){
   const hasMoney=m.rows.some(r=>r.kind==='money');
   html+='<section class="citizen-contract"><h4>'+(hasMoney?'가입조건과 보험사별 금액':'가입조건·보장범위')+'</h4>';
