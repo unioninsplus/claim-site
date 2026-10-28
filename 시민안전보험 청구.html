@@ -132,7 +132,64 @@ select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 #coverageCards .coverage-expanded h4{margin:12px 0 5px;font-size:14px;color:#493c31}#coverageCards .coverage-expanded h4:first-child{margin-top:0}
 #coverageCards .coverage-text{white-space:pre-line}#coverageCards .coverage-empty{grid-column:1/-1;padding:16px;color:#64594f}
 @media(max-width:600px){#coverageCards{grid-template-columns:1fr}}
-</style></head>
+</style><style id="citizen-readable-coverage">
+:is(#coverageCards, #coverageDialog) .coverage-expanded{padding:20px 22px 22px;background:#fffdf9;color:#26312d;}
+:is(#coverageCards, #coverageDialog) .coverage-expanded h4{font-size:15px;line-height:1.5;margin:0 0 9px;font-weight:750;color:#344c43;}
+:is(#coverageCards, #coverageDialog) .citizen-explanation p{font-size:15px;line-height:1.85;margin:0;word-break:keep-all;overflow-wrap:anywhere;}
+:is(#coverageCards, #coverageDialog) .citizen-explanation{padding:0 0 18px;}
+:is(#coverageCards, #coverageDialog) .citizen-conditions{padding:14px 16px;margin:0 0 20px;border-left:3px solid #af8861;background:#f4efe6;border-radius:0 8px 8px 0;}
+:is(#coverageCards, #coverageDialog) .citizen-conditions div,:is(#coverageCards, #coverageDialog) .citizen-original-conditions{white-space:pre-line;font-size:14px;line-height:1.8;overflow-wrap:anywhere;}
+:is(#coverageCards, #coverageDialog) .citizen-table-wrap{overflow-x:auto;border:1px solid #dce2dc;border-radius:9px;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table{display:table!important;width:100%;border-collapse:collapse;margin:0;background:white;font-size:14px;table-layout:fixed;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table th,:is(#coverageCards, #coverageDialog) .citizen-money-table td{padding:12px 11px;border:0;border-bottom:1px solid #e6e9e3;text-align:left;vertical-align:top;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table thead th{background:#edf2ed;color:#314b3c;font-weight:700;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table th:nth-child(1){width:27%;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table th:nth-child(2){width:46%;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table th:nth-child(3){width:27%;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table .citizen-money{font-weight:750;color:#25533e;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table .citizen-age th{background:#f5f1e9;color:#725438;width:auto;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table .citizen-contract-note td{font-size:13px;background:#fafbf8;}
+:is(#coverageCards, #coverageDialog) .citizen-money-table tr:last-child>*{border-bottom:0;}
+:is(#coverageCards, #coverageDialog) .citizen-total{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;margin-top:18px;background:#eaf1e9;border-radius:9px;}
+:is(#coverageCards, #coverageDialog) .citizen-total span{font-size:14px;font-weight:650;color:#415b47;}
+:is(#coverageCards, #coverageDialog) .citizen-total strong{font-size:19px;line-height:1.5;color:#254732;white-space:pre-line;text-align:right;}
+:is(#coverageCards, #coverageDialog) .citizen-small-note{font-size:12px;line-height:1.65;color:#6b736b;margin:11px 0 0;}
+@media(max-width:600px){:is(#coverageCards, #coverageDialog) .coverage-expanded{padding:17px 13px;}:is(#coverageCards, #coverageDialog) .citizen-money-table th,:is(#coverageCards, #coverageDialog) .citizen-money-table td{padding:10px 7px;font-size:13px;}:is(#coverageCards, #coverageDialog) .citizen-total strong{font-size:17px;}}
+
+:is(#coverageCards, #coverageDialog) .citizen-extra-info{display:block;background:#f4f1eb;}:is(#coverageCards, #coverageDialog) .citizen-extra-info strong{display:block;text-align:left;font-size:14px;line-height:1.8;font-weight:500;margin-top:8px;overflow-wrap:anywhere;}
+
+:is(#coverageCards, #coverageDialog) .citizen-cgl-content{font-size:14px;line-height:1.8;color:#4c534f;}
+:is(#coverageCards, #coverageDialog) .citizen-cgl-key{white-space:normal;padding:12px 15px;margin:10px 0;background:#edf3eb;border-left:4px solid #416646;border-radius:0 7px 7px 0;}
+:is(#coverageCards, #coverageDialog) .citizen-cgl-label{display:block;font-size:15px;font-weight:800;line-height:1.6;color:#284a30;}
+:is(#coverageCards, #coverageDialog) .citizen-cgl-label span{font-size:17px;margin-right:5px;}
+:is(#coverageCards, #coverageDialog) .citizen-cgl-value{white-space:pre-line;font-size:16px;font-weight:750;line-height:1.8;color:#253b2b;margin-top:3px;}
+:is(#coverageCards, #coverageDialog) .citizen-cgl-total{background:#f4f1eb;border-left-color:#9a8567;}
+:is(#coverageCards, #coverageDialog) .citizen-cgl-total .citizen-cgl-label,:is(#coverageCards, #coverageDialog) .citizen-cgl-total .citizen-cgl-value{color:#65553d;font-size:14px;}
+
+:is(#coverageCards, #coverageDialog) .citizen-cgl-inline{font-weight:800;color:#284a30;}
+:is(#coverageCards, #coverageDialog) .citizen-policy-points{margin:-5px 0 18px;color:#4c5650;font-size:14px;line-height:1.8;}
+:is(#coverageCards, #coverageDialog) .citizen-policy-points p{margin:0 0 9px;word-break:keep-all;overflow-wrap:anywhere;}
+:is(#coverageCards, #coverageDialog) .citizen-age-target{display:flex;flex-wrap:wrap;gap:7px 16px;padding:12px 16px;margin:0 0 18px;background:#edf3eb;border-radius:8px;font-size:14px;line-height:1.7;color:#284a30;}
+:is(#coverageCards, #coverageDialog) .citizen-age-target strong{font-weight:750;}
+:is(#coverageCards, #coverageDialog) .citizen-age-target span{font-weight:650;}
+:is(#coverageCards, #coverageDialog) .coverage-choice{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;min-width:0;border:1px solid #dacdbb;border-radius:12px;background:#fff;padding:15px 17px;color:#493c31;font:inherit;font-size:14px;font-weight:600;line-height:1.55;text-align:left;cursor:pointer;overflow-wrap:anywhere;}
+:is(#coverageCards, #coverageDialog) .coverage-choice:hover{background:#eee4d5;}
+:is(#coverageCards, #coverageDialog) .coverage-choice:focus-visible{outline:3px solid #9a7951;outline-offset:3px;}
+:is(#coverageCards, #coverageDialog) .coverage-choice-arrow{font-size:22px;flex-shrink:0;color:#7e6952;}
+#coverageDialog{position:fixed;inset:0;width:min(880px,calc(100vw - 32px));max-width:880px;max-height:calc(100dvh - 48px);margin:auto;padding:0;border:1px solid #cbbba4;border-radius:16px;background:#fffdf9;box-shadow:0 20px 70px #151c3040;overflow:hidden;color:#26312d;}
+#coverageDialog[open]{display:flex;flex-direction:column;}
+#coverageDialog::backdrop{background:rgba(16,24,39,.58);}
+#coverageDialog .coverage-dialog-header{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-shrink:0;padding:18px 22px;border-bottom:1px solid #ded4c6;background:#f4efe6;}
+#coverageDialog .coverage-dialog-header h3{font-size:18px;font-weight:750;line-height:1.6;overflow-wrap:anywhere;margin:0;color:#493c31;}
+#coverageDialog .coverage-dialog-close{width:auto;flex-shrink:0;padding:8px 12px;border:1px solid #cbbba4;border-radius:8px;color:#493c31;background:#fff;font-size:14px;cursor:pointer;}
+#coverageDialog .coverage-dialog-close:focus-visible{outline:3px solid #9a7951;outline-offset:2px;}
+#coverageDialog .coverage-dialog-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain;}
+#coverageDialog .coverage-text{white-space:pre-line;}
+#coverageDialog .citizen-money-table{min-width:0!important;}
+@media(max-width:600px){#coverageDialog{width:calc(100vw - 20px);max-height:calc(100dvh - 24px);border-radius:12px;}#coverageDialog .coverage-dialog-header{padding:13px;gap:10px;}#coverageDialog .coverage-dialog-header h3{font-size:16px;}}
+
+</style>
+</head>
 <body autocomplete="off">
 
 <div class="wrap">
@@ -36779,125 +36836,251 @@ const COVERAGE_GUIDE = {
   "사회재난 사고로 사망한 경우 지급됩니다.\n감염병은 제외됩니다."
 };
 
+/* 시민용 보장설명: 설명은 담보 성격, 조건·금액은 선택한 계약 원문을 사용한다. */
 function getCoverageGuideText(name) {
-  const n = String(name || "").replace(/\s+/g, "");
+ const n=String(name||'').replace(/\s+/g,'');
+ const has=(...a)=>a.some(x=>n.includes(x));
+ const base=String(name||'').split(/\r?\n/)[0].replace(/[（(].*$/,'').replace(/\s/g,'');const hasCause=(...a)=>a.some(x=>base.includes(x));
+ if(has('재난비용지원'))return '재난으로 거주에 어려움이 생겼을 때, 아래에 가입된 임시거주·숙박 등 비용을 지원하는 담보입니다. 지원 항목과 비용 한도를 확인해 주세요.';
+ if(has('의료사고','의료사고법률비용'))return '의료사고와 관련한 소송 등으로 발생한 법률비용 중, 가입조건에서 정한 비용을 보장합니다. 치료비를 지급하는 담보와는 구분됩니다.';
+ if(has('성폭력')&&has('의료비'))return '성폭력범죄로 다쳐 치료받은 경우, 보장대상 의료비를 아래 한도 안에서 보상하는 담보입니다.';
+ if(has('익수')&&has('의료비'))return '물에 빠지는 사고로 다쳐 치료받은 경우, 가입조건에서 정한 의료비를 한도 안에서 보상하는 담보입니다. 보장하는 사고 범위와 공제금액은 아래 가입내용을 확인해 주세요.';
+ if(has('들개','유기견')&&has('의료비'))return '들개·유기견으로 인해 다쳐 치료받은 경우, 가입조건에서 정한 의료비를 보상하는 담보입니다. 보장한도와 공제금액은 아래 가입내용을 확인해 주세요.';
+ if(has('자연재해')&&has('정신치료비'))return '자연재해로 인한 정신적 피해에 대해 치료받은 경우, 가입조건에서 정한 치료비를 보상하는 담보입니다. 대상 재해와 치료 범위·비용 한도는 아래 가입내용을 확인해 주세요.';
+ if(has('CGL','영문종합배상')&&has('화상수술치료비'))return '사고로 화상을 입고 치료를 위한 수술을 받은 경우, 가입조건에서 정한 수술치료비를 보상하는 담보입니다. 보장하는 화상의 정도와 비용 한도·공제금액을 확인해 주세요.';
+ if(has('야생동물')&&has('CGL','영문종합배상','치료','의료'))return '야생동물로 인한 피해로 다쳐 치료받은 경우, 아래 가입조건에 해당하는 치료비 등을 보상하는 담보입니다.';
+ if(has('개물림')&&has('응급실'))return '개에 물려 응급실에서 진료받은 경우 정해진 보험금을 지급하는 담보입니다. 일반 외래진료와 응급실 진료를 구분해 확인해 주세요.';
+ if(has('개물림')&&has('부딪힘'))return '개에 물리거나 개와 부딪혀 다친 뒤 진단을 받고 치료한 경우 정해진 보험금을 지급하는 담보입니다. 지급 횟수 등은 아래 가입조건을 확인해 주세요.';
+ if(has('개물림')&&has('치료비'))return '개에 물려 다친 뒤 치료받은 경우 보장하는 담보입니다. 응급·비응급 진료의 적용 여부와 지급기준은 아래 가입내용을 확인해 주세요.';
+ if(has('상해의료비','의료비지원'))return '사고로 다쳐 치료받았을 때, 실제 부담한 의료비 중 보장대상 비용을 가입한도 안에서 보상하는 담보입니다. 자기부담금과 보상 제외항목은 아래 가입조건을 확인해 주세요.';
+ if(has('영문종합배상책임','CGL'))return '아래에 가입된 배상책임 또는 비용손해를 보장하는 담보입니다. 세부 보장항목에 따라 대상 사고와 지급기준이 달라지므로 가입내용을 확인해 주세요.';
+ if(has('이동수단배상책임')||n==='이동수단')return '이동수단과 관련한 사고로 다른 사람에게 피해를 입혀 법률상 배상책임을 지는 경우 보장하는 담보입니다. 보장하는 이동수단과 사고 범위는 아래 가입내용을 확인해 주세요.';
+ if(has('헌혈후유증'))return '헌혈 후 발생한 후유증 중 보장기준에 해당하는 경우 정해진 보험금을 지급하는 담보입니다.';
+ if(has('미아'))return '미아 발생 시 가입조건에서 정한 요건에 해당하면 미아찾기 지원금을 지급하는 담보입니다.';
+ if(has('유괴','납치')||n==='청소년')return '유괴·납치·불법감금 등으로 피해를 입은 경우 보장하는 담보입니다. 대상 연령과 신고·발생시간 등의 지급조건을 확인해 주세요.';
+ if(has('의사상자'))return '다른 사람을 구하려다 다치거나 사망하여 의사상자로 인정된 경우, 해당 인정기준과 가입내용에 따라 보장하는 담보입니다.';
+ if(has('학교폭력'))return '학교폭력으로 피해를 입은 어린이가 아래 연령·진단 등 가입조건에 해당하는 경우 보험금을 지급하는 담보입니다.';
+ if(has('강력범죄'))return '가입조건에서 정한 강력범죄로 피해를 입어 사망하거나 다치는 등 지급요건에 해당하는 경우 보장하는 담보입니다. 모든 범죄 피해가 같은 기준으로 보장되는 것은 아닙니다.';
+ if(has('성폭력'))return '성폭력범죄로 피해를 입어 해당 담보의 지급요건에 해당하는 경우 보험금을 지급하는 담보입니다.';
+ if(has('급성감염병'))return '가입조건에서 정한 감염병을 직접적인 원인으로 사망한 경우 보장하는 담보입니다. 대상 감염병·연령과 진단일·사망일의 보험기간 조건을 확인해 주세요.';
+ if(has('화상')&&has('수술'))return '사고로 화상을 입고, 보장하는 화상의 정도와 수술기준에 해당하는 수술을 받은 경우 보험금을 지급하는 담보입니다.';
+ if(has('골절')&&has('진단'))return '사고로 뼈가 부러져 골절로 진단받은 경우 정해진 보험금을 지급하는 담보입니다. 보장하는 골절의 범위는 가입조건을 확인해 주세요.';
+ if(has('외상성절단'))return '사고로 신체 일부가 절단되어 가입조건에서 정한 외상성 절단으로 진단받은 경우 보장합니다.';
+ if(has('깁스'))return '다쳐서 가입조건에서 정한 깁스치료를 받은 경우 보험금을 지급하는 담보입니다. 보장하는 치료의 종류를 확인해 주세요.';
+ if(has('흉터성형'))return '사고로 남은 흉터를 치료하기 위해 가입조건에서 정한 성형수술을 받은 경우 보장하는 담보입니다.';
+ if(has('화상')&&has('진단'))return '가입조건에서 정한 정도의 화상으로 진단받은 경우 보험금을 지급하는 담보입니다.';
+ if(has('온열질환')&&has('진단'))return '열사병 등 가입조건에서 정한 온열질환으로 진단받은 경우 보험금을 지급하는 담보입니다.';
+ if(has('한랭질환')&&has('진단'))return '저체온증·동상 등 가입조건에서 정한 한랭질환으로 진단받은 경우 보험금을 지급하는 담보입니다.';
+ const cause=hasCause('지반침하')?'지반침하·산사태':hasCause('폭발','화재','붕괴','산사태')?['폭발','화재','붕괴','산사태'].filter(x=>base.includes(x)).join('·')+' 사고':hasCause('대중교통','대중후유')?'대중교통 이용 중 사고':hasCause('자전거')?'자전거 사고':hasCause('PM','개인형이동장치')?'개인형 이동장치 사고':hasCause('도로보행','어린이보행')?'도로 보행 중 교통사고':hasCause('스쿨존')?'어린이보호구역 내 교통사고':hasCause('실버존')?'노인보호구역 내 교통사고':hasCause('자연재해')?'보장대상 자연재해':hasCause('사회재난')?'보장대상 사회재난':hasCause('농기계')?'농기계 사고':hasCause('가스')?'가스 사고':hasCause('감전')?'감전 사고':hasCause('강도')?'강도 사고':hasCause('뺑소니')?(hasCause('무보험')?'뺑소니·무보험차 사고':'뺑소니 사고'):hasCause('개물림')?'개에 물리는 사고':hasCause('독액성')?'독액성 동물 접촉사고':hasCause('군복무')?'군복무 중 상해사고':base.startsWith('선원업무')?'선원 업무 중 사고':hasCause('침몰')?'침몰 사고':hasCause('물놀이')?'물놀이 중 사고':hasCause('익사')?'물에 빠지는 사고':hasCause('유독성')?'유독성 물질로 인한 사고':hasCause('교통사고')?'교통사고':hasCause('전동보조')?'전동휠체어·의료용스쿠터 등 보장대상 전동보조기기 사고':'상해사고';
+ let result='';
+ if(has('입원')){const reason=has('온열질환')?'온열질환':has('한랭질환')?'한랭질환':cause;result=reason+'로 입원하여 치료받은 경우, 가입조건에 따른 입원일수에 대해 보험금을 지급하는 담보입니다. 지급 시작일과 최대 지급일수를 확인해 주세요.';}
+ else if(has('응급실'))result=cause+'로 다쳐 응급실에서 진료받은 경우 정해진 보험금을 지급하는 담보입니다.';
+ else if(has('부상치료','스쿨존','실버존'))result=cause+'로 다쳐 보장하는 부상등급에 해당하는 경우, 등급별로 정해진 보험금을 지급하는 담보입니다. 실제 병원비와는 지급기준이 다릅니다.';
+ else if(has('진단위로','진단금'))result=cause+'로 다친 뒤, 진단서에 기재된 진단기간이 아래 가입조건에 해당하면 정해진 진단금을 지급하는 담보입니다. 진단 주수별 금액과 대상 연령을 확인해 주세요.';
+ else if(has('장례','사망비용'))result=cause+'로 사망한 경우 가입조건에 따라 장례비 등 사망 관련 비용을 지원하는 담보입니다.';
+ else if(has('후유장해','후유장애','후유'))result=cause+'로 치료 후에도 신체 기능의 장해가 남아 보장하는 후유장해에 해당하면 보험금을 지급하는 담보입니다. 가입금액과 장해 정도에 따라 지급금액이 달라집니다.';
+ else if(has('사망'))result=cause+'를 직접적인 원인으로 사망한 경우 가입금액을 지급하는 담보입니다.';
+ else if(has('수술'))result=cause+'로 다쳐 보장하는 수술을 받은 경우 정해진 보험금을 지급하는 담보입니다.';
+ else result='이 담보의 구체적인 보장대상과 지급조건은 아래 가입내용을 확인해 주세요.';
+ if(has('교통상해보장제외','교통상해제외','교통사고사망제외','교통사고사망제회'))result+=' 교통상해는 보장대상에서 제외됩니다.';
+ if(has('감염병제외'))result+=' 감염병은 제외됩니다.';
+ return result;
+}
+function citizenEscape(value){return String(value==null?'':value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function citizenInsurer(value){
+ const n=String(value).replace(/\s/g,'');return /^(KB|케이비)/i.test(n)?'KB손해보험':/^(DB|디비)/i.test(n)?'DB손해보험':/^현대/.test(n)?'현대해상':/^메리츠/.test(n)?'메리츠화재':/^롯데/.test(n)?'롯데손해보험':/^농협/.test(n)?'NH농협손해보험':/^삼성/.test(n)?'삼성화재':/^하나/.test(n)?'하나손해보험':n;
+}
+// 목록용 이름과 펼친 가입조건만 정리하며, 접수에 사용하는 원래 담보명은 유지한다.
+function citizenCoverageDisplay(item){
+ const name=String(item.name||'').trim();
+ if(/^급성감염병/.test(name)){
+  const title=name.split(/\r?\n|[（(]/)[0].trim();
+  return {title,conditions:name.slice(title.length).split(/\r?\n/).filter(s=>!/(양식.*별도|보험업법|경북\s*경산|부산남구)/.test(s)).join('\n').trim()};
+ }
+ if(/^강력범죄피해보상금/.test(name)){
+  const type=(name.match(/\((I{1,3})\)/)||[])[1];
+  return {title:'강력범죄피해보상금'+(type?'('+type+')':''),conditions:''};
+ }
+ const conditions=[];
+ let clean=name.replace(/[（(]([^()（）]*)[）)]/g,(whole,inner)=>{
+  if(inner==='CGL'||/^I{1,3}$/.test(inner))return whole;
+  if(/상해.*(?:진단금|진단위로금)/.test(name)&&/^교통상해(?:보장)?제외$/.test(inner.replace(/\s/g,''))){conditions.push(inner);return '(교통상해제외)';}
+  if(inner==='무보험차')return '·무보험차';
+  conditions.push(inner.replace(/\s+/g,' ').trim());return '';
+ });
+ const lines=clean.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+ let title=lines.join(' ').replace(/\s+/g,' ').trim();
+ if(/^의사상자/.test(name))title='의사상자';
+ // CGL 괄호 안에 세부 담보 자체를 넣은 자료는 제목에서도 그 종류를 구별한다.
+ if(/^(?:영문종합배상책임|영문영업배상책임)\s*\(CGL\)$/.test(title)&&conditions.length===1&&/치료비|의료비/.test(conditions[0]))title+=' '+conditions.shift();
+ return {title:title||name.split(/\r?\n/)[0],conditions:conditions.join('\n')};
+}
+function citizenCoverageTitle(item){return citizenCoverageDisplay(item).title;}
 
-  const has = (...words) => words.some(w => n.includes(w));
-  const hasAll = (...words) => words.every(w => n.includes(w));
-
-  let subject = "";
-  let action = "";
-  let extra = "";
-
-  // 1. 담보명 전체 의미 먼저 판단
-  if (has("헌혈후유증")) {
-    subject = "헌혈 후 발생한 후유증";
-    action = "약관 기준에 따라 보상금이 지급될 수 있습니다.";
-    return subject + "에 대해 " + action;
-  }
-
-  if (has("재난비용지원")) {
-    return "폭발·화재·붕괴·산사태 등의 재난 피해가 발생한 경우 약관 및 증권에서 정한 기준에 따라 재난비용이 지원될 수 있습니다.";
-  }
-
-  if (has("영문종합배상책임", "CGL", "상해의료비", "의료비")) {
-    return "국내에서 발생한 상해사고로 치료를 받은 경우 약관 및 증권에서 정한 한도 내에서 의료비 또는 배상책임 담보가 적용될 수 있습니다. 실손보험 가입 여부 확인이 필요할 수 있습니다.";
-  }
-
-  if (has("의료사고법률비용지원", "의료사고")) {
-    return "의료사고와 관련하여 법률비용 또는 약관에서 정한 비용이 발생한 경우 지급될 수 있습니다.";
-  }
-
-  if (has("강력범죄피해보상금")) {
-    return "약관에서 정한 강력범죄 피해가 발생한 경우 지급될 수 있습니다.";
-  }
-
-  if (has("의사상자")) {
-    return "의사상자로 인정된 경우 약관 기준에 따라 지급될 수 있습니다.";
-  }
-
- // 2. 담보명 기반 사고 원인 자동 판단
-const subjectMap = [
-  { keys:["지반침하"], text:"지반침하·산사태 사고" },
-  { keys:["폭발","화재","붕괴","산사태"], text:"폭발·화재·붕괴·산사태 사고" },
-  { keys:["대중교통"], text:"대중교통 이용 중 발생한 사고" },
-  { keys:["자전거"], text:"자전거 사고" },
-  { keys:["PM"], text:"개인형 이동장치(PM) 사고" },
-  { keys:["개인형이동장치"], text:"개인형 이동장치(PM) 사고" },
-  { keys:["도로보행중"], text:"도로 보행 중 교통사고" },
-  { keys:["보행중"], text:"도로 보행 중 교통사고" },
-  { keys:["스쿨존"], text:"스쿨존 내 교통사고" },
-  { keys:["어린이보호구역"], text:"스쿨존 내 교통사고" },
-  { keys:["실버존"], text:"실버존 내 교통사고" },
-  { keys:["노인보호구역"], text:"실버존 내 교통사고" },
-  { keys:["자연재해"], text:"자연재해" },
-  { keys:["사회재난"], text:"사회재난 사고" },
-  { keys:["강도"], text:"강도 사고" },
-  { keys:["농기계"], text:"농기계 사고" },
-  { keys:["가스"], text:"가스 사고" },
-  { keys:["감전"], text:"감전 사고" },
-  { keys:["뺑소니"], text:"뺑소니 사고" },
-  { keys:["익사"], text:"익사 사고" },
-  { keys:["성폭력"], text:"성폭력 범죄 피해" },
-  { keys:["화상"], text:"화상 사고" },
-  { keys:["개물림"], text:"개물림 사고" },
-  { keys:["야생동물"], text:"야생동물 피해 사고" },
-  { keys:["상해"], text:"상해사고" }
-];
-
-for (const item of subjectMap) {
-  if (item.keys.some(k => n.includes(k))) {
-    subject = item.text;
-
-    if (item.text.includes("스쿨존") || item.text.includes("실버존")) {
-      extra += " 교통사고사실확인원 및 진단서 제출이 필요할 수 있습니다.";
-    }
-
-    break;
-  }
+// 연령 부호 두 개가 함께 있으면 대상의 상·하한 제한으로 오인하지 않는다.
+function citizenDiagnosisAge(item){
+ const name=String(item.name||'');if(!/진단금|진단위로/.test(name))return '';
+ let detail=String(item.detail||'');
+ const pair=/(?:^|\n)\s*(?:만\s*)?15\s*세\s*이상\s*(?=\n|$)/.test(detail)&&/(?:^|\n)\s*(?:만\s*)?15\s*세\s*미만\s*(?=\n|$)/.test(detail);
+ if(pair)detail=detail.replace(/(^|\n)\s*(?:만\s*)?15\s*세\s*(?:이상|미만)\s*(?=\n|$)/g,'$1');
+ const source=[name,detail,item.amount||''].join('\n');
+ const rules=[...new Set((source.match(/(?:만\s*)?\d+\s*(?:[~～~-]\s*\d+\s*)?세\s*(?:이상|이하|미만|초과|까지)?/g)||[]).map(s=>s.replace(/\s+/g,'').replace(/세(이상|이하|미만|초과|까지)/,'세 $1')))];
+ if(!rules.length)return /군복무|어린이|청소년|성인|미성년|노인|취약계층/.test(source)?'가입대상: 아래 가입조건 확인':'전 연령 대상';
+ // 한 연령에 추가금만 있는 경우 전체 담보를 그 연령에 제한하지 않는다.
+ if(/전\s*연령/.test(source))return '전 연령 대상 · 연령별 추가 조건은 아래 표 확인';
+ if(/추가|취약계층|계층|세\s*(?:이상|이하|미만|초과)?\s*(?:은|는|:\s*\d+만원)/.test(source)||rules.length>2)return '연령별 가입조건 적용 · 아래 표 확인';
+ const hasUnrestrictedTier=detail.split(/\r?\n|\s+\/\s*/).some(s=>/\d+\s*주/.test(s)&&/\d+\s*세/.test(detail)&&!/\d+\s*세/.test(s));
+ const hasRestrictedTier=detail.split(/\r?\n|\s+\/\s*/).some(s=>/\d+\s*주/.test(s)&&/\d+\s*세/.test(s));
+ if(hasUnrestrictedTier&&hasRestrictedTier)return '연령별 가입조건 적용 · 아래 표 확인';
+ return rules.join(' 또는 ')+' 대상';
 }
 
-  // 3. 지급 사유 판단 — 후유증과 후유장해 구분
-  if (has("후유증")) {
-    action = "후유증이 발생한 경우 약관 기준에 따라 지급될 수 있습니다.";
-  } else if (has("부상치료비", "부상치료")) {
-    action = "부상등급 판정을 받은 경우 지급될 수 있습니다.";
-    extra += " 교통사고사실확인원 및 진단서 제출이 필요할 수 있습니다.";
-  } else if (has("수술비", "수술")) {
-    action = "수술을 받은 경우 지급될 수 있습니다.";
-  } else if (has("진단위로금", "진단위로", "진단금", "진단")) {
-    action = "약관에서 정한 기간 이상 진단받은 경우 지급될 수 있습니다.";
-  } else if (has("후유장해", "후유")) {
-    action = "후유장해가 발생한 경우 지급됩니다.";
-  } else if (has("사망")) {
-    action = "사망한 경우 지급됩니다.";
-  } else if (has("피해보상금", "보상금")) {
-    action = "피해가 발생한 경우 약관 기준에 따라 지급될 수 있습니다.";
-  } else if (has("법률비용")) {
-    action = "법률비용이 발생한 경우 지급될 수 있습니다.";
-  }
+// 제공받은 약관에서 확인한 담보의 의미를 보충한다. 개별 계약의 금액·횟수는 원문을 따른다.
+// 근거(PDF 페이지): 메리츠 49~50,66~67,111,129,157,161 / 현대 66,73~75 / KB 83~84,91.
+function citizenPolicyPoints(item){
+ const n=String(item.name||'').replace(/\s/g,''),points=[];
+ if(/CGL|영문종합배상|영문영업배상/.test(n))return points;
+ if(/화상.*수술/.test(n))points.push('화상 치료를 직접 목적으로 하는 수술이 대상입니다. 화상 진단이나 통원치료만으로 수술보험금이 지급되지는 않습니다.');
+ if(/상해.*진단금|상해진단위로금/.test(n))points.push('진단서의 진단기간과 실제 치료 여부를 기준으로 확인합니다. 여러 진단서의 기간을 더해 진단 주수를 충족시키는 방식은 적용하지 않습니다.');
+ if(/의료사고/.test(n))points.push('의료사고로 법원에 소송을 제기할 때 발생하는 변호사 착수금 등 약관에서 정한 법률비용이 대상입니다. 보장하는 재판 단계와 비용 비율은 해당 가입조건에 따릅니다.');
+ if(/의사상자/.test(n))points.push('직무 외의 구조활동 중 다른 사람을 구하다 다치거나 사망하여 의사상자로 인정된 경우입니다. 의상자는 부상등급에 따라 지급금액이 달라집니다.');
+ if(/헌혈후유증/.test(n))points.push('대한적십자사의 헌혈후유증 판정과 치료 여부를 확인합니다. 헌혈 현장에서 어지럼증 등으로 단순 처치만 받은 경우와 구분됩니다.');
+ if(/개물림/.test(n)&&/응급실|부딪힘/.test(n))points.push('반려견·유기견·들개 등 개의 종류와 관계없이 해당 사고와 진료 요건을 확인합니다. 지급 횟수는 아래 가입조건을 따릅니다.');
+ if(/미아/.test(n))points.push('길을 잃어 돌아오지 못한 뒤 경찰에 신고하고, 약관에서 정한 기간 동안 미아상태가 계속된 경우를 확인합니다. 단순 가출이나 유괴·납치로 인한 실종과는 구분됩니다.');
+ if(/깁스/.test(n))points.push('보장하는 깁스치료의 형태를 확인합니다. 뼈·관절 둘레 전체를 감싸 고정하는 깁스와 일부를 받치는 부목은 약관상 구분됩니다.');
+ return points;
+}
+function citizenCoverageModel(item){
+ const amount=String(item.amount||'').trim(),name=String(item.name||''),raw=String(item.detail||'').trim();
+ const insurerPattern='(?:메리츠(?:화재)?|현대(?:해상)?|케이비(?:손해보험)?|KB(?:손해보험)?|디비(?:손해보험)?|DB(?:손해보험)?|롯데(?:손해보험)?|농협(?:손해보험)?|NH농협(?:손해보험)?|하나(?:손해보험)?|삼성(?:화재)?|한화(?:손해보험)?|흥국(?:화재)?|MG(?:손해보험)?|엠지)';
+ const startInsurer=new RegExp('^[-`：:\\s]*('+insurerPattern+')\\s*(?::|：|(?=\\d))\\s*','i');
+ const leadingAmount=(amount.match(/^([\d,]+)(?:\s*만원)?(?=\s*(?:한도|\(|$))/)||[])[1];
+ // 각 연령 부호 안에 반복된 명시적 합계도 보장금액란에서 한 번만 표시.
+ const detailForDisplay=raw.replace(/^(.+?)[ \t]*\/[ \t]*([\d,]+)(?:[ \t]*만원)?[ \t]*$/gm,(whole,prefix,total)=>{
+  return leadingAmount&&total.replace(/,/g,'')===leadingAmount.replace(/,/g,'')&&new RegExp(insurerPattern+'\\s*[:：]','i').test(prefix)?prefix+'\n__CITIZEN_TOTAL_BREAK__':whole;
+ });
+ const withBreak=detailForDisplay.replace(new RegExp('([^\\n])\\s+('+insurerPattern+')\\s*[:：]','gi'),'$1\n$2:');
+ let lines=withBreak.split(/\r?\n|\s+\/\s*/).map(x=>x.trim()).filter(Boolean);
+ // 계약금액과 일치하는 맨 끝 합계만 별도 금액란으로 옮긴다. 조건별 금액은 보존.
+ const numericAmount=(amount.match(/^([\d,]+)\s*만원\s*$/)||[])[1];
 
-  if (has("교통상해보장제외", "교통상해제외")) {
-    extra += " 교통상해는 제외될 수 있습니다.";
+ let sharedTailAt=-1;
+ if(leadingAmount){
+  for(let i=lines.length-1;i>0;i--){
+   const value=lines[i].replace(/\s|,/g,'');
+   if((value===leadingAmount.replace(/,/g,'')||value===leadingAmount.replace(/,/g,'')+'만원')&&lines.slice(i+1).every(x=>/^\([^)]*\)$/.test(x))){lines.splice(i,1);sharedTailAt=i;break;}
   }
-
-  if (has("감염병제외")) {
-    extra += " 감염병은 제외될 수 있습니다.";
-  }
-
-  if (subject && action) {
-  return String(name || "") + " : " + subject + "로 " + action + extra;
+ }
+ let insurer='',group='',rows=[];
+ for(const [lineIndex,line] of lines.entries()){
+  if(line==='__CITIZEN_TOTAL_BREAK__'){insurer='';continue;}
+  if(lineIndex===sharedTailAt)insurer="";
+  const match=line.match(startInsurer);let body=line;
+  if(match){insurer=citizenInsurer(match[1]);body=line.slice(match[0].length).trim();}
+  // 단독 연령 제목은 원래 순서의 대상 구분으로 보존.
+  if(!match&&/^(?:만\s*)?\d+\s*세\s*(?:이상|미만|이하|초과)\s*$/.test(body)){group=body;insurer='';rows.push({kind:'group',text:body});continue;}
+  if(!body){rows.push({kind:'note',insurer,group,text:line});continue;}
+  let m=body.match(/^(.*?)\s*[:：]\s*([\d,.]+\s*(?:억\s*)?만원(?:\s*한도)?)(.*)$/);
+  if(m){rows.push({kind:'money',insurer,group,condition:(m[1].trim()+(m[3].trim()?' '+m[3].trim():'')),amount:m[2].trim(),raw:body});continue;}
+  m=body.match(/^([\d,.]+\s*(?:만원|억원|원)?)(\s*\([^\n]*\))?$/);
+  if(m&&insurer){let value=m[1].trim();if(/^[\d,.]+$/.test(value)&&/만원/.test(amount))value+='만원';rows.push({kind:'money',insurer,group,condition:m[2]?m[2].trim():'가입금액',amount:value,raw:body});continue;}
+  rows.push({kind:'note',insurer,group,text:body});
+ }
+ const ageDisplay=citizenMergeEquivalentAgeGroups(name+' '+amount,rows);rows=ageDisplay.rows;
+ const display=citizenCoverageDisplay(item),tail=display.conditions;
+ const money=rows.filter(r=>r.kind==='money');
+ let totalLabel='보장금액·한도';
+ if(money.length>1&&money.length===rows.length&&money.every(r=>r.condition==='가입금액'&&/^\d[\d,]*만원$/.test(r.amount))&&numericAmount){const sum=money.reduce((v,r)=>v+Number(r.amount.replace(/[^\d]/g,'')),0);if(sum===Number(numericAmount.replace(/,/g,'')))totalLabel='합계 가입금액';}
+ const monetary=/[\d,]+\s*(?:억\s*)?(?:만)?원/.test(amount)||/^[\d,]+(?:\s*(?:한도|\([^)]*\)))*$/.test(amount);
+ if(!monetary)totalLabel='추가 가입안내';
+ return {name,title:display.title,description:getCoverageGuideText(name),tail,rows,amount,totalLabel,monetary,ageGroupsMerged:ageDisplay.merged,diagnosis:/진단금|진단위로/.test(name),age:citizenDiagnosisAge(item),policyPoints:citizenPolicyPoints(item),raw};
+}
+function citizenCoverageHtml(item){
+ const m=citizenCoverageModel(item),e=citizenEscape;
+ const cgl=/영문종합배상|영문영업배상|CGL/i.test(m.name);
+ let html='<section class="citizen-explanation"><h4>어떤 경우 보장하나요?</h4><p>'+e(m.description)+'</p></section>';
+ if(m.policyPoints.length)html+='<div class="citizen-policy-points">'+m.policyPoints.map(t=>'<p>'+e(t)+'</p>').join('')+'</div>';
+ if(m.age)html+='<div class="citizen-age-target"><strong>보장대상</strong><span>'+e(m.age)+'</span></div>';
+ if(m.tail)html+='<section class="citizen-conditions"><h4>함께 확인할 가입조건</h4><div>'+e(m.tail)+'</div></section>';
+ if(m.rows.length){
+  const hasMoney=m.rows.some(r=>r.kind==='money');
+  html+='<section class="citizen-contract"><h4>'+(hasMoney?'가입조건과 보험사별 금액':'가입조건·보장범위')+'</h4>';
+  if(hasMoney){
+   html+='<div class="citizen-table-wrap"><table class="citizen-money-table"><thead><tr><th scope="col">보험사</th><th scope="col">대상·지급조건</th><th scope="col">금액</th></tr></thead><tbody>';
+   for(const r of m.rows){
+    if(r.kind==='group')html+='<tr class="citizen-age"><th colspan="3">대상: '+e(r.text)+'</th></tr>';
+    else if(r.kind==='money')html+='<tr><td>'+e(r.insurer||'—')+'</td><td>'+(cgl?citizenCglKeyText(r.condition||'가입금액'):e(r.condition||'가입금액'))+'</td><td class="citizen-money">'+e(r.amount)+'</td></tr>';
+    else html+='<tr class="citizen-contract-note"><td>'+e(r.insurer||'—')+'</td><td colspan="2">'+(cgl?citizenCglKeyText(r.text):e(r.text))+'</td></tr>';
+   }
+   html+='</tbody></table></div>';
+  }else html+='<div class="citizen-original-conditions'+(cgl?' citizen-cgl-content':'')+'">'+(cgl?citizenCglKeyText(m.raw):e(m.raw))+'</div>';
+  html+='</section>';
+ }
+ if(m.amount)html+='<div class="citizen-total'+(m.monetary?'':' citizen-extra-info')+'"><span>'+e(m.totalLabel)+'</span><strong>'+e(m.amount)+'</strong></div>';
+ if(m.diagnosis)html+='<p class="citizen-small-note">진단 주수와 대상 연령에 맞는 지급조건을 확인해 주세요. 표시된 금액을 모두에게 일괄 지급하는 것은 아닙니다.</p>';
+ return html;
 }
 
-if (action) {
-  return String(name || "") + " : " + action + extra;
+// 증권 부호상 연령 구분만 다르고 보장조건이 같은 비사망 담보는 화면에서 한 번 표시.
+// 다른 주수·금액·보험사·제한조건은 합치지 않으며 계약 데이터는 수정하지 않는다.
+function citizenMergeEquivalentAgeGroups(name,rows){
+ const groups=rows.map((r,i)=>r.kind==='group'?i:-1).filter(i=>i>=0);
+ if(groups.length!==2||groups[0]!==0)return {rows,merged:false};
+ const normalize=s=>String(s||'').replace(/\s+/g,'');
+ const labels=groups.map(i=>normalize(rows[i].text).replace(/^만/,''));
+ if(!labels.includes('15세이상')||!labels.includes('15세미만'))return {rows,merged:false};
+ const left=rows.slice(1,groups[1]),right=rows.slice(groups[1]+1);
+ if(!left.length||!right.length||!left.some(r=>r.kind==='money')||left.length!==right.length)return {rows,merged:false};
+ // 별도 연령 제한이나 사망 보장이 섞인 경우 전 연령으로 바꾸지 않는다.
+ const limits=String(name||'')+' '+[...left,...right].map(r=>r.condition||r.text||'').join(' ');
+ if(/사망|장례|\d+\s*세|어린이|청소년|노인|성인|미성년/.test(limits))return {rows,merged:false};
+ const signature=list=>JSON.stringify(list.map(r=>({kind:r.kind,insurer:normalize(r.insurer),condition:normalize(r.condition),amount:normalize(r.amount),text:normalize(r.text)})));
+ if(signature(left)!==signature(right))return {rows,merged:false};
+ return {rows:[{kind:'group',text:'전 연령'},...left.map(r=>Object.assign({},r,{group:'전 연령'}))],merged:true};
 }
 
-if (subject) {
-  return String(name || "") + " : " + subject + "로 인한 사고가 발생한 경우 약관 및 증권 기준에 따라 지급될 수 있습니다." + extra;
+// CGL 핵심 금액만 강조. 인당/사고당/청구당/총한도의 원문 구분을 보존한다.
+function citizenBulletText(value){
+ const source=String(value||'');let text='',depth=0;
+ for(let i=0;i<source.length;i++){
+  const ch=source[i];
+  if(ch==='('||ch==='（')depth++;
+  if(ch===')'||ch==='）')depth=Math.max(0,depth-1);
+  const next=source.slice(i+1).match(/^[ \t]*([가-힣A-Za-z])/);
+  const lineStart=!text.split('\n').pop().trim();
+  const dash=ch==='-'&&next&&(lineStart||/[ \t]/.test(source[i-1]||'')||/^[ \t]+/.test(source.slice(i+1)));
+  if(depth===0&&(/[•‧∙●]/.test(ch)||dash)){
+   text=text.replace(/[ \t]+$/,'');text+=(text&&!text.endsWith('\n')?'\n':'')+'• ';
+   while(/[ \t]/.test(source[i+1]||'\n'))i++;
+  }else text+=ch;
+ }
+ return text;
+}
+function citizenCglKeyText(value){
+ const lines=citizenBulletText(value).split(/\r?\n/),out=[];
+ const heading=/^[ \t]*(?:[‧•*※▶►▸❍-][ \t]*)*((?:총[ \t]*)?(?:보장|보상)[ \t]*한도|(?:1[ \t]*)?인당(?:[ \t]*\([ \t]*(?:1[ \t]*)?사고당[ \t]*\))?(?:[ \t]*(?:보장|보상)[ \t]*한도)?|공제[ \t]*금액|자기[ \t]*부담금)[ \t]*[:：]?[ \t]*(.*)$/;
+ for(let i=0;i<lines.length;i++){
+  const found=lines[i].match(heading);
+  if(!found){out.push(citizenCglInline(lines[i]));continue;}
+  const label=found[1].replace(/[ \t]+/g,' ').trim(),body=[];
+  if(found[2])body.push(found[2]);
+  // 제목 아래 금액을 별도 줄로 기재한 원문도 같은 강조 영역에 넣는다.
+  if(!found[2]){
+   for(let n=0;n<3&&i+1<lines.length;n++){
+    const next=lines[i+1];
+    if(!next.trim()||(heading.test(next)&&!/^[ \t-]*(?:1[ \t]*)?인당/.test(next))||!/(?:[\d,]+[ \t]*(?:억[ \t]*)?(?:만)?원|인당|사고당|청구당|장례비.*없음)/.test(next))break;
+    body.push(next);i++;
+   }
+  }
+  out.push('<div class="citizen-cgl-key'+(/^총/.test(label)?' citizen-cgl-total':'')+'"><strong class="citizen-cgl-label"><span aria-hidden="true">▶</span> '+citizenEscape(label)+'</strong>'+(body.length?'<div class="citizen-cgl-value">'+citizenCglInline(body.join('\n'))+'</div>':'')+'</div>');
+ }
+ return out.join('\n');
 }
 
-return String(name || "") + " : 해당 담보명 기준으로 약관 및 증권에서 정한 지급사유에 해당하는 경우 지급될 수 있습니다.";
+function citizenCglInline(value){
+ const safe=citizenEscape(value);
+ if(/보상예시|계산예시/.test(String(value)))return safe;
+ return safe.replace(/(?:[▶►▸][ \t]*)?((?:총[ \t]*)?(?:보장|보상)[ \t]*한도|공제[ \t]*금액|자기[ \t]*부담금)([ \t]*[:：])/g,(_,label,colon)=>'<strong class="citizen-cgl-inline">▶ '+label+colon+'</strong>');
 }
 
 function normalizeInsurerNameForPolicy(v) {
@@ -37391,6 +37574,7 @@ if (detailedBurn) {
   }
 
   const tr = document.createElement("tr");
+ tr._citizenCoverage = item;
    const parsed = splitDetailAndAmount(item.detail, item.amount);
 const guideText = getCoverageGuideText(item.name);
 
@@ -38099,25 +38283,50 @@ document.addEventListener('DOMContentLoaded', initSignaturePad);
 (function(){
  const tbody=document.getElementById('coverageTableBody');
  if(!tbody)return;
- const tableWrap=tbody.closest('table');
+ const table=tbody.closest('table');
  const cards=document.createElement('div');cards.id='coverageCards';
- tableWrap.insertAdjacentElement('afterend',cards);tableWrap.style.display='none';
+ table.insertAdjacentElement('afterend',cards);table.style.display='none';
+ const dialog=document.createElement('dialog');dialog.id='coverageDialog';
+ dialog.setAttribute('aria-labelledby','coverageDialogTitle');
+ dialog.innerHTML='<header class="coverage-dialog-header"><h3 id="coverageDialogTitle"></h3><button type="button" class="coverage-dialog-close" aria-label="담보 설명 닫기">닫기 ×</button></header><div class="coverage-dialog-scroll"></div>';
+ document.body.appendChild(dialog);
+ const heading=dialog.querySelector('h3'),content=dialog.querySelector('.coverage-dialog-scroll');
+ let opener=null,previousOverflow='';
+ function close(){dialog.close();}
+ dialog.querySelector('button').addEventListener('click',close);
+ dialog.addEventListener('click',function(event){
+  if(event.target!==dialog)return;
+  const r=dialog.getBoundingClientRect();
+  if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)close();
+ });
+ dialog.addEventListener('close',function(){
+  document.body.style.overflow=previousOverflow;
+  content.replaceChildren();
+  if(opener&&opener.isConnected)opener.focus();
+  opener=null;
+ });
  function renderCoverageCards(){
-   cards.replaceChildren();
-   Array.from(tbody.rows).forEach(function(row){
-     const cells=row.cells;
-     if(cells.length<4){const empty=document.createElement('div');empty.className='coverage-empty';empty.textContent=row.textContent;cards.appendChild(empty);return;}
-     const item=document.createElement('details');
-     const title=document.createElement('summary');title.textContent=cells[1].textContent.trim();item.appendChild(title);
-     const body=document.createElement('div');body.className='coverage-expanded';
-     [[2,'보장내용'],[3,'보장금액']].forEach(function(pair){
-       const heading=document.createElement('h4');heading.textContent=pair[1];body.appendChild(heading);
-       const content=document.createElement('div');content.className='coverage-text';
-       Array.from(cells[pair[0]].childNodes).forEach(function(node){content.appendChild(node.cloneNode(true));});
-       if(!content.textContent.trim())content.textContent='-';body.appendChild(content);
-     });
-     item.appendChild(body);cards.appendChild(item);
+  if(dialog.open)close();
+  cards.replaceChildren();
+  Array.from(tbody.rows).forEach(function(row){
+   const cells=row.cells;
+   if(cells.length<4){const empty=document.createElement('div');empty.className='coverage-empty';empty.textContent=row.textContent;cards.appendChild(empty);return;}
+   const item=document.createElement('button');item.type='button';item.className='coverage-choice';
+   item.setAttribute('aria-haspopup','dialog');item.setAttribute('aria-controls','coverageDialog');
+   const title=document.createElement('span');title.textContent=row._citizenCoverage?citizenCoverageTitle(row._citizenCoverage):cells[1].textContent.trim();item.appendChild(title);
+   const arrow=document.createElement('span');arrow.className='coverage-choice-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='›';item.appendChild(arrow);
+   item.addEventListener('click',function(){
+    const body=document.createElement('div');body.className='coverage-expanded';
+    if(row._citizenCoverage)body.innerHTML=citizenCoverageHtml(row._citizenCoverage);
+    else [[2,'보장내용'],[3,'보장금액']].forEach(function(pair){
+     const label=document.createElement('h4');label.textContent=pair[1];body.appendChild(label);
+     const text=document.createElement('div');text.className='coverage-text';text.textContent=cells[pair[0]].textContent.trim()||'-';body.appendChild(text);
+    });
+    heading.textContent=title.textContent;content.replaceChildren(body);content.scrollTop=0;
+    opener=item;previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';dialog.showModal();
    });
+   cards.appendChild(item);
+  });
  }
  new MutationObserver(renderCoverageCards).observe(tbody,{childList:true,subtree:true,characterData:true});
  renderCoverageCards();
