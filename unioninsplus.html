@@ -2811,5 +2811,61 @@ html:not([lang="ko"]) .premium-header .company-side-menu a[href="#faq"]{white-sp
 })();
 </script>
 
+<style id="mobile-header-compact-20261105">
+/* Mobile layout only. Base: user-selected unioninsplus(20261105-021444).html. */
+@media (max-width: 999px) {
+  .premium-header {
+    position: static;
+    top: auto;
+  }
+  .premium-header .topbar {
+    min-height: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+  .premium-header .company-menu-container {
+    position: static;
+    width: 100%;
+    margin: 0;
+    padding: 8px 12px;
+    box-sizing: border-box;
+  }
+  .premium-header nav.company-side-menu {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.5fr);
+    width: 100%;
+    margin: 0;
+    gap: 0;
+    border: 1px solid #d4d9e1;
+  }
+  .premium-header nav.company-side-menu > a[href] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 44px;
+    height: auto;
+    padding: 8px 4px;
+    border: 0;
+    border-right: 1px solid #d4d9e1;
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: normal;
+    text-align: center;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .premium-header nav.company-side-menu > a[href]:last-child {
+    border-right: 0;
+  }
+  .premium-header nav.company-side-menu > a[href]::after,
+  .premium-header nav.company-side-menu > a[href="#faq"]::before {
+    display: none;
+  }
+}
+</style>
 </body>
 </html>
