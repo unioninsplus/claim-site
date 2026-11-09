@@ -251,6 +251,16 @@ th { background:#f4f8ff; color:#12419e; }
 /* INTERNAL_THEME_END */
 
 </style>
+
+<style id="internal-coverage-documents-style">
+.internal-coverage-documents{margin-top:18px;padding:16px;border:1px solid #cbdcf2;border-radius:12px;background:#f3f7fd;white-space:normal}
+.internal-coverage-documents h4{margin:0 0 12px;color:#163b7a;font-size:17px}
+.internal-coverage-documents a{display:block;width:fit-content;max-width:100%;margin:8px 0;padding:11px 14px;border:1px solid #245bb1;border-radius:9px;background:#245bb1;color:#fff;text-decoration:none;font-weight:700;line-height:1.6;overflow-wrap:anywhere}
+.internal-coverage-documents a:hover{background:#17458e}
+.internal-coverage-documents a:focus-visible{outline:3px solid #0f2957;outline-offset:3px}
+.internal-coverage-documents p{margin:12px 0 0;color:#556175;font-size:13px;line-height:1.6}
+</style>
+
 </head>
 <body>
 
@@ -32741,6 +32751,104 @@ function initDropdowns() {
   if (claimYearMirror) claimYearMirror.value = document.getElementById("yearSelect").value || "";
 }
 
+function internalCoverageDocuments(item){
+  const originalName = String(item.name || '');
+  const name = citizenCoverageTitle(item).replace(/\s+/g, '');
+  // 전체 연령을 나누어 기재한 부호 제목은 가입 연령 제한으로 해석하지 않습니다.
+  let detail = String(item.detail || '');
+  if(/(?:^|\n)\s*15세이상\s*(?:\n|$)/.test(detail) && /(?:^|\n)\s*15세미만\s*(?:\n|$)/.test(detail)){
+    detail = detail.replace(/(^|\n)\s*15세(?:이상|미만)\s*(?=\n|$)/g, '$1');
+  }
+  const text = (originalName + '\n' + detail + '\n' + (item.amount || '')).replace(/\s+/g, '');
+  const result = {files:[], note:''};
+  const add = (file, label) => result.files.push({file, label:label || file.replace(/\.pdf$/, '')});
+  const death = file => {add(file);add('위임장.pdf', '위임장 (상속인 대표 수령 시)');};
+  if(/급성감염병.*사망/.test(name)) death('급성감염병사망.pdf');
+  else if(/장례/.test(name)) death('사망-장례비용.pdf');
+  else if(/사망/.test(name) || name === '자연재해') death('사망.pdf');
+  else if(/자연재해.*후유/.test(name)) add('자연재해 후유장해.pdf');
+  else if(/후유(?:장해|장애)?/.test(name) && !/후유증/.test(name)) add('후유장해.pdf');
+  else if(/자연재해.*정신/.test(name)) add('자연재해 정신치료비.pdf');
+  else if(/자연재해/.test(name) && /입원/.test(name)) add('자연재해 상해진단금+입원일당.pdf');
+  else if(/자연재해.*진단/.test(name)) add('연재해상해진단위로금.pdf','자연재해 상해진단위로금');
+  else if(/자전거.*진단/.test(name)) add('자전거상해 진단위로금.pdf');
+  else if(/개물림|부딪힘/.test(name)){
+    if(/진단/.test(name)) add('개물림 부딪힘 진단비.pdf');
+    else if(/비응급|치료비/.test(name)) add('개물림 사고(응급&비응급) 치료비.pdf');
+    else if(/응급실/.test(name)) add('개물림응급실내원진료비.pdf');
+  }
+  else if(/독액성.*응급/.test(name)) add('독액성동물 응급실내원진료비.pdf');
+  else if(/군복무/.test(name)){
+    if(/흉터/.test(name)) add('군복무 상해보험 상해흉터성형수술비.pdf');
+    else if(/골절/.test(name)) add('군복무상해보험 골절진단금.pdf');
+    else if(/깁스/.test(name)) add('군복무상해보험 깁스치료비.pdf');
+    else if(/입원일당/.test(name)) add('군복무상해보험 상해입원일당.pdf');
+  }
+  else if(/성폭력/.test(name)) add(/상해|의료/.test(name) ? '성폭력범죄상해.pdf':'성폭력범죄발생보상금.pdf');
+  else if(/학교폭력/.test(name)) add('어린이학교폭력피해보장금.pdf');
+  else if(/강력범죄/.test(name)) add('강력범죄피해보상금.pdf');
+  else if(/전동보조기기/.test(name)) add('전동보조기기(전동휠체어,의료용스쿠터사고) 부상치료비.pdf');
+  else if(/스쿨존|실버존|어린이보행|대중교통.*부상/.test(name)) add('스쿨존 실버존 어린이보행중 대중교통)부상치료비.pdf');
+  else if(/화상수술/.test(name)) add(/수술치료/.test(name) ? '화상수술비+화상수술치료비.pdf':'화상수술비.pdf');
+  else if(/온열|한랭/.test(name) && /진단/.test(name)) add(/한랭/.test(name)?'온열+한랭질환 진단비.pdf':'온열질환 진단비.pdf');
+  else if(/의료사고/.test(name)) add('의료사고법률비용.pdf');
+  else if(/의사상자/.test(name)){add('의사자 보상금.pdf');add('의상자 보상금.pdf');}
+  else if(/의사자/.test(name)) add('의사자 보상금.pdf');
+  else if(/의상자/.test(name)) add('의상자 보상금.pdf');
+  else if(/재난.*(?:지원|비용)/.test(name)) add('재난비용지원.pdf');
+  else if(/어린이.*수술/.test(name) && /12세이하/.test(text)) add('어린이(상해수술비)12세이하.pdf');
+  else if(/상해의료비/.test(name)){
+    const excluded = /실손.*(?:가입자.*(?:제외|불가)|보험금지급제한)|(?:제한사항|보상하지).*실손/.test(text);
+    if(/진단/.test(name) && excluded) add('상해의료비+상해진단위로금.pdf');
+    else add(excluded ? '상해의료비(실손가입자제외).pdf':'상해의료비.pdf');
+    if(/장례/.test(detail)){death('사망-장례비용.pdf');}
+  }
+  else if(/상해(?:사고)?진단/.test(name) && !/재난|폭발|화재|붕괴/.test(name)){
+    const ages = [...new Set(text.match(/\d+세(?:이하|미만|이상|초과)/g) || [])].sort();
+    const key = ages.join('|');
+    const byAge = {
+      '12세이하|60세이상':'상해사고진단금 (12세이하, 60세이상만 적용).pdf',
+      '12세이하|61세이상':'상해사고진단금 (12세이하, 61세이상만 적용).pdf',
+      '12세이하|65세이상':'상해사고진단금 (12세이하, 65세이상만 적용).pdf',
+      '12세이상':'상해사고진단금(12세 이상 적용).pdf',
+      '12세이하':'상해사고진단금(12세이하만 적용).pdf',
+      '15세미만|65세이상':'상해사고진단금(15세미만, 65세이상적용).pdf',
+      '15세이하|60세이상':'상해사고진단금(15세이하, 60세 이상만 적용).pdf',
+      '65세이상':'상해사고진단금(65세 이상 적용).pdf'
+    };
+    if(/취약계층|기초수급|차상위/.test(text)) result.note='연령·대상자별 조건이 있어 구비서류를 상담으로 확인해 주세요.';
+    else if(byAge[key]) add(byAge[key]);
+    else if(!ages.length) add('상해사고진단금.pdf');
+    else result.note='등록된 연령 조건과 일치하는 구비서류 안내문을 상담으로 확인해 주세요.';
+  }
+  if(!result.files.length && !result.note) result.note='이 담보의 구비서류는 카카오상담 또는 1522-3556으로 확인해 주세요.';
+  return result;
+}
+
+
+// Public document links only. No form state, sheet request or SMS changes.
+function appendInternalCoverageDocuments(container, item) {
+  const info = internalCoverageDocuments(item);
+  const panel = document.createElement('section');
+  panel.className = 'internal-coverage-documents';
+  const title = document.createElement('h4');
+  title.textContent = '구비서류 안내문';
+  panel.appendChild(title);
+  info.files.forEach(function(doc) {
+    const link = document.createElement('a');
+    link.href = 'https://wjdbs1.gabia.io/docs/' + encodeURIComponent(doc.file);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.download = doc.file;
+    link.textContent = doc.label + ' 다운로드';
+    panel.appendChild(link);
+  });
+  const note = document.createElement('p');
+  note.textContent = info.note || '조회한 담보의 가입조건에 맞는 안내문을 확인해 주세요.';
+  panel.appendChild(note);
+  container.appendChild(panel);
+}
+
 function getInternalCoverageDialog(){
  let dialog=document.getElementById('coverageDialog');
  if(dialog)return dialog;
@@ -32798,6 +32906,7 @@ function renderCoverageLookupCards() {
     Array.from(row.cells[2].childNodes).forEach(function(node){section.appendChild(node.cloneNode(true));});
     body.appendChild(section);
    }
+   if(row._citizenCoverage)appendInternalCoverageDocuments(body, row._citizenCoverage);
    popup.querySelector('h3').textContent=name.textContent;
    const content=popup.querySelector('.coverage-dialog-scroll');content.replaceChildren(body);content.scrollTop=0;
    popup._opener=button;popup._previousOverflow=document.body.style.overflow;
