@@ -261,6 +261,35 @@ th { background:#f4f8ff; color:#12419e; }
 .internal-coverage-documents p{margin:12px 0 0;color:#556175;font-size:13px;line-height:1.6}
 </style>
 
+
+<style id="document-link-styles">
+.document-link-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.document-link-row>a{flex:1;min-width:160px}
+.document-link-send{flex:0 0 auto;background:#2d6cdf;color:white;border:0;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer}
+.document-link-send:focus-visible{outline:3px solid #1d8f76;outline-offset:3px}
+.internal-coverage-documents .document-link-row{justify-content:space-between;column-gap:24px;row-gap:8px}
+.internal-coverage-documents .document-link-row>a{flex:0 1 auto;min-width:0}
+.internal-coverage-documents .document-link-send{width:auto;min-width:0;margin-left:auto;padding:11px 14px;border:1px solid #245bb1;background:#245bb1;font:inherit;font-weight:700;line-height:1.6;white-space:nowrap}
+.internal-coverage-documents .document-link-send:hover{background:#17458e}
+#documentLinkDialog{width:min(520px,calc(100vw - 28px));max-height:90vh;overflow:auto;border:1px solid #d8e2f0;border-radius:18px;padding:24px;color:#1f2937;box-shadow:0 20px 80px #1234}
+#documentLinkDialog::backdrop{background:#10213b80}
+.document-link-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.document-link-heading h3{font-size:21px;margin:0;color:#163b7a}
+.document-link-heading button{background:#edf2f9;padding:8px;border:0;border-radius:6px;cursor:pointer}
+.document-link-intro{font-size:14px;line-height:1.7;color:#667085}
+.document-link-selected{background:#f0f5ff;border:1px solid #d8e2f0;padding:16px;border-radius:12px;margin:16px 0}
+.document-link-selected span,.document-link-selected strong{display:block;margin-bottom:8px}
+.document-link-selected span{font-size:12px;color:#667085}
+.document-link-selected a{font-size:13px;color:#1e56a0}
+#documentLinkPhone{width:100%;font-size:19px;padding:12px;border:1px solid #acbfd9;border-radius:10px;margin:8px 0 16px}
+.document-link-actions{display:flex;gap:10px;justify-content:flex-end}
+.document-link-actions button{border:0;border-radius:10px;padding:12px 22px;font-weight:700;cursor:pointer}
+#documentLinkDialog button:disabled{opacity:.6;cursor:wait}
+#documentLinkDialog [data-send-status]{min-height:42px;line-height:1.6;font-size:14px;margin:16px 0 0;color:#205c40;overflow-wrap:anywhere}
+#documentLinkDialog [data-send-status].is-error{color:#a02923}
+@media(max-width:500px){#documentLinkDialog{padding:18px}.document-link-heading h3{font-size:18px}}
+</style>
+
 </head>
 <body>
 
@@ -32841,7 +32870,12 @@ function appendInternalCoverageDocuments(container, item) {
     link.rel = 'noopener noreferrer';
     link.download = doc.file;
     link.textContent = doc.label + ' 다운로드';
-    panel.appendChild(link);
+    const row = document.createElement('div');
+    row.className = 'document-link-row';
+    row.appendChild(link);
+    const sendButton = window.UnionDocumentLinks && window.UnionDocumentLinks.button('guide', doc.file);
+    if (sendButton) row.appendChild(sendButton);
+    panel.appendChild(row);
   });
   const note = document.createElement('p');
   note.textContent = info.note || '조회한 담보의 가입조건에 맞는 안내문을 확인해 주세요.';
@@ -32929,7 +32963,7 @@ function clearLookup(resetTop=true) {
   document.getElementById("infoInsurer").textContent = "-";
   document.getElementById("infoStart").textContent = "-";
   document.getElementById("infoPop").textContent = "-";
-  document.getElementById("infoRegion").textContent = "-";
+  const infoRegionEl = document.getElementById("infoRegion"); if (infoRegionEl) infoRegionEl.textContent = "-";
   document.getElementById("coverageTableBody").innerHTML = '<tr><td colspan="5">조회 전</td></tr>';
   renderCoverageLookupCards();
   document.getElementById("claimYearView").value = document.getElementById("yearSelect").value || "";
@@ -33485,6 +33519,7 @@ clearLookup();
 loadUserEmail();
 
 function renderAdminPreview() {
+  if (!["adminCount", "adminLatestName", "adminLatestRegion", "adminLatestType"].every(id => document.getElementById(id))) return;
   const key = "unioninsplus_claims_v15";
   const rows = JSON.parse(localStorage.getItem(key) || "[]");
   document.getElementById("adminCount").textContent = rows.length ? String(rows.length) : "0";
@@ -33977,5 +34012,168 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 </form>
 
+<script id="document-link-feature">
+(function () {
+  'use strict';
+  const CATALOG = {"c0":{"id":"c0","kind":"claim","file":"보험금청구서.html","label":"보험금청구서","url":"https://unioninsplus.github.io/claim-site/%EB%B3%B4%ED%97%98%EA%B8%88%EC%B2%AD%EA%B5%AC%EC%84%9C.html"},"c1":{"id":"c1","kind":"claim","file":"보험금청구서_상해진단금.html","label":"보험금청구서 (상해진단금)","url":"https://unioninsplus.github.io/claim-site/%EB%B3%B4%ED%97%98%EA%B8%88%EC%B2%AD%EA%B5%AC%EC%84%9C_%EC%83%81%ED%95%B4%EC%A7%84%EB%8B%A8%EA%B8%88.html"},"c2":{"id":"c2","kind":"claim","file":"보험금청구서_상해진단금+의료비.html","label":"보험금청구서 (상해진단금+의료비)","url":"https://unioninsplus.github.io/claim-site/%EB%B3%B4%ED%97%98%EA%B8%88%EC%B2%AD%EA%B5%AC%EC%84%9C_%EC%83%81%ED%95%B4%EC%A7%84%EB%8B%A8%EA%B8%88%2B%EC%9D%98%EB%A3%8C%EB%B9%84.html"},"c3":{"id":"c3","kind":"claim","file":"보험금청구서_화상수술비.html","label":"보험금청구서 (화상수술비)","url":"https://unioninsplus.github.io/claim-site/%EB%B3%B4%ED%97%98%EA%B8%88%EC%B2%AD%EA%B5%AC%EC%84%9C_%ED%99%94%EC%83%81%EC%88%98%EC%88%A0%EB%B9%84.html"},"c4":{"id":"c4","kind":"claim","file":"보험금청구서_개물림부딪힘진단비.html","label":"보험금청구서 (개물림·부딪힘 진단비)","url":"https://unioninsplus.github.io/claim-site/%EB%B3%B4%ED%97%98%EA%B8%88%EC%B2%AD%EA%B5%AC%EC%84%9C_%EA%B0%9C%EB%AC%BC%EB%A6%BC%EB%B6%80%EB%94%AA%ED%9E%98%EC%A7%84%EB%8B%A8%EB%B9%84.html"},"d0":{"id":"d0","kind":"guide","file":"강력범죄피해보상금.pdf","label":"강력범죄피해보상금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B0%95%EB%A0%A5%EB%B2%94%EC%A3%84%ED%94%BC%ED%95%B4%EB%B3%B4%EC%83%81%EA%B8%88.pdf"},"d1":{"id":"d1","kind":"guide","file":"개물림 부딪힘 진단비.pdf","label":"개물림 부딪힘 진단비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B0%9C%EB%AC%BC%EB%A6%BC%20%EB%B6%80%EB%94%AA%ED%9E%98%20%EC%A7%84%EB%8B%A8%EB%B9%84.pdf"},"d2":{"id":"d2","kind":"guide","file":"개물림 사고(응급&비응급) 치료비.pdf","label":"개물림 사고(응급&비응급) 치료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B0%9C%EB%AC%BC%EB%A6%BC%20%EC%82%AC%EA%B3%A0%28%EC%9D%91%EA%B8%89%26%EB%B9%84%EC%9D%91%EA%B8%89%29%20%EC%B9%98%EB%A3%8C%EB%B9%84.pdf"},"d3":{"id":"d3","kind":"guide","file":"개물림응급실내원진료비.pdf","label":"개물림응급실내원진료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B0%9C%EB%AC%BC%EB%A6%BC%EC%9D%91%EA%B8%89%EC%8B%A4%EB%82%B4%EC%9B%90%EC%A7%84%EB%A3%8C%EB%B9%84.pdf"},"d4":{"id":"d4","kind":"guide","file":"군복무 상해보험 상해흉터성형수술비.pdf","label":"군복무 상해보험 상해흉터성형수술비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B5%B0%EB%B3%B5%EB%AC%B4%20%EC%83%81%ED%95%B4%EB%B3%B4%ED%97%98%20%EC%83%81%ED%95%B4%ED%9D%89%ED%84%B0%EC%84%B1%ED%98%95%EC%88%98%EC%88%A0%EB%B9%84.pdf"},"d5":{"id":"d5","kind":"guide","file":"군복무상해보험 골절진단금.pdf","label":"군복무상해보험 골절진단금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B5%B0%EB%B3%B5%EB%AC%B4%EC%83%81%ED%95%B4%EB%B3%B4%ED%97%98%20%EA%B3%A8%EC%A0%88%EC%A7%84%EB%8B%A8%EA%B8%88.pdf"},"d6":{"id":"d6","kind":"guide","file":"군복무상해보험 깁스치료비.pdf","label":"군복무상해보험 깁스치료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B5%B0%EB%B3%B5%EB%AC%B4%EC%83%81%ED%95%B4%EB%B3%B4%ED%97%98%20%EA%B9%81%EC%8A%A4%EC%B9%98%EB%A3%8C%EB%B9%84.pdf"},"d7":{"id":"d7","kind":"guide","file":"군복무상해보험 상해입원일당.pdf","label":"군복무상해보험 상해입원일당 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B5%B0%EB%B3%B5%EB%AC%B4%EC%83%81%ED%95%B4%EB%B3%B4%ED%97%98%20%EC%83%81%ED%95%B4%EC%9E%85%EC%9B%90%EC%9D%BC%EB%8B%B9.pdf"},"d8":{"id":"d8","kind":"guide","file":"급성감염병사망.pdf","label":"급성감염병사망 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EA%B8%89%EC%84%B1%EA%B0%90%EC%97%BC%EB%B3%91%EC%82%AC%EB%A7%9D.pdf"},"d9":{"id":"d9","kind":"guide","file":"독액성동물 응급실내원진료비.pdf","label":"독액성동물 응급실내원진료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EB%8F%85%EC%95%A1%EC%84%B1%EB%8F%99%EB%AC%BC%20%EC%9D%91%EA%B8%89%EC%8B%A4%EB%82%B4%EC%9B%90%EC%A7%84%EB%A3%8C%EB%B9%84.pdf"},"d10":{"id":"d10","kind":"guide","file":"사망-장례비용.pdf","label":"사망-장례비용 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%82%AC%EB%A7%9D-%EC%9E%A5%EB%A1%80%EB%B9%84%EC%9A%A9.pdf"},"d11":{"id":"d11","kind":"guide","file":"사망.pdf","label":"사망 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%82%AC%EB%A7%9D.pdf"},"d12":{"id":"d12","kind":"guide","file":"상해사고진단금 (12세이하, 60세이상만 적용).pdf","label":"상해사고진단금 (12세이하, 60세이상만 적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%20%2812%EC%84%B8%EC%9D%B4%ED%95%98%2C%2060%EC%84%B8%EC%9D%B4%EC%83%81%EB%A7%8C%20%EC%A0%81%EC%9A%A9%29.pdf"},"d13":{"id":"d13","kind":"guide","file":"상해사고진단금 (12세이하, 61세이상만 적용).pdf","label":"상해사고진단금 (12세이하, 61세이상만 적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%20%2812%EC%84%B8%EC%9D%B4%ED%95%98%2C%2061%EC%84%B8%EC%9D%B4%EC%83%81%EB%A7%8C%20%EC%A0%81%EC%9A%A9%29.pdf"},"d14":{"id":"d14","kind":"guide","file":"상해사고진단금 (12세이하, 65세이상만 적용).pdf","label":"상해사고진단금 (12세이하, 65세이상만 적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%20%2812%EC%84%B8%EC%9D%B4%ED%95%98%2C%2065%EC%84%B8%EC%9D%B4%EC%83%81%EB%A7%8C%20%EC%A0%81%EC%9A%A9%29.pdf"},"d15":{"id":"d15","kind":"guide","file":"상해사고진단금(12세 이상 적용).pdf","label":"상해사고진단금(12세 이상 적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%2812%EC%84%B8%20%EC%9D%B4%EC%83%81%20%EC%A0%81%EC%9A%A9%29.pdf"},"d16":{"id":"d16","kind":"guide","file":"상해사고진단금(12세이하만 적용).pdf","label":"상해사고진단금(12세이하만 적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%2812%EC%84%B8%EC%9D%B4%ED%95%98%EB%A7%8C%20%EC%A0%81%EC%9A%A9%29.pdf"},"d17":{"id":"d17","kind":"guide","file":"상해사고진단금(15세미만, 65세이상적용).pdf","label":"상해사고진단금(15세미만, 65세이상적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%2815%EC%84%B8%EB%AF%B8%EB%A7%8C%2C%2065%EC%84%B8%EC%9D%B4%EC%83%81%EC%A0%81%EC%9A%A9%29.pdf"},"d18":{"id":"d18","kind":"guide","file":"상해사고진단금(15세이하, 60세 이상만 적용).pdf","label":"상해사고진단금(15세이하, 60세 이상만 적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%2815%EC%84%B8%EC%9D%B4%ED%95%98%2C%2060%EC%84%B8%20%EC%9D%B4%EC%83%81%EB%A7%8C%20%EC%A0%81%EC%9A%A9%29.pdf"},"d19":{"id":"d19","kind":"guide","file":"상해사고진단금(65세 이상 적용).pdf","label":"상해사고진단금(65세 이상 적용) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88%2865%EC%84%B8%20%EC%9D%B4%EC%83%81%20%EC%A0%81%EC%9A%A9%29.pdf"},"d20":{"id":"d20","kind":"guide","file":"상해사고진단금.pdf","label":"상해사고진단금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%82%AC%EA%B3%A0%EC%A7%84%EB%8B%A8%EA%B8%88.pdf"},"d21":{"id":"d21","kind":"guide","file":"상해의료비(실손가입자제외).pdf","label":"상해의료비(실손가입자제외) 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%9D%98%EB%A3%8C%EB%B9%84%28%EC%8B%A4%EC%86%90%EA%B0%80%EC%9E%85%EC%9E%90%EC%A0%9C%EC%99%B8%29.pdf"},"d22":{"id":"d22","kind":"guide","file":"상해의료비+상해진단위로금.pdf","label":"상해의료비+상해진단위로금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%9D%98%EB%A3%8C%EB%B9%84%2B%EC%83%81%ED%95%B4%EC%A7%84%EB%8B%A8%EC%9C%84%EB%A1%9C%EA%B8%88.pdf"},"d23":{"id":"d23","kind":"guide","file":"상해의료비.pdf","label":"상해의료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%83%81%ED%95%B4%EC%9D%98%EB%A3%8C%EB%B9%84.pdf"},"d24":{"id":"d24","kind":"guide","file":"성폭력범죄발생보상금.pdf","label":"성폭력범죄발생보상금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%84%B1%ED%8F%AD%EB%A0%A5%EB%B2%94%EC%A3%84%EB%B0%9C%EC%83%9D%EB%B3%B4%EC%83%81%EA%B8%88.pdf"},"d25":{"id":"d25","kind":"guide","file":"성폭력범죄상해.pdf","label":"성폭력범죄상해 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%84%B1%ED%8F%AD%EB%A0%A5%EB%B2%94%EC%A3%84%EC%83%81%ED%95%B4.pdf"},"d26":{"id":"d26","kind":"guide","file":"스쿨존 실버존 어린이보행중 대중교통)부상치료비.pdf","label":"스쿨존 실버존 어린이보행중 대중교통)부상치료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%8A%A4%EC%BF%A8%EC%A1%B4%20%EC%8B%A4%EB%B2%84%EC%A1%B4%20%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%B3%B4%ED%96%89%EC%A4%91%20%EB%8C%80%EC%A4%91%EA%B5%90%ED%86%B5%29%EB%B6%80%EC%83%81%EC%B9%98%EB%A3%8C%EB%B9%84.pdf"},"d27":{"id":"d27","kind":"guide","file":"어린이(상해수술비)12세이하.pdf","label":"어린이(상해수술비)12세이하 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%96%B4%EB%A6%B0%EC%9D%B4%28%EC%83%81%ED%95%B4%EC%88%98%EC%88%A0%EB%B9%84%2912%EC%84%B8%EC%9D%B4%ED%95%98.pdf"},"d28":{"id":"d28","kind":"guide","file":"어린이학교폭력피해보장금.pdf","label":"어린이학교폭력피해보장금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%96%B4%EB%A6%B0%EC%9D%B4%ED%95%99%EA%B5%90%ED%8F%AD%EB%A0%A5%ED%94%BC%ED%95%B4%EB%B3%B4%EC%9E%A5%EA%B8%88.pdf"},"d29":{"id":"d29","kind":"guide","file":"연재해상해진단위로금.pdf","label":"연재해상해진단위로금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%97%B0%EC%9E%AC%ED%95%B4%EC%83%81%ED%95%B4%EC%A7%84%EB%8B%A8%EC%9C%84%EB%A1%9C%EA%B8%88.pdf"},"d30":{"id":"d30","kind":"guide","file":"온열+한랭질환 진단비.pdf","label":"온열+한랭질환 진단비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%98%A8%EC%97%B4%2B%ED%95%9C%EB%9E%AD%EC%A7%88%ED%99%98%20%EC%A7%84%EB%8B%A8%EB%B9%84.pdf"},"d31":{"id":"d31","kind":"guide","file":"온열질환 진단비.pdf","label":"온열질환 진단비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%98%A8%EC%97%B4%EC%A7%88%ED%99%98%20%EC%A7%84%EB%8B%A8%EB%B9%84.pdf"},"d32":{"id":"d32","kind":"guide","file":"위임장.pdf","label":"위임장 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9C%84%EC%9E%84%EC%9E%A5.pdf"},"d33":{"id":"d33","kind":"guide","file":"의료사고법률비용.pdf","label":"의료사고법률비용 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9D%98%EB%A3%8C%EC%82%AC%EA%B3%A0%EB%B2%95%EB%A5%A0%EB%B9%84%EC%9A%A9.pdf"},"d34":{"id":"d34","kind":"guide","file":"의사자 보상금.pdf","label":"의사자 보상금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9D%98%EC%82%AC%EC%9E%90%20%EB%B3%B4%EC%83%81%EA%B8%88.pdf"},"d35":{"id":"d35","kind":"guide","file":"의상자 보상금.pdf","label":"의상자 보상금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9D%98%EC%83%81%EC%9E%90%20%EB%B3%B4%EC%83%81%EA%B8%88.pdf"},"d36":{"id":"d36","kind":"guide","file":"자연재해 상해진단금+입원일당.pdf","label":"자연재해 상해진단금+입원일당 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9E%90%EC%97%B0%EC%9E%AC%ED%95%B4%20%EC%83%81%ED%95%B4%EC%A7%84%EB%8B%A8%EA%B8%88%2B%EC%9E%85%EC%9B%90%EC%9D%BC%EB%8B%B9.pdf"},"d37":{"id":"d37","kind":"guide","file":"자연재해 정신치료비.pdf","label":"자연재해 정신치료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9E%90%EC%97%B0%EC%9E%AC%ED%95%B4%20%EC%A0%95%EC%8B%A0%EC%B9%98%EB%A3%8C%EB%B9%84.pdf"},"d38":{"id":"d38","kind":"guide","file":"자연재해 후유장해.pdf","label":"자연재해 후유장해 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9E%90%EC%97%B0%EC%9E%AC%ED%95%B4%20%ED%9B%84%EC%9C%A0%EC%9E%A5%ED%95%B4.pdf"},"d39":{"id":"d39","kind":"guide","file":"자전거상해 진단위로금.pdf","label":"자전거상해 진단위로금 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9E%90%EC%A0%84%EA%B1%B0%EC%83%81%ED%95%B4%20%EC%A7%84%EB%8B%A8%EC%9C%84%EB%A1%9C%EA%B8%88.pdf"},"d40":{"id":"d40","kind":"guide","file":"재난비용지원.pdf","label":"재난비용지원 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%9E%AC%EB%82%9C%EB%B9%84%EC%9A%A9%EC%A7%80%EC%9B%90.pdf"},"d41":{"id":"d41","kind":"guide","file":"전동보조기기(전동휠체어,의료용스쿠터사고) 부상치료비.pdf","label":"전동보조기기(전동휠체어,의료용스쿠터사고) 부상치료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%EC%A0%84%EB%8F%99%EB%B3%B4%EC%A1%B0%EA%B8%B0%EA%B8%B0%28%EC%A0%84%EB%8F%99%ED%9C%A0%EC%B2%B4%EC%96%B4%2C%EC%9D%98%EB%A3%8C%EC%9A%A9%EC%8A%A4%EC%BF%A0%ED%84%B0%EC%82%AC%EA%B3%A0%29%20%EB%B6%80%EC%83%81%EC%B9%98%EB%A3%8C%EB%B9%84.pdf"},"d42":{"id":"d42","kind":"guide","file":"화상수술비+화상수술치료비.pdf","label":"화상수술비+화상수술치료비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%ED%99%94%EC%83%81%EC%88%98%EC%88%A0%EB%B9%84%2B%ED%99%94%EC%83%81%EC%88%98%EC%88%A0%EC%B9%98%EB%A3%8C%EB%B9%84.pdf"},"d43":{"id":"d43","kind":"guide","file":"화상수술비.pdf","label":"화상수술비 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%ED%99%94%EC%83%81%EC%88%98%EC%88%A0%EB%B9%84.pdf"},"d44":{"id":"d44","kind":"guide","file":"후유장해.pdf","label":"후유장해 구비서류 안내문","url":"https://wjdbs1.gabia.io/docs/%ED%9B%84%EC%9C%A0%EC%9E%A5%ED%95%B4.pdf"}};
+  const PUBLIC_LINK_BASE = 'https://unioninsplus.github.io/claim-site/doc.html';
+  const SEND_URL = 'https://wjdbs1.gabia.io/aligo_send.php';
+  const RELEASE = 'union-document-link-v1-20261112';
+  const WAIT_MS = 5 * 60 * 1000;
+  let dialog, selected, opener, busy = false;
+  const history = new Map();
+
+  function byFile(kind, file) {
+    return Object.values(CATALOG).find(doc => doc.kind === kind && doc.file === file);
+  }
+  function phoneDigits(value) { return String(value || '').replace(/\D/g, ''); }
+  function phoneDisplay(value) { return phoneDigits(value).replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3'); }
+  function remember(key, state) {
+    const record = {state: state, at: Date.now()};
+    history.set(key, record);
+    try { sessionStorage.setItem('unionDocumentLink:' + key, JSON.stringify(record)); } catch (_) {}
+  }
+  function recent(key) {
+    let record = history.get(key);
+    try { record = record || JSON.parse(sessionStorage.getItem('unionDocumentLink:' + key) || 'null'); } catch (_) {}
+    return record && Date.now() - record.at < WAIT_MS ? record : null;
+  }
+  function status(message, isError) {
+    const el = dialog.querySelector('[data-send-status]');
+    el.textContent = message;
+    el.classList.toggle('is-error', !!isError);
+  }
+  function setBusy(value) {
+    busy = value;
+    dialog.querySelector('[data-phone]').disabled = value;
+    dialog.querySelector('[data-close]').disabled = value;
+    dialog.querySelector('[data-send]').disabled = value;
+    dialog.querySelector('[data-send]').textContent = value ? '발송 확인 중…' : '보내기';
+    dialog.setAttribute('aria-busy', String(value));
+  }
+  function makeDialog() {
+    if (dialog) return dialog;
+    dialog = document.createElement('dialog');
+    dialog.id = 'documentLinkDialog';
+    dialog.setAttribute('aria-labelledby', 'documentLinkTitle');
+    dialog.innerHTML = '<div class="document-link-heading"><h3 id="documentLinkTitle">휴대폰으로 양식 보내기</h3><button type="button" data-close aria-label="양식 보내기 닫기">닫기 ×</button></div>' +
+      '<p class="document-link-intro">선택한 양식의 링크를 보내드립니다. 시민은 휴대폰에서 링크를 눌러 열어볼 수 있습니다.</p>' +
+      '<div class="document-link-selected"><span>보낼 양식</span><strong data-name></strong><a data-preview target="_blank" rel="noopener noreferrer">양식 미리보기 ↗</a></div>' +
+      '<label for="documentLinkPhone">받는 휴대폰번호</label><input id="documentLinkPhone" data-phone type="tel" inputmode="tel" autocomplete="off" maxlength="13" placeholder="010-0000-0000">' +
+      '<div class="document-link-actions"><button type="button" data-copy class="soft">링크 복사</button><button type="button" data-send class="primary">보내기</button></div>' +
+      '<p data-send-status role="status" aria-live="polite"></p>';
+    document.body.appendChild(dialog);
+    dialog.querySelector('[data-close]').addEventListener('click', () => { if (!busy) dialog.close(); });
+    dialog.addEventListener('cancel', event => { if (busy) event.preventDefault(); });
+    dialog.addEventListener('keydown', event => {
+      event.stopPropagation();
+      if (event.key === 'Enter' && event.target.matches('[data-phone]')) { event.preventDefault(); send(); }
+    });
+    dialog.querySelector('[data-phone]').addEventListener('input', event => {
+      const n = phoneDigits(event.target.value).slice(0, 11);
+      event.target.value = n.length > 7 ? n.slice(0, 3) + '-' + n.slice(3, 7) + '-' + n.slice(7) : n.length > 3 ? n.slice(0, 3) + '-' + n.slice(3) : n;
+    });
+    dialog.querySelector('[data-send]').addEventListener('click', send);
+    dialog.querySelector('[data-copy]').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(selected.url); status('양식 링크를 복사했습니다.'); }
+      catch (_) { status('자동 복사가 되지 않습니다. 양식 미리보기를 열어 주소를 복사해 주세요.', true); }
+    });
+    dialog.addEventListener('close', () => { if (opener && opener.isConnected) opener.focus(); });
+    return dialog;
+  }
+  function open(kind, file, trigger) {
+    if (busy) return;
+    const doc = byFile(kind, file);
+    if (!doc) { alert('등록된 양식을 찾지 못했습니다.'); return; }
+    makeDialog();
+    selected = doc;
+    opener = trigger || document.activeElement;
+    dialog.querySelector('[data-name]').textContent = doc.label;
+    dialog.querySelector('[data-preview]').href = doc.url;
+    dialog.querySelector('[data-phone]').value = phoneDisplay(document.getElementById('claimPhone')?.value || '');
+    status('받는 번호와 보낼 양식을 확인한 뒤 보내기를 눌러 주세요.');
+    setBusy(false);
+    dialog.showModal();
+    dialog.querySelector('[data-phone]').focus();
+  }
+  async function fetchWithTimeout(url, options, milliseconds) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), milliseconds);
+    try { return await fetch(url, Object.assign({}, options, {signal: controller.signal})); }
+    finally { clearTimeout(timer); }
+  }
+  async function send() {
+    if (busy || !selected) return;
+    const phone = phoneDigits(dialog.querySelector('[data-phone]').value);
+    if (!/^010\d{8}$/.test(phone)) { status('010으로 시작하는 휴대폰번호 11자리를 입력해 주세요.', true); dialog.querySelector('[data-phone]').focus(); return; }
+    const key = selected.id + ':' + phone;
+    const prior = recent(key);
+    if (prior) {
+      status(prior.state === 'accepted' ? '같은 번호와 양식의 발송 요청이 이미 접수되었습니다. 중복 발송을 막기 위해 5분 후 다시 보낼 수 있습니다.' : '앞선 요청의 결과를 확인 중입니다. 중복 발송을 막기 위해 수신 여부를 먼저 확인하고 5분 후 다시 시도해 주세요.', true);
+      return;
+    }
+    const snapshot = selected;
+    const shortUrl = PUBLIC_LINK_BASE + '?f=' + encodeURIComponent(snapshot.id);
+    setBusy(true);
+    let requested = false;
+    try {
+      status('양식 연결을 확인하고 있습니다.');
+      // The public page must be deployed before sending a link to a citizen.
+      const ready = await fetchWithTimeout(PUBLIC_LINK_BASE, {method: 'GET', cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer'}, 10000);
+      if (!ready.ok || !(await ready.text()).includes(RELEASE)) {
+        throw new Error('양식 연결 파일(doc.html)이 아직 업로드되지 않았습니다. 파일을 함께 올린 뒤 보내기를 사용해 주세요.');
+      }
+      status('보내는 중입니다. 잠시만 기다려 주세요.');
+      requested = true;
+      remember(key, 'pending');
+      const res = await fetchWithTimeout(SEND_URL, {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'omit', referrerPolicy: 'no-referrer',
+        body: JSON.stringify({phone: phone, note: shortUrl})
+      }, 30000);
+      if (!res.ok) throw new Error('발송 결과를 확인하지 못했습니다. 수신 여부를 확인한 뒤 다시 시도해 주세요.');
+      const data = await res.json();
+      const provider = data && data.aligo;
+      const accepted = data.ok === true && provider && Number(provider.result_code) === 1 && Number(provider.success_cnt) === 1 && Number(provider.error_cnt || 0) === 0 && provider.msg_id;
+      if (accepted) {
+        remember(key, 'accepted');
+        status(phoneDisplay(phone) + ' 번호로 ' + snapshot.label + ' 링크 발송 요청이 접수되었습니다. 휴대폰 수신 여부를 확인해 주세요.');
+        return;
+      }
+      if (provider && Number.isFinite(Number(provider.result_code)) && Number(provider.result_code) < 0) {
+        history.delete(key);
+        try { sessionStorage.removeItem('unionDocumentLink:' + key); } catch (_) {}
+        requested = false;
+        throw new Error('발송 요청이 거절되었습니다. ' + String(provider.message || '발송 계정과 잔여 건수를 확인해 주세요.').slice(0, 180));
+      }
+      throw new Error('발송 접수 여부가 확인되지 않았습니다. 수신 여부를 먼저 확인해 주세요.');
+    } catch (error) {
+      const detail = error.name === 'AbortError' ? (requested ? '응답 시간이 초과되었습니다. 중복 발송을 막기 위해 수신 여부를 먼저 확인해 주세요.' : '양식 연결 확인 시간이 초과되었습니다. 발송 요청은 보내지 않았습니다.') : error.message;
+      status(detail || '연결을 확인하지 못했습니다.', true);
+    } finally { setBusy(false); }
+  }
+  function button(kind, file) {
+    const doc = byFile(kind, file);
+    if (!doc) return null;
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'document-link-send'; el.textContent = '보내기';
+    el.setAttribute('aria-label', doc.label + ' 휴대폰으로 보내기');
+    el.addEventListener('click', () => open(kind, file, el));
+    return el;
+  }
+  function initialize() {
+    document.querySelectorAll('a[href]').forEach(link => {
+      let file;
+      try { file = decodeURIComponent(new URL(link.getAttribute('href'), location.href).pathname.split('/').pop()); } catch (_) { return; }
+      if (!byFile('claim', file)) return;
+      const sendButton = button('claim', file);
+      if (sendButton) { link.parentElement.classList.add('document-link-row'); link.after(sendButton); }
+    });
+  }
+  window.UnionDocumentLinks = Object.freeze({open: open, button: button});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize);
+  else initialize();
+})();
+
+</script>
 </body>
 </html>
