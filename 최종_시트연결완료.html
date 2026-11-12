@@ -34060,7 +34060,7 @@ document.addEventListener("DOMContentLoaded", function () {
       '<p class="document-link-intro">선택한 양식의 링크를 보내드립니다. 시민은 휴대폰에서 링크를 눌러 열어볼 수 있습니다.</p>' +
       '<div class="document-link-selected"><span>보낼 양식</span><strong data-name></strong><a data-preview target="_blank" rel="noopener noreferrer">양식 미리보기 ↗</a></div>' +
       '<label for="documentLinkPhone">받는 휴대폰번호</label><input id="documentLinkPhone" data-phone type="tel" inputmode="tel" autocomplete="off" maxlength="13" placeholder="010-0000-0000">' +
-      '<div class="document-link-actions"><button type="button" data-copy class="soft">링크 복사</button><button type="button" data-send class="primary">보내기</button></div>' +
+      '<div class="document-link-actions"><button type="button" data-send class="primary">보내기</button></div>' +
       '<p data-send-status role="status" aria-live="polite"></p>';
     document.body.appendChild(dialog);
     dialog.querySelector('[data-close]').addEventListener('click', () => { if (!busy) dialog.close(); });
@@ -34074,10 +34074,6 @@ document.addEventListener("DOMContentLoaded", function () {
       event.target.value = n.length > 7 ? n.slice(0, 3) + '-' + n.slice(3, 7) + '-' + n.slice(7) : n.length > 3 ? n.slice(0, 3) + '-' + n.slice(3) : n;
     });
     dialog.querySelector('[data-send]').addEventListener('click', send);
-    dialog.querySelector('[data-copy]').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(selected.url); status('양식 링크를 복사했습니다.'); }
-      catch (_) { status('자동 복사가 되지 않습니다. 양식 미리보기를 열어 주소를 복사해 주세요.', true); }
-    });
     dialog.addEventListener('close', () => { if (opener && opener.isConnected) opener.focus(); });
     return dialog;
   }
