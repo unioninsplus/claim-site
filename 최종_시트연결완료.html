@@ -32879,7 +32879,7 @@ function internalCoverageDocuments(item){
     // 사고 원인이 달라도 의료비 구비서류는 공통입니다. 원인은 진료기록지 등으로 확인합니다.
     const excluded = /실손.*(?:가입자.*(?:제외|불가)|보험금지급제한)|(?:제한사항|보상하지).*실손/.test(text);
     if(/진단/.test(name) && excluded) add('상해의료비+상해진단위로금.pdf');
-    else add(excluded ? '상해의료비(실손가입자제외).pdf':'상해의료비.pdf');
+    else add(excluded ? '상해의료비(실손가입자제외).pdf':'상해의료비.pdf', '상해의료비');
     // 의료비 담보의 설명에 다른 급부가 언급돼도 그 급부의 서류를 추가하지 않습니다.
   }
   else if(/상해(?:사고)?진단/.test(name) && !/재난|폭발|화재|붕괴/.test(name)){
