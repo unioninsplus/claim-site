@@ -32840,7 +32840,7 @@ function internalCoverageDocuments(item){
   const add = (file, label) => result.files.push({file, label:label || file.replace(/\.pdf$/, '')});
   const death = file => {add(file);add('위임장.pdf', '위임장 (상속인 대표 수령 시)');};
   if(/급성감염병.*사망/.test(name)) death('급성감염병사망.pdf');
-  else if(/장례/.test(name)) death('사망-장례비용.pdf');
+  else if(/장례/.test(name) || originalName.replace(/\s+/g, '') === '익사사고사망비용(장례비지원)') death('사망-장례비용.pdf');
   else if(/사망/.test(name) || name === '자연재해') death('사망.pdf');
   else if(/자연재해.*후유/.test(name)) add('자연재해 후유장해.pdf');
   else if(/후유(?:장해|장애)?/.test(name) && !/후유증/.test(name)) add('후유장해.pdf');
@@ -32877,7 +32877,7 @@ function internalCoverageDocuments(item){
     const excluded = /실손.*(?:가입자.*(?:제외|불가)|보험금지급제한)|(?:제한사항|보상하지).*실손/.test(text);
     if(/진단/.test(name) && excluded) add('상해의료비+상해진단위로금.pdf');
     else add(excluded ? '상해의료비(실손가입자제외).pdf':'상해의료비.pdf');
-    if(/장례/.test(detail)){death('사망-장례비용.pdf');}
+    // 의료비 담보의 설명에 다른 급부가 언급돼도 그 급부의 서류를 추가하지 않습니다.
   }
   else if(/상해(?:사고)?진단/.test(name) && !/재난|폭발|화재|붕괴/.test(name)){
     const ages = [...new Set(text.match(/\d+세(?:이하|미만|이상|초과)/g) || [])].sort();
@@ -32898,7 +32898,7 @@ function internalCoverageDocuments(item){
     }
     else if(byAge[key]) add(byAge[key]);
     else if(!ages.length) add('상해사고진단금.pdf');
-    else result.note='등록된 연령 조건과 일치하는 구비서류 안내문을 상담으로 확인해 주세요.';
+    else add('상해사고진단금.pdf'); // 연령별 전용 양식이 없어도 공통 구비서류는 동일합니다.
   }
   if(!result.files.length && !result.note) result.note='이 담보의 구비서류는 카카오상담 또는 1522-3556으로 확인해 주세요.';
   return result;
