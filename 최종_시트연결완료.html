@@ -32892,7 +32892,10 @@ function internalCoverageDocuments(item){
       '15세이하|60세이상':'상해사고진단금(15세이하, 60세 이상만 적용).pdf',
       '65세이상':'상해사고진단금(65세 이상 적용).pdf'
     };
-    if(/취약계층|기초수급|차상위/.test(text)) result.note='연령·대상자별 조건이 있어 구비서류를 상담으로 확인해 주세요.';
+    if(/취약계층|기초수급|차상위/.test(text)) {
+      // 연령·대상자 조건과 별개로 동일한 공통 구비서류 안내문을 연결합니다.
+      add('상해사고진단금.pdf');
+    }
     else if(byAge[key]) add(byAge[key]);
     else if(!ages.length) add('상해사고진단금.pdf');
     else result.note='등록된 연령 조건과 일치하는 구비서류 안내문을 상담으로 확인해 주세요.';
