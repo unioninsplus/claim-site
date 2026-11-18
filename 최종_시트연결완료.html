@@ -261,6 +261,86 @@ th { background:#f4f8ff; color:#12419e; }
 .internal-coverage-documents p{margin:12px 0 0;color:#556175;font-size:13px;line-height:1.6}
 </style>
 
+
+<style id="internal-readable-coverage-layout">
+#coverageDialog .cg-readable-copy{white-space:normal!important;word-break:keep-all;overflow-wrap:anywhere}
+#coverageDialog .cg-readable-copy .cg-readable-part{display:block;white-space:normal;font-size:inherit;line-height:1.85;margin:0 0 11px}
+#coverageDialog .cg-readable-copy .cg-readable-part:last-child{margin-bottom:0}
+#coverageDialog .cg-readable-copy .cg-readable-heading{font-weight:750;color:#344c43;margin-top:20px;padding-top:14px;border-top:1px solid #e4dccf}
+#coverageDialog .cg-readable-copy .cg-readable-heading:first-child{margin-top:0}
+#coverageDialog .cg-readable-copy .cg-readable-bullet{padding-left:1.15em;text-indent:-1.15em}
+</style>
+
+<script id="internal-readable-coverage-layout-code">
+/* Presentation only: retain every source character except whitespace. */
+function cgReadableSegments(value){
+  const source=String(value||'').replace(/\r\n?/g,'\n'),parts=[];
+  let buffer='',depth=0;
+  const flush=()=>{if(buffer.trim())parts.push(buffer.trim());buffer='';};
+  const explicitStart=/^(?:[•‣▪●◦○※▶►▸]|[-–]\s|[①②③④⑤⑥⑦⑧⑨⑩]|\d+[.)]\s)/;
+  for(let i=0;i<source.length;i++){
+    const ch=source[i],tail=source.slice(i);
+    if(ch==='\n'){
+      const next=source.slice(i+1).trimStart(),previous=buffer.trim();
+      // Retain list, heading, amount and paragraph boundaries; join PDF-wrapped prose.
+      if(depth===0&&(source[i+1]==='\n'||explicitStart.test(next)||
+        /[.!?。！？]$/.test(previous)||/^※[^\n]{0,65}$/.test(previous)||
+        /^[\d,]+\s*(?:원|만원|억원|한도)/.test(next)||
+        /^(?:메리츠|현대|KB|DB|롯데|농협|삼성|한화|NH|MG)\s*[:：]/i.test(next)))flush();
+      else buffer+=' ';
+      continue;
+    }
+    if(depth===0&&buffer.trim()){
+      const prev=source[i-1]||'';
+      const bullet=/[•‣▪●◦○※▶►▸]/.test(ch)&&(/\s/.test(prev)||/[•‣▪●※▶►▸]/.test(ch));
+      const dash=(ch==='-'||ch==='–')&&/\s/.test(prev)&&/^[-–]\s+[가-힣A-Za-z]/.test(tail);
+      const numbered=/^[①②③④⑤⑥⑦⑧⑨⑩]/.test(ch)&&/\s/.test(prev);
+      if(bullet||dash||numbered)flush();
+      // A long definition is easier to read at its existing clause boundaries.
+      if(buffer.length>90&&/^의사의\s*관리하에/.test(tail))flush();
+      if(buffer.length>100&&/^[（(]/.test(ch)){
+        let level=0,end=i;
+        for(;end<source.length;end++){
+          if(/[（(]/.test(source[end]))level++;
+          if(/[）)]/.test(source[end])&&--level===0)break;
+        }
+        if(end<source.length&&end-i>80)flush();
+      }
+    }
+    if(/[（(\[【「『]/.test(ch))depth++;
+    if(/[）)\]】」』]/.test(ch))depth=Math.max(0,depth-1);
+    buffer+=ch;
+    if(depth===0&&buffer.length>65&&/[.!?。！？]/.test(ch)&&/\s/.test(source[i+1]||''))flush();
+    else if(depth===0&&buffer.length>90&&ch===','&&/\s/.test(source[i+1]||''))flush();
+  }
+  flush();return parts;
+}
+function cgReadableTextHtml(value){
+  const escape=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  return cgReadableSegments(value).map(text=>{
+    const heading=/^※/.test(text)&&text.length<70;
+    const bullet=/^(?:[•‣▪●◦○▶►▸]|[-–]\s|[①②③④⑤⑥⑦⑧⑨⑩]|\d+[.)]\s)/.test(text);
+    return '<span class="cg-readable-part'+(heading?' cg-readable-heading':bullet?' cg-readable-bullet':'')+'">'+escape(text)+'</span>';
+  }).join('');
+}
+function cgReadableCoverageHtml(html){
+  const template=document.createElement('template');template.innerHTML=html;
+  const selector='.citizen-original-conditions,.citizen-conditions>div,.citizen-contract-note td[colspan],.citizen-explanation p,.citizen-policy-points p,.citizen-extra-info strong';
+  for(const block of template.content.querySelectorAll(selector)){
+    // Work with text leaves so existing amount boxes and emphasis are preserved.
+    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT),nodes=[];
+    while(walker.nextNode())nodes.push(walker.currentNode);
+    for(const node of nodes){
+      if(!node.textContent.trim()||node.parentElement.closest('.citizen-cgl-key,.citizen-cgl-inline,.cg-readable-part'))continue;
+      const piece=document.createElement('template');piece.innerHTML=cgReadableTextHtml(node.textContent);
+      node.replaceWith(piece.content);
+    }
+    block.classList.add('cg-readable-copy');
+  }
+  return template.innerHTML;
+}
+
+</script>
 </head>
 <body>
 
@@ -1001,7 +1081,7 @@ function citizenCoverageHtml(item){
  }
  if(m.amount)html+='<div class="citizen-total'+(m.monetary?'':' citizen-extra-info')+'"><span>'+e(m.totalLabel)+'</span><strong>'+e(m.amount)+'</strong></div>';
  if(m.diagnosis)html+='<p class="citizen-small-note">진단 주수와 대상 연령에 맞는 지급조건을 확인해 주세요. 표시된 금액을 모두에게 일괄 지급하는 것은 아닙니다.</p>';
- return html;
+ return cgReadableCoverageHtml(html);
 }
 
 // 증권 부호상 연령 구분만 다르고 보장조건이 같은 비사망 담보는 화면에서 한 번 표시.
@@ -22031,7 +22111,7 @@ const DATASET = {
         },
         {
           "name": "상해사고진단금(교통상해보장제외)",
-          "detail": "65세이상\n메리츠: 4주이상: 10만원(65세이상만)\n\n65세미만\n4주이상: 10만원(65세미만_취약계층만)\n ※  취약계층 : 기초수급자,\n차상위계층(차상위장예인포함)\n한부모가정 / 10",
+          "detail": "65세 이상\n메리츠: 4주 이상: 10만원\n\n65세 미만\n메리츠: 4주 이상: 10만원 (취약계층만)\n\n※ 취약계층: 기초수급자, 차상위계층(차상위장애인 포함), 한부모가정",
           "amount": "10만원"
         },
         {
@@ -26105,7 +26185,7 @@ const DATASET = {
           },
           {
             "name": "상해사고진단금(교통상해보장제외)",
-            "detail": "메리츠:4주이상 :5만원 (65세이상)\n(65세미만은 취약계층만)\n\n-현대:4주이상 :5만원 (65세이상)\n( 65세미만은 취약계층만)\n\n※ 취약계층 : 기초수급자,\n차상위계층(차상위장예인포함)\n한부모가정",
+            "detail": "65세 이상\n메리츠: 4주 이상: 5만원\n현대: 4주 이상: 5만원\n\n65세 미만\n메리츠: 4주 이상: 10만원 (취약계층만)\n\n※ 취약계층: 기초수급자, 차상위계층(차상위장애인 포함), 한부모가정",
             "amount": "10만원"
           },
           {
