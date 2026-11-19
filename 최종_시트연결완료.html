@@ -32827,6 +32827,16 @@ function initDropdowns() {
   if (claimYearMirror) claimYearMirror.value = document.getElementById("yearSelect").value || "";
 }
 
+// 2026-11-19: 선택한 계약의 가입 담보만으로 화상 구비서류를 구분합니다.
+function burnCoverageGuideFile109(item, coverages){
+  const norm=x=>String(x&&x.name||'').replace(/\s+/g,'');
+  const name=norm(item),names=(Array.isArray(coverages)?coverages:[]).map(norm);
+  if(!/화상수술(?:치료)?비/.test(name))return '';
+  const both=names.some(n=>/화상수술비/.test(n))&&names.some(n=>/화상수술치료비/.test(n));
+  if(both)return '화상수술비+화상수술치료비.pdf';
+  return /화상수술치료비/.test(name)?'상해의료비.pdf':'화상수술비.pdf';
+}
+
 function internalCoverageDocuments(item){
   const originalName = String(item.name || '');
   const name = citizenCoverageTitle(item).replace(/\s+/g, '');
@@ -32865,7 +32875,7 @@ function internalCoverageDocuments(item){
   else if(/강력범죄/.test(name)) add('강력범죄피해보상금.pdf');
   else if(/전동보조기기/.test(name)) add('전동보조기기(전동휠체어,의료용스쿠터사고) 부상치료비.pdf');
   else if(/스쿨존|실버존|어린이보행|대중교통.*부상/.test(name)) add('스쿨존 실버존 어린이보행중 대중교통)부상치료비.pdf');
-  else if(/화상수술/.test(name)) add(/수술치료/.test(name) ? '화상수술비+화상수술치료비.pdf':'화상수술비.pdf');
+  else if(/화상수술/.test(name)) add(burnCoverageGuideFile109(item, window.currentItems || []));
   else if(/온열|한랭/.test(name) && /진단/.test(name)) add(/한랭/.test(name)?'온열+한랭질환 진단비.pdf':'온열질환 진단비.pdf');
   else if(/의료사고/.test(name)) add('의료사고법률비용.pdf');
   else if(/의사상자/.test(name)){add('의사자 보상금.pdf');add('의상자 보상금.pdf');}
