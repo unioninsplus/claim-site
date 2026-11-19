@@ -37084,8 +37084,9 @@ function citizenPolicyPoints(item){
  return points;
 }
 // 연령별 조건과 금액의 원문은 유지하고 진단 담보의 표 표시만 정리한다.
-function citizenDiagnosisTableRows(name, rows){
- if(!/진단금|진단위로/.test(name))return rows;
+// 연령별 조건과 금액의 원문은 유지하고 진단 담보의 표 표시만 정리한다.
+function citizenCoverageTableRows(name, rows){
+ const diagnosis=/진단금|진단위로/.test(name);
  const compact=s=>String(s||'').replace(/\s+/g,'');
  const out=[],sections=[];
  let section={heading:null,rows:[]};
@@ -37113,6 +37114,17 @@ function citizenDiagnosisTableRows(name, rows){
     part.rows=part.rows.filter(r=>!(r.kind==='note'&&keys.has(compact(r.text))));
    }
   }
+  // 해당 대상의 모든 금액 조건에 공통인 정의만 대상 제목으로 이동한다.
+  // 특정 보험사에만 붙은 제한은 그 보험사의 조건으로 보존한다.
+  if(part.heading&&money.length){
+   const definitions=part.rows.filter(r=>r.kind==='note'&&/^※\s*취약계층\s*[:：]/.test(r.text));
+   if(definitions.length&&money.every(r=>/취약계층\s*만/.test(r.condition||''))){
+    const text=definitions.map(r=>r.text.replace(/\s+/g,' ').trim()).join(' ');
+    part.heading.annotation=[part.heading.annotation,'(취약계층만)',text].filter(Boolean).join(' ');
+    part.rows=part.rows.filter(r=>!definitions.includes(r));
+    for(const r of part.rows)if(r.kind==='money')r.condition=r.condition.replace(/\s*\(\s*취약계층\s*만\s*\)\s*/g,' ').trim();
+   }
+  }
   // 조건에 붙은 설명은 해당 보험사와 함께 이동한다. 전체 주수 조건을 확인할 수 있을 때만 정렬한다.
   const blocks=[],tail=[];let block=null;
   for(const row of part.rows){
@@ -37124,13 +37136,20 @@ function citizenDiagnosisTableRows(name, rows){
    blocks.sort((a,b)=>Number(a.week[1])-Number(b.week[1]));
    part.rows=blocks.flatMap(b=>b.rows).concat(tail);
   }
+  // 같은 보험사의 뒤따르는 조건은 해당 금액 행 안에서 줄을 나눠 표시한다.
+  const displayRows=[];let owner=null;
+  for(const row of part.rows){
+   if(row.kind==='money'){owner=row;displayRows.push(row);}
+   else if(row.kind==='note'&&owner&&row.insurer&&row.insurer===owner.insurer&&row.group===owner.group){
+    owner.notes=(owner.notes||[]).concat(row.text);
+   }else {displayRows.push(row);owner=null;}
+  }
   if(part.heading)out.push(part.heading);
-  out.push(...part.rows);
+  out.push(...displayRows);
  }
  // 명시된 합계는 기존 하단 보장금액란에만 표시한다.
- return out.filter(r=>r.kind!=='total');
+ return diagnosis?out.filter(r=>r.kind!=='total'):out;
 }
-
 function citizenCoverageModel(item){
  const amount=String(item.amount||'').trim(),name=String(item.name||''),raw=String(item.detail||'').trim();
  const diagnosis=/진단금|진단위로/.test(name),groupedDiagnosis=diagnosis&&/^(?:만\s*)?\d+\s*세\s*(?:이상|미만|이하|초과)\s*$/m.test(raw);
@@ -37183,7 +37202,7 @@ function citizenCoverageModel(item){
   if(/^[\d,]+만(?:원)?\s*한도$/.test(r.text))return Object.assign({},r,{insurer:'',text:(r.group?'해당 연령 ':'')+'합계 '+r.text});
   return r;
  });
- rows=citizenDiagnosisTableRows(name,rows);
+ rows=citizenCoverageTableRows(name,rows);
  const ageDisplay=citizenMergeEquivalentAgeGroups(name+' '+amount,rows);rows=ageDisplay.rows;
  const display=citizenCoverageDisplay(item),tail=display.conditions;
  const money=rows.filter(r=>r.kind==='money');
@@ -37208,7 +37227,7 @@ function citizenCoverageHtml(item){
    html+='<div class="citizen-table-wrap"><table class="citizen-money-table"><thead><tr><th scope="col">보험사</th><th scope="col">대상·지급조건</th><th scope="col">금액</th></tr></thead><tbody>';
    for(const r of m.rows){
     if(r.kind==='group')html+='<tr class="citizen-age"><th colspan="3">대상: '+e(r.text.replace(/(\d+세)\s*(이상|이하|미만|초과)/g,'$1 $2'))+(r.annotation?' <span style="display:inline-block;font-weight:500">'+e(r.annotation)+'</span>':'')+'</th></tr>';
-    else if(r.kind==='money')html+='<tr><td>'+e(r.insurer||'—')+'</td><td>'+(cgl?citizenCglKeyText(r.condition||'가입금액'):e(r.condition||'가입금액'))+'</td><td class="citizen-money">'+e(r.amount)+'</td></tr>';
+    else if(r.kind==='money')html+='<tr><td>'+e(r.insurer||'—')+'</td><td>'+(cgl?citizenCglKeyText(r.condition||'가입금액'):e(r.condition||'가입금액'))+(r.notes||[]).map(t=>'<div class="citizen-row-detail" style="margin-top:6px;line-height:1.7;white-space:pre-line">'+(cgl?citizenCglKeyText(t):e(t))+'</div>').join('')+'</td><td class="citizen-money">'+e(r.amount)+'</td></tr>';
     else html+='<tr class="citizen-contract-note"><td>'+e(r.insurer||'—')+'</td><td colspan="2">'+(cgl?citizenCglKeyText(r.text):e(r.text))+'</td></tr>';
    }
    html+='</tbody></table></div>';
@@ -37228,12 +37247,13 @@ function citizenMergeEquivalentAgeGroups(name,rows){
  const normalize=s=>String(s||'').replace(/\s+/g,'');
  const labels=groups.map(i=>normalize(rows[i].text).replace(/^만/,''));
  if(!labels.includes('15세이상')||!labels.includes('15세미만'))return {rows,merged:false};
+ if(groups.some(i=>rows[i].annotation))return {rows,merged:false};
  const left=rows.slice(1,groups[1]),right=rows.slice(groups[1]+1);
  if(!left.length||!right.length||!left.some(r=>r.kind==='money')||left.length!==right.length)return {rows,merged:false};
  // 별도 연령 제한이나 사망 보장이 섞인 경우 전 연령으로 바꾸지 않는다.
- const limits=String(name||'')+' '+[...left,...right].map(r=>r.condition||r.text||'').join(' ');
+ const limits=String(name||'')+' '+[...left,...right].map(r=>[r.condition||r.text||'',...(r.notes||[])].join(' ')).join(' ');
  if(/사망|장례|\d+\s*세|어린이|청소년|노인|성인|미성년/.test(limits))return {rows,merged:false};
- const signature=list=>JSON.stringify(list.map(r=>({kind:r.kind,insurer:normalize(r.insurer),condition:normalize(r.condition),amount:normalize(r.amount),text:normalize(r.text)})));
+ const signature=list=>JSON.stringify(list.map(r=>({kind:r.kind,insurer:normalize(r.insurer),condition:normalize(r.condition),amount:normalize(r.amount),text:normalize(r.text),notes:(r.notes||[]).map(normalize)})));
  if(signature(left)!==signature(right))return {rows,merged:false};
  return {rows:[{kind:'group',text:'전 연령'},...left.map(r=>Object.assign({},r,{group:'전 연령'}))],merged:true};
 }
