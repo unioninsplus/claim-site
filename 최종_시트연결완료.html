@@ -32828,13 +32828,27 @@ function initDropdowns() {
 }
 
 // 2026-11-19: 선택한 계약의 가입 담보만으로 화상 구비서류를 구분합니다.
+// 2026-11-19: 공통 의료비 안내문은 사고 종류를 괄호 안에 표시합니다.
+function medicalCoverageGuideFile112(item){
+  const name=String(item&&item.name||'').replace(/\s+/g,'');
+  const detail=String(item&&item.detail||'').replace(/\s+/g,'');
+  if(/사망|장례|후유장해|후유장애|진단금|진단비|진단위로금/.test(name))return '';
+  if(/화상수술치료비/.test(name))return '상해의료비(화상수술치료비).pdf';
+  if(/개물림/.test(name)&&/치료비/.test(name))return '상해의료비(개물림사고치료비).pdf';
+  const medical=/의료비|치료비/.test(name)||(/피해$/.test(name)&&/의료비|치료비/.test(detail));
+  if(medical&&/야생동물/.test(name))return '상해의료비(야생동물피해의료비).pdf';
+  if(medical&&/들개|유기견/.test(name))return '상해의료비(들개·유기견피해의료비).pdf';
+  if(/익수/.test(name)&&/상해의료비/.test(name))return '상해의료비(익수사고의료비).pdf';
+  return '';
+}
+
 function burnCoverageGuideFile109(item, coverages){
   const norm=x=>String(x&&x.name||'').replace(/\s+/g,'');
   const name=norm(item),names=(Array.isArray(coverages)?coverages:[]).map(norm);
   if(!/화상수술(?:치료)?비/.test(name))return '';
   const both=names.some(n=>/화상수술비/.test(n))&&names.some(n=>/화상수술치료비/.test(n));
   if(both)return '화상수술비+화상수술치료비.pdf';
-  return /화상수술치료비/.test(name)?'상해의료비.pdf':'화상수술비.pdf';
+  return /화상수술치료비/.test(name)?'상해의료비(화상수술치료비).pdf':'화상수술비.pdf';
 }
 
 function internalCoverageDocuments(item){
@@ -32860,7 +32874,7 @@ function internalCoverageDocuments(item){
   else if(/자전거.*진단/.test(name)) add('자전거상해 진단위로금.pdf');
   else if(/개물림|부딪힘/.test(name)){
     if(/진단/.test(name)) add('개물림 부딪힘 진단비.pdf');
-    else if(/비응급|치료비/.test(name)) add('개물림 사고(응급&비응급) 치료비.pdf');
+    else if(/비응급|치료비/.test(name)) add(medicalCoverageGuideFile112(item) || '개물림 사고(응급&비응급) 치료비.pdf');
     else if(/응급실/.test(name)) add('개물림응급실내원진료비.pdf');
   }
   else if(/독액성.*응급/.test(name)) add('독액성동물 응급실내원진료비.pdf');
@@ -32883,13 +32897,16 @@ function internalCoverageDocuments(item){
   else if(/의상자/.test(name)) add('의상자 보상금.pdf');
   else if(/재난.*(?:지원|비용)/.test(name)) add('재난비용지원.pdf');
   else if(/어린이.*수술/.test(name) && /12세이하/.test(text)) add('어린이(상해수술비)12세이하.pdf');
-  else if(/상해의료비/.test(name) ||
+  else if(medicalCoverageGuideFile112(item) || /상해의료비/.test(name) ||
     /(?:들개|유기견|야생동물)(?:피해)?(?:의료비|치료비)$/.test(name) ||
     (/(?:들개|유기견|야생동물)피해$/.test(name) && /의료비|치료비/.test(detail))){
     // 사고 원인이 달라도 의료비 구비서류는 공통입니다. 원인은 진료기록지 등으로 확인합니다.
     const excluded = /실손.*(?:가입자.*(?:제외|불가)|보험금지급제한)|(?:제한사항|보상하지).*실손/.test(text);
     if(/진단/.test(name) && excluded) add('상해의료비+상해진단위로금.pdf');
-    else add(excluded ? '상해의료비(실손가입자제외).pdf':'상해의료비.pdf', '상해의료비');
+    else {
+      const specific=medicalCoverageGuideFile112(item);
+      add(specific || (excluded ? '상해의료비(실손가입자제외).pdf':'상해의료비.pdf'), specific ? specific.replace(/\.pdf$/, '') : '상해의료비');
+    }
     // 의료비 담보의 설명에 다른 급부가 언급돼도 그 급부의 서류를 추가하지 않습니다.
   }
   else if(/상해(?:사고)?진단/.test(name) && !/재난|폭발|화재|붕괴/.test(name)){
@@ -32913,6 +32930,7 @@ function internalCoverageDocuments(item){
     else if(!ages.length) add('상해사고진단금.pdf');
     else add('상해사고진단금.pdf'); // 연령별 전용 양식이 없어도 공통 구비서류는 동일합니다.
   }
+  result.files.forEach(doc=>{if(doc.file==='화상수술비+화상수술치료비.pdf')doc.label='화상수술비 + 상해의료비(화상수술치료비)';});
   if(!result.files.length && !result.note) result.note='이 담보의 구비서류는 카카오상담 또는 1522-3556으로 확인해 주세요.';
   return result;
 }
