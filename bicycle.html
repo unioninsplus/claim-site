@@ -15392,6 +15392,44 @@ function extractAmount(detailText) {
   return "-";
 }
 
+// The table uses a display-only projection. Claim entry and payment calculations use the original items.
+function coverageDisplayShares(item) {
+  const detail = String(item.detail || "");
+  const policyNo = String(item.policyNo || "");
+  const lines = detail.split(/\r?\n/);
+  const named = line => line.match(/^\s*([A-Za-z가-힣][A-Za-z가-힣\d .&-]*?)\s*[:：]\s*(.*)$/);
+  const active = new Set();
+  const listed = new Set();
+  let complete = true;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const entry = named(line);
+    if (!entry) {
+      complete = false;
+      continue;
+    }
+    const insurer = entry[1];
+    listed.add(insurer);
+    for (const band of entry[2].split("/")) {
+      // A week number describes the band. Only the amounts determine participation.
+      const money = band.trim().replace(/,/g, "").match(/^(?:\d+\s*주\s*[:：]?\s*)?(\d+(?:\.\d+)?)(?:\s*\(\s*(\d+(?:\.\d+)?)\s*\))?\s*(?:만\s*원|만|원)?$/);
+      if (!money) complete = false;
+      if (!money || Number(money[1]) > 0 || Number(money[2] || 0) > 0) active.add(insurer);
+    }
+  }
+  if (!listed.size) return { detail, policyNo };
+  function show(line, policy) {
+    const entry = named(line);
+    if (!entry) return true;
+    if (listed.has(entry[1])) return active.has(entry[1]);
+    return !policy || !complete;
+  }
+  return {
+    detail: lines.filter(line => show(line, false)).join("\n").trim(),
+    policyNo: policyNo.split(/\r?\n/).filter(line => show(line, true)).join("\n").trim()
+  };
+}
+
 function runLookup() {
   const year = document.getElementById("yearSelect").value;
   const sido = document.getElementById("sidoSelect").value;
@@ -15449,8 +15487,9 @@ function runLookup() {
     tbody.innerHTML = '<tr><td colspan="5">선택한 조건의 데이터가 없습니다.</td></tr>';
   } else {
     items.forEach((item, idx) => {
+      const display = coverageDisplayShares(item);
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td style="width:6%;">${idx+1}</td><td style="width:16%; white-space:normal; word-break:keep-all;">${item.name}</td><td style="width:24%; white-space:pre-line;">${item.policyNo || "-"}</td><td style="width:36%; white-space:pre-line;">${item.detail || "-"}</td><td style="width:18%; white-space:pre-line;">${item.amount || extractAmount(item.detail || "")}</td>`;
+      tr.innerHTML = `<td style="width:6%;">${idx+1}</td><td style="width:16%; white-space:normal; word-break:keep-all;">${item.name}</td><td style="width:24%; white-space:pre-line;">${display.policyNo || "-"}</td><td style="width:36%; white-space:pre-line;">${display.detail || "-"}</td><td style="width:18%; white-space:pre-line;">${item.amount || extractAmount(item.detail || "")}</td>`;
       tbody.appendChild(tr);
     });
   }
